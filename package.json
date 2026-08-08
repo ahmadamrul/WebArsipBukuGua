@@ -1,0 +1,29 @@
+{
+  "name": "arsip-buku-gua-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Aplikasi web untuk mengelola koleksi buku dan komik dengan akun cloud.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "fast-xml-parser": "^5.10.1",
+    "jszip": "^3.10.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0"
+  }
+}
