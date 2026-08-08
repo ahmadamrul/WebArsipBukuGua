@@ -5,6 +5,7 @@ import {
   addComicLabel,
   addLabel,
   deleteComic,
+  deleteLabel,
   deleteReadingProgress,
   getSession,
   exportLibraryBundle,
@@ -18,7 +19,10 @@ import {
   signOut,
   signUp,
   updateComic,
+  updateLabel,
   updateComicSource,
+  updateAccountPassword,
+  updateProfileUsername,
   removeComicLabel,
   updateProgress,
 } from './lib/libraryService';
@@ -109,9 +113,37 @@ function toDebugMessage(error: unknown) {
   }
 }
 
+const shortDateFormatter = new Intl.DateTimeFormat('id-ID', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+
+function formatShortDate(value: string | null | undefined) {
+  if (!value) return '-';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '-' : shortDateFormatter.format(date);
+}
+
+const PASSWORD_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+function formatCooldown(milliseconds: number) {
+  const totalMinutes = Math.max(1, Math.ceil(milliseconds / 60000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours > 0 ? `${hours} jam ${minutes} menit` : `${minutes} menit`;
+}
+
 export default function App() {
   const [ready, setReady] = useState(false);
   const [sessionEmail, setSessionEmail] = useState('');
+  const [profileUsername, setProfileUsername] = useState('');
+  const [profileUsernameInput, setProfileUsernameInput] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [passwordChangedAt, setPasswordChangedAt] = useState<string | null>(null);
+  const [clockNow, setClockNow] = useState(Date.now());
   const [syncState, setSyncState] = useState<SyncState>('belum-login');
   const [message, setMessage] = useState('Login dulu untuk masuk ke arsip.');
   const [loginEmail, setLoginEmail] = useState('');
@@ -134,13 +166,14 @@ export default function App() {
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
   const [sourceForm, setSourceForm] = useState<SourceFormState>(emptySourceForm);
   const [labelForm, setLabelForm] = useState<LabelFormState>(emptyLabelForm);
+  const [editingLabel, setEditingLabel] = useState<LibraryLabel | null>(null);
   const [sourceEditForm, setSourceEditForm] = useState<SourceEditFormState>(emptySourceEditForm);
   const [comicFormTagIds, setComicFormTagIds] = useState<string[]>([]);
   const [activeComicId, setActiveComicId] = useState('');
   const [openPanel, setOpenPanel] = useState<'comic' | 'source' | 'label' | null>(null);
   const [detailTab, setDetailTab] = useState<'info' | 'source' | 'history' | 'label'>('info');
   const [debugError, setDebugError] = useState('');
-  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'history' | 'library' | 'settings'>('dashboard');
+  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'history' | 'library' | 'settings' | 'profile'>('dashboard');
   const [confirmState, setConfirmState] = useState<{
     open: boolean;
     title: string;
@@ -160,6 +193,9 @@ export default function App() {
         if (!active) return;
         if (session) {
           setSessionEmail(session.email);
+          setProfileUsername(session.username);
+          setProfileUsernameInput(session.username);
+          setPasswordChangedAt(session.passwordChangedAt);
           setShowLogin(false);
           setReady(true);
           setSyncState('siap-sync');
@@ -173,6 +209,11 @@ export default function App() {
     return () => {
       active = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClockNow(Date.now()), 60000);
+    return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -204,6 +245,10 @@ export default function App() {
     berhasil: 'Berhasil',
     gagal: 'Gagal',
   } satisfies Record<SyncState, string>;
+
+  const passwordCooldownRemaining = passwordChangedAt
+    ? Math.max(0, new Date(passwordChangedAt).getTime() + PASSWORD_COOLDOWN_MS - clockNow)
+    : 0;
 
   const requestConfirm = (title: string, message: string) => {
     return new Promise<boolean>((resolve) => {
@@ -344,6 +389,9 @@ export default function App() {
       const session = await getSession();
       if (!session) throw new Error('Sesi login tidak ditemukan.');
       setSessionEmail(session.email);
+      setProfileUsername(session.username);
+      setProfileUsernameInput(session.username);
+      setPasswordChangedAt(session.passwordChangedAt);
       setReady(true);
       setShowLogin(false);
       setSyncState('siap-sync');
@@ -355,6 +403,9 @@ export default function App() {
         const session = await getSession();
         if (!session) throw new Error('Akun belum aktif.');
         setSessionEmail(session.email);
+        setProfileUsername(session.username);
+        setProfileUsernameInput(session.username);
+        setPasswordChangedAt(session.passwordChangedAt);
         setReady(true);
         setShowLogin(false);
         setSyncState('siap-sync');
@@ -539,7 +590,14 @@ export default function App() {
   };
 
   const openLabelForm = (kind: string = 'collection') => {
+    setEditingLabel(null);
     setLabelForm({ ...emptyLabelForm, kind });
+    setOpenPanel('label');
+  };
+
+  const openLabelEdit = (label: LibraryLabel) => {
+    setEditingLabel(label);
+    setLabelForm({ name: label.name, kind: label.kind });
     setOpenPanel('label');
   };
 
@@ -601,13 +659,36 @@ export default function App() {
         setMessage('Nama label wajib diisi.');
         return;
       }
-      if (!(await requestConfirm('Buat Label?', 'Label baru akan ditambahkan ke library.'))) return;
-      await addLabel(labelForm.name.trim(), labelForm.kind.trim() || 'collection');
+      if (editingLabel) {
+        if (!(await requestConfirm('Simpan Perubahan Label?', `Label "${editingLabel.name}" akan diperbarui.`))) return;
+        await updateLabel(
+          editingLabel.id,
+          labelForm.name.trim(),
+          labelForm.kind.trim() || 'collection',
+          editingLabel.name,
+          editingLabel.kind,
+        );
+      } else {
+        if (!(await requestConfirm('Buat Label?', 'Label baru akan ditambahkan ke library.'))) return;
+        await addLabel(labelForm.name.trim(), labelForm.kind.trim() || 'collection');
+      }
       setOpenPanel(null);
       setLabelForm(emptyLabelForm);
+      setEditingLabel(null);
       await syncNow();
     } catch (error) {
-      setMessage(`Simpan label gagal: ${toErrorMessage(error)}`);
+      setMessage(`${editingLabel ? 'Edit' : 'Simpan'} label gagal: ${toErrorMessage(error)}`);
+    }
+  };
+
+  const handleDeleteLabel = async (label: LibraryLabel) => {
+    try {
+      if (!(await requestConfirm('Hapus Label?', `Label "${label.name}" dan relasinya pada komik akan dihapus.`))) return;
+      await deleteLabel(label.id, label.name, label.kind);
+      await syncNow();
+    } catch (error) {
+      setMessage(`Hapus label gagal: ${toErrorMessage(error)}`);
+      setDebugError(toDebugMessage(error));
     }
   };
 
@@ -698,19 +779,63 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      if (!(await requestConfirm('Keluar?', 'Putuskan akun cloud dan keluar dari dashboard?'))) return;
+      if (!(await requestConfirm('Logout?', 'Anda akan keluar dari sesi saat ini. Data akun tidak akan dihapus.'))) return;
       await signOut();
       setReady(false);
       setSessionEmail('');
+      setProfileUsername('');
+      setProfileUsernameInput('');
+      setPasswordChangedAt(null);
       setComics([]);
       setLabels([]);
       setComicLabels([]);
       setProgresses([]);
       setShowLogin(true);
       setSyncState('belum-login');
-      setMessage('Akun diputus.');
+      setMessage('Logout berhasil.');
     } catch (error) {
-      setMessage(`Putus akun gagal: ${toErrorMessage(error)}`);
+      setMessage(`Logout gagal: ${toErrorMessage(error)}`);
+    }
+  };
+
+  const handleProfileSave = async (event: FormEvent) => {
+    event.preventDefault();
+    const usernameChanged = profileUsernameInput.trim() !== profileUsername;
+    const passwordChanged = newPassword.length > 0 || confirmPassword.length > 0;
+
+    if (!usernameChanged && !passwordChanged) {
+      setMessage('Tidak ada perubahan profil untuk disimpan.');
+      return;
+    }
+    if (passwordChanged && newPassword !== confirmPassword) {
+      setMessage('Konfirmasi password tidak sama.');
+      return;
+    }
+    if (passwordChanged && passwordCooldownRemaining > 0) {
+      setMessage(`Password dapat diganti lagi dalam ${formatCooldown(passwordCooldownRemaining)}.`);
+      return;
+    }
+    if (!(await requestConfirm('Simpan Profil?', 'Username atau password akun akan diperbarui.'))) return;
+
+    setProfileSaving(true);
+    try {
+      if (usernameChanged) await updateProfileUsername(profileUsernameInput);
+      if (passwordChanged) await updateAccountPassword(newPassword);
+      const session = await getSession();
+      if (session) {
+        setProfileUsername(session.username);
+        setProfileUsernameInput(session.username);
+        setPasswordChangedAt(session.passwordChangedAt);
+      }
+      setNewPassword('');
+      setConfirmPassword('');
+      setMessage('Profil berhasil diperbarui.');
+      setDebugError('');
+    } catch (error) {
+      setMessage(`Update profil gagal: ${toErrorMessage(error)}`);
+      setDebugError(toDebugMessage(error));
+    } finally {
+      setProfileSaving(false);
     }
   };
 
@@ -749,13 +874,13 @@ export default function App() {
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-mark">A</div>
+        <button type="button" className="brand brand-profile-button" onClick={() => setActiveMenu('profile')} aria-label="Buka pengaturan profil">
+          <div className="brand-mark">{(profileUsername || sessionEmail).charAt(0).toUpperCase()}</div>
           <div>
             <p className="eyebrow">Arsip Buku Gua</p>
-            <h1>{sessionEmail}</h1>
+            <h1>{profileUsername || 'Atur username'}</h1>
           </div>
-        </div>
+        </button>
 
         <nav className="menu" aria-label="Navigasi utama">
           <button
@@ -794,7 +919,7 @@ export default function App() {
           {debugError ? <pre className="debug-box">{debugError}</pre> : null}
           <div className="stack-actions">
             <button type="button" className="primary" onClick={syncNow}>Sync Sekarang</button>
-            <button type="button" className="secondary" onClick={handleLogout}>Putuskan Akun</button>
+            <button type="button" className="secondary" onClick={handleLogout}>Logout</button>
           </div>
         </section>
 
@@ -989,7 +1114,7 @@ export default function App() {
                         <div><span>Genre</span><strong>{activeComic?.genre ?? 'Tanpa genre'}</strong></div>
                         <div><span>Koleksi</span><strong>{activeComic?.collection ?? 'Tanpa koleksi'}</strong></div>
                         <div><span>Progress</span><strong>{activeComic?.progress ?? 0}%</strong></div>
-                        <div><span>Update</span><strong>{activeComic?.updated_at ?? '-'}</strong></div>
+                        <div><span>Update</span><strong>{formatShortDate(activeComic?.updated_at)}</strong></div>
                       </div>
                     )}
                     {detailTab === 'source' && (
@@ -1035,9 +1160,192 @@ export default function App() {
 
         {activeMenu === 'settings' && (
           <section className="stack">
-            <section className="panel compact-panel"><div className="panel-head"><div><p className="eyebrow">Pengaturan</p><h3>Akun dan sinkronisasi</h3></div></div><div className="stack-actions"><button type="button" className="primary" onClick={syncNow}>Sync Sekarang</button><button type="button" className="secondary" onClick={handleLogout}>Putuskan Akun</button></div></section>
-            <section className="panel compact-panel"><div className="panel-head"><div><p className="eyebrow">Import</p><h3>File lokal</h3></div></div><div className="stack-actions"><input type="file" accept=".json,.zip,.pdf,.cbz,.epub,.png,.jpg,.jpeg" onChange={(event) => handleImportLocalFile(event.target.files)} /><p className="muted">{importInfo || 'Impor PDF, gambar, EPUB, JSON, atau bundle arsip.'}</p><input type="file" accept=".json" onChange={(event) => handleImportLibrary(event.target.files)} /><input type="file" accept=".zip" onChange={(event) => handleImportBundle(event.target.files)} /></div><div className="inline-actions"><button type="button" className="secondary" onClick={handleExport}>Export JSON</button><button type="button" className="secondary" onClick={handleExportBundle}>Export Bundle</button></div></section>
-            <section className="panel compact-panel"><div className="panel-head"><div><p className="eyebrow">Label</p><h3>Genre, koleksi, tag</h3></div><div className="inline-actions"><button type="button" className="secondary" onClick={() => openLabelForm('genre')}>Tambah Genre</button><button type="button" className="secondary" onClick={() => openLabelForm('collection')}>Tambah Koleksi</button><button type="button" className="secondary" onClick={() => openLabelForm('tag')}>Tambah Tag</button></div></div><div className="mini-list">{genres.map((genre) => (<button type="button" key={genre} className={genre === selectedGenre ? 'mini-chip active' : 'mini-chip'} onClick={() => setSelectedGenre(genre)}>{genre}</button>))}</div><div className="mini-list">{collections.map((collection) => (<button type="button" key={collection} className={collection === selectedCollection ? 'mini-chip active' : 'mini-chip'} onClick={() => setSelectedCollection(collection)}>{collection}</button>))}</div><div className="mini-list">{tags.map((tag) => (<button type="button" key={tag} className={tag === selectedTag ? 'mini-chip active' : 'mini-chip'} onClick={() => setSelectedTag(tag)}>{tag}</button>))}</div><div className="label-grid">{labels.map((label) => (<div className="label-card" key={label.id}><strong>{label.name}</strong><small>{label.kind}</small></div>))}</div></section>
+            <section className="settings-account-grid">
+              <article className="panel compact-panel settings-card profile-summary-card">
+                <div className="settings-card-icon" aria-hidden="true">{(profileUsername || sessionEmail).charAt(0).toUpperCase()}</div>
+                <div className="settings-card-copy">
+                  <p className="eyebrow">Profil</p>
+                  <h3>{profileUsername || 'Atur username'}</h3>
+                  <p className="muted">{sessionEmail}</p>
+                </div>
+                <button type="button" className="secondary" onClick={() => setActiveMenu('profile')}>Kelola profil</button>
+              </article>
+              <article className="panel compact-panel settings-card sync-settings-card">
+                <div className="settings-card-copy">
+                  <p className="eyebrow">Sinkronisasi</p>
+                  <h3>{syncLabel[syncState]}</h3>
+                  <p className="muted">{message}</p>
+                </div>
+                <div className="inline-actions settings-card-actions">
+                  <button type="button" className="primary" onClick={syncNow}>Sync Sekarang</button>
+                  <button type="button" className="secondary" onClick={handleLogout}>Logout</button>
+                </div>
+              </article>
+            </section>
+            <section className="panel compact-panel import-manager">
+              <div className="panel-head">
+                <div>
+                  <p className="eyebrow">Import & Export</p>
+                  <h3>Kelola file library</h3>
+                  <p className="muted">Tambahkan publikasi atau pulihkan data dari arsip sebelumnya.</p>
+                </div>
+              </div>
+              <div className="import-grid">
+                <label className="import-option import-option-publication">
+                  <input
+                    type="file"
+                    accept=".pdf,.cbz,.epub,.png,.jpg,.jpeg"
+                    onChange={(event) => {
+                      void handleImportLocalFile(event.target.files);
+                      event.currentTarget.value = '';
+                    }}
+                  />
+                  <span className="import-icon" aria-hidden="true">P</span>
+                  <span className="import-copy">
+                    <strong>Import publikasi</strong>
+                    <small>PDF, CBZ, EPUB, atau gambar</small>
+                  </span>
+                  <span className="import-action">Pilih file</span>
+                </label>
+                <label className="import-option import-option-json">
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={(event) => {
+                      void handleImportLibrary(event.target.files);
+                      event.currentTarget.value = '';
+                    }}
+                  />
+                  <span className="import-icon" aria-hidden="true">J</span>
+                  <span className="import-copy">
+                    <strong>Restore JSON</strong>
+                    <small>Pulihkan data library dari file JSON</small>
+                  </span>
+                  <span className="import-action">Pilih file</span>
+                </label>
+                <label className="import-option import-option-bundle">
+                  <input
+                    type="file"
+                    accept=".zip"
+                    onChange={(event) => {
+                      void handleImportBundle(event.target.files);
+                      event.currentTarget.value = '';
+                    }}
+                  />
+                  <span className="import-icon" aria-hidden="true">Z</span>
+                  <span className="import-copy">
+                    <strong>Restore bundle</strong>
+                    <small>Pulihkan data dan file dari arsip ZIP</small>
+                  </span>
+                  <span className="import-action">Pilih file</span>
+                </label>
+              </div>
+              {importInfo ? <div className="import-status"><span aria-hidden="true">OK</span><div><strong>File siap diproses</strong><small>{importInfo}</small></div></div> : null}
+              <div className="export-row">
+                <div>
+                  <strong>Cadangkan library</strong>
+                  <span>Simpan data dalam format ringan atau bundle lengkap.</span>
+                </div>
+                <div className="inline-actions">
+                  <button type="button" className="secondary" onClick={handleExport}>Export JSON</button>
+                  <button type="button" className="secondary" onClick={handleExportBundle}>Export Bundle</button>
+                </div>
+              </div>
+            </section>
+            <section className="panel compact-panel label-manager">
+              <div className="panel-head">
+                <div>
+                  <p className="eyebrow">Label</p>
+                  <h3>Genre, koleksi, dan tag</h3>
+                  <p className="muted">Kelola kategori yang digunakan untuk menyusun library.</p>
+                </div>
+              </div>
+              <div className="label-management-grid">
+                {[
+                  { kind: 'genre', title: 'Genre', description: 'Jenis cerita atau kategori bacaan.' },
+                  { kind: 'collection', title: 'Koleksi', description: 'Kelompok khusus dalam library.' },
+                  { kind: 'tag', title: 'Tag', description: 'Penanda tambahan untuk komik.' },
+                ].map((group) => {
+                  const groupLabels = labels.filter((label) => label.kind === group.kind);
+                  return (
+                    <section className={`label-group label-group-${group.kind}`} key={group.kind}>
+                      <div className="label-group-head">
+                        <div>
+                          <span className="label-kind-badge">{group.title}</span>
+                          <strong>{groupLabels.length} item</strong>
+                          <small>{group.description}</small>
+                        </div>
+                        <button type="button" className="secondary" onClick={() => openLabelForm(group.kind)}>+ Tambah</button>
+                      </div>
+                      <div className="label-manage-list">
+                        {groupLabels.length ? groupLabels.map((label) => (
+                          <article className="label-manage-card" key={label.id}>
+                            <div className="label-manage-name">
+                              <span aria-hidden="true">{label.name.trim().charAt(0).toUpperCase() || '?'}</span>
+                              <div><strong>{label.name}</strong><small>{group.title}</small></div>
+                            </div>
+                            <div className="label-manage-actions">
+                              <button type="button" className="mini-action" onClick={() => openLabelEdit(label)}>Edit</button>
+                              <button type="button" className="mini-action danger" onClick={() => handleDeleteLabel(label)}>Hapus</button>
+                            </div>
+                          </article>
+                        )) : <p className="label-empty">Belum ada {group.title.toLowerCase()}.</p>}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            </section>
+          </section>
+        )}
+
+        {activeMenu === 'profile' && (
+          <section className="profile-page">
+            <section className="profile-page-header">
+              <div>
+                <p className="eyebrow">Akun</p>
+                <h2>Kelola profil</h2>
+                <p className="muted">Atur identitas akun dan keamanan login Anda.</p>
+              </div>
+              <button type="button" className="secondary" onClick={() => setActiveMenu('settings')}>Kembali ke Pengaturan</button>
+            </section>
+            <section className="panel compact-panel profile-settings-panel">
+              <div className="profile-page-identity">
+                <div className="profile-page-avatar">{(profileUsername || sessionEmail).charAt(0).toUpperCase()}</div>
+                <div><strong>{profileUsername || 'Belum ada username'}</strong><span>{sessionEmail}</span></div>
+              </div>
+              <form className="profile-form" onSubmit={handleProfileSave}>
+                <label>
+                  Username
+                  <input value={profileUsernameInput} onChange={(event) => setProfileUsernameInput(event.target.value)} placeholder="Masukkan username" minLength={2} maxLength={40} />
+                </label>
+                <label>
+                  Email
+                  <input value={sessionEmail} readOnly aria-readonly="true" />
+                  <small>Email digunakan untuk login dan tidak diubah dari halaman ini.</small>
+                </label>
+                <div className="password-section">
+                  <div className="password-section-head">
+                    <div><strong>Ganti password</strong><span>Password minimal 8 karakter.</span></div>
+                    {passwordCooldownRemaining > 0 ? <span className="cooldown-badge">Tersedia dalam {formatCooldown(passwordCooldownRemaining)}</span> : <span className="cooldown-badge ready">Siap diubah</span>}
+                  </div>
+                  <div className="profile-password-grid">
+                    <label>
+                      Password baru
+                      <input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="Minimal 8 karakter" minLength={8} autoComplete="new-password" disabled={passwordCooldownRemaining > 0} />
+                    </label>
+                    <label>
+                      Konfirmasi password
+                      <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Ulangi password baru" minLength={8} autoComplete="new-password" disabled={passwordCooldownRemaining > 0} />
+                    </label>
+                  </div>
+                </div>
+                <div className="profile-form-actions">
+                  <button type="button" className="secondary" onClick={() => { setProfileUsernameInput(profileUsername); setNewPassword(''); setConfirmPassword(''); }}>Batalkan perubahan</button>
+                  <button type="submit" className="primary" disabled={profileSaving}>{profileSaving ? 'Menyimpan...' : 'Simpan perubahan'}</button>
+                </div>
+              </form>
+            </section>
           </section>
         )}
       </main>
@@ -1234,9 +1542,9 @@ export default function App() {
             <div className="panel-head">
               <div>
                 <p className="eyebrow">Label</p>
-                <h3>Buat label baru</h3>
+                <h3>{editingLabel ? 'Edit label' : 'Buat label baru'}</h3>
               </div>
-              <button type="button" className="ghost" onClick={() => setOpenPanel(null)}>Tutup</button>
+              <button type="button" className="ghost" onClick={() => { setOpenPanel(null); setEditingLabel(null); setLabelForm(emptyLabelForm); }}>Tutup</button>
             </div>
             <div className="form-grid">
               <label>
@@ -1252,7 +1560,7 @@ export default function App() {
                 </select>
               </label>
             </div>
-            <button className="primary" type="submit">Simpan Label</button>
+            <button className="primary" type="submit">{editingLabel ? 'Simpan Perubahan' : 'Simpan Label'}</button>
           </form>
         </div>
       )}

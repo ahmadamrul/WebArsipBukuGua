@@ -17,6 +17,8 @@ const delay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve
 export type SessionInfo = {
   id: string;
   email: string;
+  username: string;
+  passwordChangedAt: string | null;
 };
 
 export type LibrarySnapshot = {
@@ -92,7 +94,40 @@ export async function getSession(): Promise<SessionInfo | null> {
   if (!supabaseConfigured || !supabase) return null;
   const { data } = await supabase.auth.getUser();
   const user = data.user;
-  return user?.email ? { id: user.id, email: user.email } : null;
+  if (!user?.email) return null;
+  const username = typeof user.user_metadata.username === 'string'
+    ? user.user_metadata.username.trim()
+    : '';
+  const passwordChangedAt = typeof user.user_metadata.password_changed_at === 'string'
+    ? user.user_metadata.password_changed_at
+    : null;
+  return { id: user.id, email: user.email, username, passwordChangedAt };
+}
+
+export async function updateProfileUsername(username: string) {
+  if (!supabaseConfigured || !supabase) throw new Error('Akun cloud belum dikonfigurasi.');
+  const normalizedUsername = username.trim();
+  if (normalizedUsername.length < 2) throw new Error('Username minimal 2 karakter.');
+  const { error } = await supabase.auth.updateUser({ data: { username: normalizedUsername } });
+  if (error) throw new Error(formatSupabaseError(error));
+}
+
+export async function updateAccountPassword(password: string) {
+  if (!supabaseConfigured || !supabase) throw new Error('Akun cloud belum dikonfigurasi.');
+  if (password.length < 8) throw new Error('Password baru minimal 8 karakter.');
+  const user = await requireUser();
+  const lastChangedValue = user.user_metadata.password_changed_at;
+  const lastChangedAt = typeof lastChangedValue === 'string' ? new Date(lastChangedValue).getTime() : 0;
+  const cooldownEndsAt = lastChangedAt + 24 * 60 * 60 * 1000;
+  if (lastChangedAt > 0 && Date.now() < cooldownEndsAt) {
+    throw new Error('Password hanya dapat diganti satu kali dalam 24 jam.');
+  }
+  const changedAt = new Date().toISOString();
+  const { error } = await supabase.auth.updateUser({
+    password,
+    data: { password_changed_at: changedAt },
+  });
+  if (error) throw new Error(formatSupabaseError(error));
 }
 
 export async function signIn(email: string, password: string) {
@@ -135,12 +170,18 @@ export async function loadLibrary(): Promise<LibrarySnapshot> {
   if (sources.error) throw new Error(formatSupabaseError(sources.error));
   if (progresses.error) throw new Error(formatSupabaseError(progresses.error));
 
-  const mergedLabels = [
+  const allLabels = [
     ...(labels.data ?? []),
     ...(genres.data ?? []).map((item) => ({ ...item, kind: 'genre' })),
     ...(tags.data ?? []).map((item) => ({ ...item, kind: 'tag' })),
     ...(collections.data ?? []).map((item) => ({ ...item, kind: 'collection' })),
   ];
+  const labelMap = new Map<string, LibraryLabel>();
+  for (const label of allLabels) {
+    const key = `${label.kind}:${label.name.trim().toLowerCase()}`;
+    if (!labelMap.has(key)) labelMap.set(key, label as LibraryLabel);
+  }
+  const mergedLabels = [...labelMap.values()].sort((a, b) => a.name.localeCompare(b.name));
 
   return {
     comics: comics.data ?? [],
@@ -211,11 +252,91 @@ export async function addLabel(name: string, kind = 'collection') {
         : 'library_collections';
 
   const [{ error: labelError }, { error: typedError }] = await Promise.all([
-    supabase!.from('library_labels').insert({ user_id: user.id, name: name.trim(), kind }),
+    supabase!.from('library_labels').insert({ ...basePayload, kind }),
     supabase!.from(targetTable).insert(basePayload),
   ]);
   if (labelError) throw new Error(formatSupabaseError(labelError));
   if (typedError) throw new Error(formatSupabaseError(typedError));
+}
+
+export async function updateLabel(
+  id: string,
+  name: string,
+  kind: string,
+  previousName: string,
+  previousKind: string,
+) {
+  const user = await requireUser();
+  const normalizedName = name.trim().toLowerCase();
+  const previousTable = labelTable(previousKind);
+  const targetTable = labelTable(kind);
+
+  const { error: labelError } = await supabase!
+    .from('library_labels')
+    .update({ name: name.trim(), normalized_name: normalizedName, kind })
+    .eq('id', id)
+    .eq('user_id', user.id);
+  if (labelError) throw new Error(formatSupabaseError(labelError));
+
+  if (previousKind === 'genre' || previousKind === 'collection') {
+    const column = previousKind === 'genre' ? 'genre' : 'collection';
+    const replacement = kind === previousKind ? name.trim() : null;
+    const { error: comicError } = await supabase!
+      .from('comics')
+      .update({ [column]: replacement, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq(column, previousName);
+    if (comicError) throw new Error(formatSupabaseError(comicError));
+  }
+
+  const { error: removeTypedError } = await supabase!
+    .from(previousTable)
+    .delete()
+    .eq('user_id', user.id)
+    .eq('name', previousName);
+  if (removeTypedError) throw new Error(formatSupabaseError(removeTypedError));
+
+  const { error: typedError } = await supabase!
+    .from(targetTable)
+    .insert({ user_id: user.id, name: name.trim(), normalized_name: normalizedName });
+  if (typedError) throw new Error(formatSupabaseError(typedError));
+}
+
+export async function deleteLabel(id: string, name: string, kind: string) {
+  const user = await requireUser();
+  const targetTable = labelTable(kind);
+
+  const { error: linkError } = await supabase!
+    .from('comic_labels')
+    .delete()
+    .eq('label_id', id)
+    .eq('user_id', user.id);
+  if (linkError) throw new Error(formatSupabaseError(linkError));
+
+  if (kind === 'genre' || kind === 'collection') {
+    const column = kind === 'genre' ? 'genre' : 'collection';
+    const { error: comicError } = await supabase!
+      .from('comics')
+      .update({ [column]: null, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq(column, name);
+    if (comicError) throw new Error(formatSupabaseError(comicError));
+  }
+
+  const [{ error: labelError }, { error: typedError }] = await Promise.all([
+    supabase!.from('library_labels').delete().eq('id', id).eq('user_id', user.id),
+    supabase!.from(targetTable).delete().eq('user_id', user.id).eq('name', name),
+  ]);
+  if (labelError) throw new Error(formatSupabaseError(labelError));
+  if (typedError) throw new Error(formatSupabaseError(typedError));
+}
+
+function labelTable(kind: string) {
+  return kind === 'genre'
+    ? 'library_genres'
+    : kind === 'tag'
+      ? 'library_tags'
+      : 'library_collections';
 }
 
 export async function updateProgress(comicId: string, pageIndex: number, chapterLabel?: string) {

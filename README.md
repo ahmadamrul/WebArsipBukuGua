@@ -1,123 +1,123 @@
 # Arsip Buku Gua Web
 
-Aplikasi web React untuk mengelola koleksi buku dan komik. Aplikasi menggunakan akun cloud, sehingga pengguna wajib login sebelum mengakses library dan seluruh data dibatasi berdasarkan akun yang sedang aktif.
+A React web application for managing book and comic collections. The application uses cloud accounts, so users must sign in before accessing the library. All data is scoped to the currently authenticated user.
 
-## Fitur
+## Features
 
-- Login dan pendaftaran akun cloud.
-- Tambah, edit, dan hapus komik.
-- Mode tampilan daftar dan grid.
-- Cover komik dari URL manual atau metadata link sumber.
-- Genre, koleksi, tag, dan relasi label per komik.
-- Pencarian, filter, dan pengurutan library.
-- Sumber serta link bacaan per komik.
-- Progress dan riwayat baca.
-- Import file lokal dan export/import data library.
-- Row Level Security untuk memisahkan data setiap pengguna.
-- Tampilan responsif untuk desktop dan browser mobile.
+- Cloud account registration and authentication.
+- Create, edit, and delete comics.
+- List and grid display modes.
+- Comic covers from manual URLs or source-page metadata.
+- Genres, collections, tags, and per-comic label relationships.
+- Library search, filtering, and sorting.
+- Multiple reading sources and links per comic.
+- Reading progress and history.
+- Local file import and library data import/export.
+- Row Level Security to isolate each user's data.
+- Responsive layout for desktop and mobile browsers.
 
-## Teknologi
+## Tech Stack
 
 - React 19
 - TypeScript
 - Vite
-- Supabase Auth dan Postgres
-- JSZip dan fast-xml-parser untuk import file
+- Supabase Auth and Postgres
+- JSZip and fast-xml-parser for file imports
 
-## Persyaratan
+## Requirements
 
-- Node.js 20 atau lebih baru.
-- npm.
-- Proyek Supabase dengan Auth email/password aktif.
+- Node.js 20 or newer
+- npm
+- A Supabase project with email/password authentication enabled
 
-## Menjalankan Proyek
+## Getting Started
 
-1. Install dependency:
+1. Install the dependencies:
 
 ```bash
 npm install
 ```
 
-2. Salin konfigurasi environment:
+2. Copy the environment template:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Pada macOS atau Linux:
+On macOS or Linux:
 
 ```bash
 cp .env.example .env
 ```
 
-3. Isi `.env` dengan konfigurasi proyek:
+3. Add your project configuration to `.env`:
 
 ```env
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=sb_publishable_your_key_here
 ```
 
-Gunakan **Project URL** dan **Publishable key** dari pengaturan API proyek. Jangan gunakan secret key atau service-role key di aplikasi browser.
+Use the **Project URL** and **Publishable key** from your project's API settings. Never expose a secret key or service-role key in a browser application.
 
-4. Buka SQL Editor pada dashboard proyek, jalankan seluruh isi [`supabase/schema.sql`](supabase/schema.sql), lalu pastikan tidak ada error.
+4. Open the SQL Editor in your project dashboard, run the complete [`supabase/schema.sql`](supabase/schema.sql) file, and verify that it finishes without errors.
 
-5. Jalankan development server:
+5. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Aplikasi tersedia di alamat yang ditampilkan Vite, biasanya `http://localhost:5173`.
+The application will be available at the address displayed by Vite, usually `http://localhost:5173`.
 
-## Perintah
+## Scripts
 
 ```bash
-npm run dev      # Menjalankan development server
-npm run build    # Type-check dan membuat production build
-npm run preview  # Menampilkan production build secara lokal
+npm run dev      # Start the development server
+npm run build    # Type-check and create a production build
+npm run preview  # Preview the production build locally
 ```
 
-## Struktur Proyek
+## Project Structure
 
 ```text
 src/
-  App.tsx                  UI dan alur utama aplikasi
-  styles.css               Seluruh styling dan layout responsif
+  App.tsx                  Main UI and application flow
+  styles.css               Styling and responsive layouts
   lib/
-    libraryService.ts      Auth, CRUD, import/export, dan metadata
-    supabase.ts            Inisialisasi client akun cloud
-    types.ts               Tipe data aplikasi
+    libraryService.ts      Authentication, CRUD, imports, exports, and metadata
+    supabase.ts            Cloud client initialization
+    types.ts               Application data types
 supabase/
-  schema.sql               Tabel, migrasi kompatibilitas, RLS, dan index
-public/                     Favicon dan aset publik
+  schema.sql               Tables, compatibility migrations, RLS, and indexes
+public/                     Public assets and favicon
 ```
 
-## Database dan Keamanan
+## Database and Security
 
-- Semua tabel utama menggunakan `user_id` yang terhubung ke `auth.users`.
-- Row Level Security hanya mengizinkan pengguna terautentikasi membaca dan mengubah datanya sendiri.
-- `schema.sql` aman dijalankan ulang karena menggunakan `if not exists` dan mengganti policy dengan definisi terbaru.
-- Migrasi schema menangani database lama dari aplikasi Flutter yang masih memiliki kolom `device_id` wajib isi pada riwayat baca.
-- `.env` tidak ikut Git. Hanya `.env.example` dengan placeholder yang boleh di-commit.
+- Every primary table uses a `user_id` linked to `auth.users`.
+- Row Level Security allows authenticated users to access only their own data.
+- The schema is designed to be safely rerun by using `if not exists` and replacing policies with their latest definitions.
+- Compatibility migrations handle older Flutter databases where `device_id` may still be required for reading-progress rows.
+- `.env` is excluded from Git. Only `.env.example`, containing placeholders, should be committed.
 
 ## Troubleshooting
 
-### Akun cloud belum dikonfigurasi
+### Cloud account is not configured
 
-Pastikan `.env` tersedia, kedua variabel terisi, lalu restart `npm run dev` setelah mengubah environment.
+Make sure `.env` exists and both variables are set. Restart `npm run dev` after changing environment variables.
 
-### Request database mendapat status 400
+### Database requests return status 400
 
-Jalankan ulang [`supabase/schema.sql`](supabase/schema.sql). Error ini biasanya terjadi ketika struktur tabel lama belum memiliki kolom atau default terbaru.
+Run [`supabase/schema.sql`](supabase/schema.sql) again. This usually means an older table is missing a required column or default value.
 
-### Insert atau update ditolak policy
+### Inserts or updates are rejected by a policy
 
-Pastikan pengguna sudah login dan policy RLS dari [`supabase/schema.sql`](supabase/schema.sql) berhasil dibuat.
+Make sure the user is signed in and that all RLS policies from [`supabase/schema.sql`](supabase/schema.sql) were created successfully.
 
-### Cover dari link sumber tidak ditemukan
+### A cover cannot be detected from the source page
 
-Sebagian situs memblokir pengambilan metadata dari browser. Isi `URL Cover` secara manual pada form tambah atau edit komik sebagai fallback.
+Some websites block metadata requests from browsers. Enter a cover URL manually in the create or edit comic form as a fallback.
 
-## Catatan
+## Notes
 
-Versi web ini bersifat online dan membutuhkan koneksi ke akun cloud. Repo Flutter/Android berada di proyek terpisah dan tidak diubah oleh aplikasi ini.
+This web version is online-only and requires a connection to the cloud account service. The Flutter/Android application is maintained in a separate repository and is not modified by this project.
