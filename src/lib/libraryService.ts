@@ -1,73 +1,728 @@
 import JSZip from 'jszip';
 import { XMLParser } from 'fast-xml-parser';
 
-import { supabase, supabaseConfigured } from './supabase';
+import { supabase, supabaseConfigured } from './api/supabaseClient';
+import {
+  COVER_BUCKET,
+  cleanDescription,
+  decodeHtmlEntities,
+  detectPageDescription,
+  formatBytes,
+  guessCoverExtension,
+  isChallengePage,
+  legacyProgressFields,
+  normalizeSourceName,
+  optimizeCoverBlob,
+  parseSrcset,
+  requiresLegacyProgressFields,
+  resolveUrl,
+  scoreCoverCandidate,
+} from './libraryServiceHelpers';
+import type { Comic, LibraryLabel, PublicationItem, PublicationKind } from './types';
 import type {
-  Comic,
-  ComicLabel,
-  ComicSource,
-  LibraryLabel,
-  PublicationItem,
-  PublicationKind,
-  ReadingProgress,
-} from './types';
+  ComicInput,
+  ComicLabelInput,
+  ComicSourceInput,
+  ComicSourceUpdateInput,
+  DetectedMetadata,
+  LibrarySnapshot,
+  PublicationPreview,
+  SessionInfo,
+} from './types/api';
+
+export type {
+  ComicInput,
+  ComicLabelInput,
+  ComicSourceInput,
+  ComicSourceUpdateInput,
+  DetectedMetadata,
+  LibrarySnapshot,
+  PublicationPreview,
+  SessionInfo,
+} from './types/api';
 
 const delay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
-export type SessionInfo = {
-  id: string;
-  email: string;
-  username: string;
-  passwordChangedAt: string | null;
+async function fetchHtmlWithFallback(url: string) {
+  const parsed = new URL(url);
+  const strippedUrl = url.replace(/^https?:\/\//i, '');
+  const readerUrls =
+    parsed.protocol === 'https:'
+      ? [`https://r.jina.ai/https://${strippedUrl}`, `https://r.jina.ai/http://${strippedUrl}`]
+      : [`https://r.jina.ai/http://${strippedUrl}`, `https://r.jina.ai/https://${strippedUrl}`];
+  const attempts = parsed.origin === window.location.origin ? [url, ...readerUrls] : readerUrls;
+  let lastError: unknown = null;
+  for (const candidate of attempts) {
+    try {
+      const response = await fetch(candidate, {
+        method: 'GET',
+        cache: 'no-store',
+      });
+      if (!response.ok) {
+        lastError = new Error(`Gagal mengambil halaman: ${response.status}`);
+        continue;
+      }
+      const text = await response.text();
+      if (text.trim() && !isChallengePage(text)) return text;
+      if (isChallengePage(text)) {
+        lastError = new Error('Halaman dilindungi challenge Cloudflare.');
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError ?? new Error('Gagal mengambil halaman.');
+}
+
+async function fetchCoverSourceBlob(url: string) {
+  const fetchFromEdgeProxy = async () => {
+    if (!supabaseConfigured || !supabase) return null;
+    const { data, error } = await supabase.functions.invoke('cover-proxy', { body: { url } });
+    if (error) throw error;
+    if (data instanceof Blob && data.size > 0) return data;
+    if (data instanceof ArrayBuffer && data.byteLength > 0) return new Blob([data]);
+    return null;
+  };
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    if (hostname.endsWith('shngm.id') || hostname === 'jumpg-assets.tokyo-cdn.com') {
+      const proxied = await fetchFromEdgeProxy();
+      if (proxied) return proxied;
+    }
+  } catch {
+    // Continue through the public fallbacks when the Edge Function is not deployed yet.
+  }
+  const attempts = [
+    url,
+    `https://images.weserv.nl/?url=${encodeURIComponent(url)}&output=webp`,
+    `https://images.weserv.nl/?url=${encodeURIComponent(url)}`,
+  ];
+  let lastError: unknown = null;
+  for (const candidate of attempts) {
+    try {
+      const response = await fetch(candidate, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-store',
+      });
+      if (!response.ok) {
+        lastError = new Error(`Gagal mengambil gambar cover: ${response.status}`);
+        continue;
+      }
+      return await response.blob();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  if (supabaseConfigured && supabase) {
+    try {
+      const proxied = await fetchFromEdgeProxy();
+      if (proxied) return proxied;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError ?? new Error('Gagal mengambil gambar cover.');
+}
+
+async function uploadComicCoverFromUrl(userId: string, comicId: string, coverUrl: string) {
+  if (!supabaseConfigured || !supabase) throw new Error('Akun cloud belum dikonfigurasi.');
+  const sourceBlob = await fetchCoverSourceBlob(coverUrl);
+  const sourceSizeLabel = formatBytes(sourceBlob.size);
+  const optimized = await optimizeCoverBlob(sourceBlob);
+  const extension = guessCoverExtension(optimized.mimeType);
+  const filePath = `${userId}/${comicId}/cover-${Date.now()}.${extension}`;
+  const { error } = await supabase.storage.from(COVER_BUCKET).upload(filePath, optimized.blob, {
+    upsert: true,
+    contentType: optimized.mimeType,
+    cacheControl: '31536000',
+  });
+  if (error) throw new Error(formatSupabaseError(error));
+  const { data } = supabase.storage.from(COVER_BUCKET).getPublicUrl(filePath);
+  return {
+    coverStoragePath: filePath,
+    coverUrl: data.publicUrl,
+    sourceSizeLabel,
+    optimizedSizeLabel: formatBytes(optimized.blob.size),
+  };
+}
+
+export async function replaceComicCover(comicId: string, coverUrl: string) {
+  const user = await requireUser();
+  return await uploadComicCoverFromUrl(user.id, comicId, coverUrl);
+}
+
+export async function deleteStoredComicCover(coverStoragePath: string | null | undefined) {
+  if (!coverStoragePath || !supabaseConfigured || !supabase) return;
+  const { error } = await supabase.storage.from(COVER_BUCKET).remove([coverStoragePath]);
+  if (error) throw new Error(formatSupabaseError(error));
+}
+
+function uniqueStrings(values: Array<string | null | undefined>) {
+  const result: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    if (!value) continue;
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    result.push(trimmed);
+  }
+  return result;
+}
+
+function humanizePathTitle(pathname: string) {
+  const raw = pathname.split('/').filter(Boolean).at(-1) ?? '';
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    decoded = raw;
+  }
+  return decoded.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function cleanDetectedTitle(value: string | null | undefined, hostname: string) {
+  if (!value) return '';
+  let title = decodeHtmlEntities(value)
+    .replace(/^#+\s*/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (hostname.includes('komiku.org')) {
+    title = title
+      .replace(/^Komik\s+/i, '')
+      .replace(/\s*[-|]\s*Komiku\s*$/i, '')
+      .trim();
+  }
+  if (hostname.includes('komiktap.')) {
+    title = title.replace(/\s*[|-]\s*Komiktap\s*$/i, '').trim();
+  }
+  return title;
+}
+
+function extractMarkdownTitle(html: string) {
+  return uniqueStrings([html.match(/^Title:\s*(.+)$/im)?.[1], html.match(/^#\s+(.+)$/m)?.[1]]);
+}
+
+function parseJsonLdImages(html: string) {
+  const candidates: string[] = [];
+  for (const match of html.matchAll(
+    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi,
+  )) {
+    const raw = match[1].trim();
+    if (!raw) continue;
+    try {
+      const parsedJson = JSON.parse(raw);
+      const entries = Array.isArray(parsedJson) ? parsedJson : [parsedJson];
+      for (const entry of entries) {
+        const values = [entry?.image, entry?.thumbnailUrl, entry?.associatedMedia?.thumbnailUrl];
+        for (const value of values) {
+          if (typeof value === 'string') {
+            candidates.push(value);
+          } else if (Array.isArray(value)) {
+            for (const item of value) {
+              if (typeof item === 'string') candidates.push(item);
+              else if (item && typeof item === 'object') {
+                const url = (item as Record<string, unknown>).url;
+                if (typeof url === 'string') candidates.push(url);
+              }
+            }
+          } else if (value && typeof value === 'object') {
+            const url = (value as Record<string, unknown>).url;
+            if (typeof url === 'string') candidates.push(url);
+          }
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+  return candidates;
+}
+
+function collectDomImageCandidates(document: Document) {
+  return uniqueStrings(
+    [
+      ...Array.from(document.images),
+      ...Array.from(document.querySelectorAll('source')),
+      ...Array.from(
+        document.querySelectorAll('meta[property*="image"], meta[name*="image"], link[rel*="image"]'),
+      ),
+    ].flatMap((element) => [
+      element.getAttribute('src'),
+      element.getAttribute('href'),
+      element.getAttribute('content'),
+      element.getAttribute('data-src'),
+      element.getAttribute('data-original'),
+      element.getAttribute('data-lazy-src'),
+      element.getAttribute('data-url'),
+      ...parseSrcset(element.getAttribute('srcset') ?? ''),
+      ...parseSrcset(element.getAttribute('data-srcset') ?? ''),
+    ]),
+  );
+}
+
+function collectAggressiveCandidates(html: string, document: Document, baseUrl: string) {
+  const metaCandidates = uniqueStrings([
+    document.querySelector('meta[property="og:image:secure_url"]')?.getAttribute('content'),
+    document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+    document.querySelector('meta[name="twitter:image:src"]')?.getAttribute('content'),
+    document.querySelector('meta[name="twitter:image"]')?.getAttribute('content'),
+    document.querySelector('meta[itemprop="image"]')?.getAttribute('content'),
+    document.querySelector('meta[property="vk:image"]')?.getAttribute('content'),
+    document.querySelector('meta[name="thumbnail"]')?.getAttribute('content'),
+    document.querySelector('meta[property="image"]')?.getAttribute('content'),
+    document.querySelector('meta[name="image"]')?.getAttribute('content'),
+    document.querySelector('link[rel="image_src"]')?.getAttribute('href'),
+    document.querySelector('link[rel="preload"][as="image"]')?.getAttribute('href'),
+  ]);
+  const scriptCandidates = uniqueStrings(
+    Array.from(
+      html.matchAll(
+        /(?:cover|poster|thumbnail|image)[^"'`\\]{0,40}(?:url|src)?\s*[:=]\s*["']([^"']+\.(?:jpe?g|png|webp|gif|bmp)(?:\?[^"']*)?)["']/gi,
+      ),
+      (match) => match[1],
+    ),
+  );
+  const inlineUrlCandidates = uniqueStrings(
+    Array.from(
+      html.matchAll(/https?:\/\/[^"'`\s<>]+?\.(?:jpe?g|png|webp|gif|bmp)(?:\?[^"'`\s<>]*)?/gi),
+      (match) => match[0],
+    ),
+  );
+  const markdownImageCandidates = uniqueStrings(
+    Array.from(html.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/gi), (match) => match[1]),
+  );
+  return uniqueStrings([
+    ...metaCandidates,
+    ...parseJsonLdImages(html),
+    ...collectDomImageCandidates(document),
+    ...scriptCandidates,
+    ...markdownImageCandidates,
+    ...inlineUrlCandidates,
+  ])
+    .map((candidate) => resolveUrl(baseUrl, candidate))
+    .filter(Boolean)
+    .sort((a, b) => scoreCoverCandidate(b!) - scoreCoverCandidate(a!)) as string[];
+}
+
+function collectSektedoujinPageCovers(html: string, document: Document, baseUrl: string) {
+  const pageTitle = humanizePathTitle(new URL(baseUrl).pathname);
+  const normalizedPageTitle = pageTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  const markdownMatches = Array.from(html.matchAll(/!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/gi), (match) => ({
+    alt: match[1],
+    url: match[2],
+  }));
+  const matchingMarkdownCovers = markdownMatches
+    .filter(({ alt }) => {
+      const normalizedAlt = alt
+        .toLowerCase()
+        .replace(/^image\s*\d+\s*:\s*/i, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+      return (
+        normalizedPageTitle &&
+        (normalizedAlt.includes(normalizedPageTitle) || normalizedPageTitle.includes(normalizedAlt))
+      );
+    })
+    .map(({ url }) => url);
+  return uniqueStrings([
+    ...matchingMarkdownCovers,
+    document.querySelector('.summary_image img')?.getAttribute('src'),
+    document.querySelector('.summary_image img')?.getAttribute('data-src'),
+    document.querySelector('.thumb img.wp-post-image')?.getAttribute('src'),
+    document.querySelector('meta[property="og:image:secure_url"]')?.getAttribute('content'),
+    document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+  ])
+    .map((candidate) => resolveUrl(baseUrl, candidate))
+    .filter(Boolean) as string[];
+}
+
+function collectMangaDistrictPageCovers(html: string, document: Document, baseUrl: string) {
+  const summaryImage = document.querySelector('.summary_image');
+  const summaryCandidates = summaryImage
+    ? uniqueStrings(
+        [...summaryImage.querySelectorAll('img')].flatMap((image) => [
+          image.getAttribute('src'),
+          image.getAttribute('data-src'),
+          image.getAttribute('data-original'),
+          image.getAttribute('data-lazy-src'),
+          image.getAttribute('data-mature-static'),
+          ...parseSrcset(image.getAttribute('srcset') ?? ''),
+          ...parseSrcset(image.getAttribute('data-srcset') ?? ''),
+        ]),
+      )
+    : [];
+  const pageSlug = new URL(baseUrl).pathname.split('/').filter(Boolean).at(-1)?.toLowerCase() ?? '';
+  const slugWords = pageSlug.split('-').filter((word) => word.length > 2);
+  const matchingInlineCandidates = Array.from(
+    html.matchAll(/https?:\/\/[^"'`\s<>]+?\.(?:jpe?g|png|webp)(?:\?[^"'`\s<>]*)?/gi),
+    (match) => match[0],
+  ).filter((candidate) => {
+    const normalizedCandidate = candidate.toLowerCase().replace(/[^a-z0-9]+/g, ' ');
+    return (
+      slugWords.length > 0 &&
+      slugWords.filter((word) => normalizedCandidate.includes(word)).length >= Math.min(3, slugWords.length)
+    );
+  });
+  return uniqueStrings([...summaryCandidates, ...matchingInlineCandidates])
+    .map((candidate) => resolveUrl(baseUrl, candidate))
+    .filter(Boolean) as string[];
+}
+
+function detectDomainSpecificCover(
+  hostname: string,
+  html: string,
+  document: Document,
+  baseUrl: string,
+  fallbackCandidates: string[],
+) {
+  if (hostname.includes('mangaplus.shueisha.co.jp')) {
+    const candidates = uniqueStrings([
+      ...Array.from(
+        html.matchAll(
+          /https?:\/\/jumpg-assets\.tokyo-cdn\.com\/secure\/title\/\d+\/title_thumbnail_portrait(?:_list)?\/[^)\s"'<>]+/gi,
+        ),
+        (match) => match[0],
+      ),
+      ...fallbackCandidates.filter((candidate) => candidate.includes('/title_thumbnail_portrait')),
+    ]);
+    return candidates.map((candidate) => resolveUrl(baseUrl, candidate)).find(Boolean) ?? null;
+  }
+  if (hostname.includes('shinigami.asia')) {
+    const candidates = uniqueStrings([
+      document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+      document.querySelector('meta[property="og:image:secure_url"]')?.getAttribute('content'),
+      document.querySelector('meta[property="twitter:image"]')?.getAttribute('content'),
+      document.querySelector('meta[name="twitter:image"]')?.getAttribute('content'),
+      ...fallbackCandidates,
+      ...Array.from(
+        html.matchAll(
+          /["'](?:cover|poster|thumbnail|banner|series_image|seriesImage|image)["']\s*:\s*["']([^"']+)["']/gi,
+        ),
+        (match) => match[1],
+      ),
+      ...Array.from(
+        html.matchAll(/(?:data-src|src)=["']([^"']+\.(?:jpe?g|png|webp)(?:\?[^"']*)?)["']/gi),
+        (match) => match[1],
+      ),
+    ]);
+    return candidates.map((candidate) => resolveUrl(baseUrl, candidate)).find(Boolean) ?? null;
+  }
+  if (hostname.includes('webtoons.com')) {
+    const candidates = uniqueStrings([
+      document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+      document.querySelector('meta[property="og:image:secure_url"]')?.getAttribute('content'),
+      document.querySelector('meta[name="twitter:image"]')?.getAttribute('content'),
+      document.querySelector('meta[name="twitter:image:src"]')?.getAttribute('content'),
+      document.querySelector('img[alt*="comic" i]')?.getAttribute('src'),
+      document.querySelector('img[alt*="cover" i]')?.getAttribute('src'),
+      document.querySelector('img[title*="comic" i]')?.getAttribute('src'),
+      ...fallbackCandidates,
+      ...Array.from(
+        html.matchAll(
+          /["'](?:cover|thumbnail|thumb|image|seriesImage|episodeThumbnail)["']\s*:\s*["']([^"']+)["']/gi,
+        ),
+        (match) => match[1],
+      ),
+    ]);
+    const resolved = candidates
+      .map((candidate) => resolveUrl(baseUrl, candidate))
+      .filter(Boolean) as string[];
+    return resolved.sort((a, b) => scoreCoverCandidate(b) - scoreCoverCandidate(a)).find(Boolean) ?? null;
+  }
+  if (hostname.includes('komiktap.')) {
+    const candidates = uniqueStrings([
+      document.querySelector('.thumb[itemprop="image"] img')?.getAttribute('src'),
+      document.querySelector('.thumb img.wp-post-image')?.getAttribute('src'),
+      document.querySelector('.thumb img')?.getAttribute('src'),
+      document.querySelector('meta[property="og:image:secure_url"]')?.getAttribute('content'),
+      document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+      document.querySelector('meta[name="twitter:image"]')?.getAttribute('content'),
+      ...fallbackCandidates.filter((candidate) =>
+        /wp-content\/uploads\/.+\.(?:jpe?g|png|webp)(?:\?|$)/i.test(candidate),
+      ),
+    ]);
+    return candidates.map((candidate) => resolveUrl(baseUrl, candidate)).find(Boolean) ?? null;
+  }
+  if (hostname.includes('sektedoujin.')) {
+    return collectSektedoujinPageCovers(html, document, baseUrl)[0] ?? null;
+  }
+  if (hostname.includes('mangadistrict.')) {
+    return collectMangaDistrictPageCovers(html, document, baseUrl)[0] ?? null;
+  }
+  if (hostname.includes('komikcast') || hostname.includes('manganato') || hostname.includes('bato')) {
+    const candidates = uniqueStrings([
+      ...fallbackCandidates,
+      document.querySelector('.thumb img')?.getAttribute('src'),
+      document.querySelector('.thumb img')?.getAttribute('data-src'),
+      document.querySelector('.summary_image img')?.getAttribute('src'),
+      document.querySelector('.summary_image img')?.getAttribute('data-src'),
+      document.querySelector('.series-thumb img')?.getAttribute('src'),
+      document.querySelector('.series-thumb img')?.getAttribute('data-src'),
+      document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+    ]);
+    const resolved = candidates
+      .map((candidate) => resolveUrl(baseUrl, candidate))
+      .filter(Boolean) as string[];
+    return resolved.sort((a, b) => scoreCoverCandidate(b) - scoreCoverCandidate(a)).find(Boolean) ?? null;
+  }
+  return null;
+}
+
+function detectDomainSpecificTitle(
+  hostname: string,
+  html: string,
+  document: Document,
+  fallbackTitle: string,
+) {
+  if (hostname.includes('mangaplus.shueisha.co.jp')) {
+    return cleanDetectedTitle(html.match(/^#\s+(.+)$/m)?.[1] ?? fallbackTitle, hostname);
+  }
+  if (hostname.includes('komiku.org')) {
+    const candidates = uniqueStrings([
+      document.querySelector('#Judul [itemprop="name"]')?.textContent,
+      document.querySelector('h1 [itemprop="name"]')?.textContent,
+      document.querySelector('[itemprop="name"]')?.getAttribute('content'),
+      document.querySelector('[itemprop="name"]')?.textContent,
+      document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+      document.querySelector('meta[name="twitter:title"]')?.getAttribute('content'),
+      ...Array.from(
+        html.matchAll(/mangaData\s*=\s*\{[\s\S]*?judul\s*:\s*["']([^"']+)["']/gi),
+        (match) => match[1],
+      ),
+      ...extractMarkdownTitle(html),
+      document.querySelector('#Judul h1')?.textContent,
+      document.querySelector('h1')?.textContent,
+      fallbackTitle,
+    ]);
+    return (
+      candidates
+        .map((candidate) => cleanDetectedTitle(candidate, hostname))
+        .find((candidate) => candidate && candidate.toLowerCase() !== 'list') ?? fallbackTitle
+    );
+  }
+  if (hostname.includes('mangadistrict.')) {
+    const candidates = uniqueStrings([
+      document.querySelector('.post-title h1')?.textContent,
+      document.querySelector('h1')?.textContent,
+      document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+      fallbackTitle,
+    ]);
+    return (
+      candidates.map((candidate) => cleanDetectedTitle(candidate, hostname)).find(Boolean) ?? fallbackTitle
+    );
+  }
+  if (hostname.includes('komiktap.')) {
+    const candidates = uniqueStrings([
+      document.querySelector('.entry-title')?.textContent,
+      document.querySelector('h1[itemprop="name"]')?.textContent,
+      document.querySelector('h1')?.textContent,
+      document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+      document.querySelector('meta[name="twitter:title"]')?.getAttribute('content'),
+      fallbackTitle,
+    ]);
+    return (
+      candidates.map((candidate) => cleanDetectedTitle(candidate, hostname)).find(Boolean) ?? fallbackTitle
+    );
+  }
+  if (hostname.includes('shinigami.asia')) {
+    const candidates = uniqueStrings([
+      document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+      document.querySelector('h1')?.textContent,
+      document.querySelector('.series-title')?.textContent,
+      document.querySelector('.post-title')?.textContent,
+      document.querySelector('.entry-title')?.textContent,
+      ...Array.from(html.matchAll(/<h1[^>]*>([^<]+)<\/h1>/gi), (match) => match[1]),
+    ]);
+    return candidates[0]?.trim() ?? fallbackTitle;
+  }
+  if (hostname.includes('webtoons.com')) {
+    const candidates = uniqueStrings([
+      document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+      document.querySelector('meta[name="twitter:title"]')?.getAttribute('content'),
+      document.querySelector('h1')?.textContent,
+      document.querySelector('h2')?.textContent,
+      document.querySelector('[class*="title"] h1')?.textContent,
+      document.querySelector('[class*="title"]')?.textContent,
+      document.querySelector('title')?.textContent,
+      ...Array.from(html.matchAll(/<h1[^>]*>([^<]+)<\/h1>/gi), (match) => match[1]),
+      ...Array.from(html.matchAll(/<title[^>]*>([^<]+)<\/title>/gi), (match) => match[1]),
+    ]);
+    const cleaned = candidates
+      .map((candidate) => candidate?.trim())
+      .find((candidate) => candidate && candidate.toLowerCase() !== 'list');
+    return cleaned ?? fallbackTitle;
+  }
+  return fallbackTitle;
+}
+
+function collectLabeledGenreCandidates(document: Document) {
+  const labeledValues = [
+    ...document.querySelectorAll('.post-content_item, .info-item, .detail-item, .metadata-item, tr, dl'),
+  ].flatMap((container) => {
+    const heading =
+      container
+        .querySelector('.summary-heading, .label, .name, .title, th, dt, h4, h5, h6')
+        ?.textContent?.trim() ?? '';
+    if (!/^(?:genres?|types?|formats?)\s*(?:\(s\))?\s*:?$/i.test(heading)) return [];
+    const content = container.querySelector('.summary-content, .value, .content, td, dd');
+    if (!content) return [];
+    const linkedValues = [...content.querySelectorAll('a')]
+      .map((node) => node.textContent?.trim())
+      .filter(Boolean);
+    if (linkedValues.length > 0) return linkedValues;
+    return (content.textContent ?? '')
+      .split(/[,|•·]+/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+  });
+  return uniqueStrings([
+    ...[...document.querySelectorAll('[itemprop="genre"]')].map(
+      (node) => node.getAttribute('content') ?? node.textContent,
+    ),
+    ...labeledValues,
+  ]);
+}
+
+function detectDomainSpecificGenres(hostname: string, html: string, document: Document) {
+  if (hostname.includes('mangadistrict.')) {
+    const typeItem = [...document.querySelectorAll('.post-content_item')].find((item) =>
+      /^type$/i.test(item.querySelector('.summary-heading')?.textContent?.trim() ?? ''),
+    );
+    const typeValues =
+      typeItem
+        ?.querySelector('.summary-content')
+        ?.textContent?.split(',')
+        .map((value) => value.trim()) ?? [];
+    const markdownGenreSection =
+      html.match(
+        /#{1,6}\s*Genre\(s\)\s*([\s\S]*?)(?=\n\s*>?\s*#{1,6}\s*(?:Type|Tag\(s\)|Chapters)(?:\s|$))/i,
+      )?.[1] ?? '';
+    const markdownGenres = Array.from(
+      markdownGenreSection.matchAll(/\[([^\]]+)\]\([^)]*\/publication-genre\/[^)]+\)/gi),
+      (match) => match[1].replace(/\s+/g, ' ').trim(),
+    );
+    const markdownTypeSection =
+      html.match(
+        /#{1,6}\s*Type\s*([\s\S]*?)(?=\n\s*>?\s*#{1,6}\s*(?:Tag\(s\)|Chapters|Release|Status)(?:\s|$))/i,
+      )?.[1] ?? '';
+    const markdownTypes = markdownTypeSection
+      .replace(/^\s*>\s*/gm, '')
+      .split(/[,|•·]+/)
+      .map((value) => value.replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+    return uniqueStrings([
+      ...[...document.querySelectorAll('.genres-content a')].map((node) => node.textContent),
+      ...typeValues,
+      ...markdownGenres,
+      ...markdownTypes,
+    ]);
+  }
+  if (hostname.includes('sektedoujin.') || hostname.includes('komiktap.')) {
+    const candidates = uniqueStrings([
+      ...[
+        ...document.querySelectorAll(
+          'a[href*="/genre/"], a[href*="/genres/"], .mgen a, .seriestugenre a, .genres a, [itemprop="genre"]',
+        ),
+      ].map((node) => node.textContent),
+      ...Array.from(html.matchAll(/\[([^\]]+)\]\([^)]*\/genres?\/[^)]+\)/gi), (match) => match[1]),
+      ...Array.from(
+        html.matchAll(/\[([^\]]+)\]\([^)]*[?&]type=([^)&]+)[^)]*\)/gi),
+        (match) => match[1] || match[2],
+      ),
+      ...Array.from(
+        html.matchAll(/<a[^>]+href=["'][^"']*\/genres?\/[^"']+["'][^>]*>([^<]+)<\/a>/gi),
+        (match) => match[1],
+      ),
+    ]);
+    return candidates.filter((candidate) => !/^genres?$/i.test(candidate));
+  }
+  if (hostname.includes('shinigami.asia')) {
+    return uniqueStrings([
+      ...[...document.querySelectorAll('a[href*="genre"], span.genre, .genres a, .tags a')].map(
+        (node) => node.textContent,
+      ),
+      ...Array.from(html.matchAll(/genre[^>]*>([^<]+)</gi), (match) => match[1]),
+    ]);
+  }
+  if (hostname.includes('webtoons.com')) {
+    return uniqueStrings([
+      ...[...document.querySelectorAll('a[href*="/genre/"], .genre, .genres a, .info_area a')].map(
+        (node) => node.textContent,
+      ),
+      ...Array.from(
+        html.matchAll(/<a[^>]+href="[^"]*\/genre\/[^"]+"[^>]*>([^<]+)<\/a>/gi),
+        (match) => match[1],
+      ),
+      ...Array.from(
+        html.matchAll(/<span[^>]*class="[^"]*(?:genre|tag)[^"]*"[^>]*>([^<]+)<\/span>/gi),
+        (match) => match[1],
+      ),
+    ]);
+  }
+  return collectLabeledGenreCandidates(document);
+}
+
+type ShinigamiTaxonomyItem = { name?: string };
+type ShinigamiDetailResponse = {
+  data?: {
+    title?: string;
+    description?: string;
+    synopsis?: string;
+    cover_image_url?: string;
+    cover_portrait_url?: string;
+    taxonomy?: Record<string, ShinigamiTaxonomyItem[]>;
+  };
 };
 
-export type LibrarySnapshot = {
-  comics: Comic[];
-  labels: LibraryLabel[];
-  comicLabels: ComicLabel[];
-  sources: ComicSource[];
-  progresses: ReadingProgress[];
+type KomiktapEmbedResponse = {
+  title?: string;
+  thumbnail_url?: string;
+  thumbnail_width?: number;
+  thumbnail_height?: number;
 };
 
-export type ComicInput = {
-  title: string;
-  sourceUrl?: string;
-  sourceName?: string;
-  coverUrl?: string;
-  genre?: string;
-  collection?: string;
-  progress?: number;
-  history?: string;
-};
+async function detectKomiktapEmbed(parsed: URL) {
+  const endpoint = new URL('/wp-json/oembed/1.0/embed', parsed.origin);
+  endpoint.searchParams.set('url', parsed.toString());
+  const response = await fetch(endpoint.toString(), { method: 'GET', cache: 'no-store' });
+  if (!response.ok) throw new Error(`API oEmbed Komiktap gagal: ${response.status}`);
+  return (await response.json()) as KomiktapEmbedResponse;
+}
 
-export type ComicSourceInput = {
-  comicId: string;
-  label: string;
-  url: string;
-};
-
-export type ComicSourceUpdateInput = {
-  label?: string;
-  url?: string;
-};
-
-export type ComicLabelInput = {
-  comicId: string;
-  labelId: string;
-};
-
-export type DetectedMetadata = {
-  title: string;
-  sourceName: string;
-  coverUrl: string | null;
-  genres: string[];
-};
-
-export type PublicationPreview = {
-  items: PublicationItem[];
-  kind: PublicationKind;
-  title: string;
-};
+async function detectShinigamiMetadata(parsed: URL): Promise<DetectedMetadata | null> {
+  const seriesId = parsed.pathname.match(/\/series\/([0-9a-f-]{20,})/i)?.[1];
+  if (!seriesId) return null;
+  const response = await fetch(`https://api.shngm.io/v1/manga/detail/${encodeURIComponent(seriesId)}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+  if (!response.ok) throw new Error(`API Shinigami gagal: ${response.status}`);
+  const payload = (await response.json()) as ShinigamiDetailResponse;
+  const data = payload.data;
+  if (!data?.title) return null;
+  const coverCandidates = uniqueStrings([
+    resolveUrl(parsed.toString(), data.cover_portrait_url),
+    resolveUrl(parsed.toString(), data.cover_image_url),
+  ]);
+  const genres = uniqueStrings([
+    ...(data.taxonomy?.Genre ?? []).map((item) => item.name),
+    ...(data.taxonomy?.Format ?? []).map((item) => item.name),
+  ]);
+  return {
+    title: cleanDetectedTitle(data.title, parsed.hostname),
+    sourceName: 'Shinigami',
+    description: cleanDescription(data.description ?? data.synopsis),
+    coverUrl: coverCandidates[0] ?? null,
+    coverCandidates,
+    genres,
+  };
+}
 
 function formatSupabaseError(error: unknown) {
   if (!error || typeof error !== 'object') return String(error);
@@ -78,6 +733,13 @@ function formatSupabaseError(error: unknown) {
   if (typeof record.hint === 'string' && record.hint) parts.push(`hint: ${record.hint}`);
   if (typeof record.code === 'string' && record.code) parts.push(`code: ${record.code}`);
   return parts.length > 0 ? parts.join(' | ') : JSON.stringify(error);
+}
+
+function isMissingColumnError(error: unknown, column: string) {
+  if (!error || typeof error !== 'object') return false;
+  const record = error as Record<string, unknown>;
+  const message = typeof record.message === 'string' ? record.message.toLowerCase() : '';
+  return record.code === 'PGRST204' && message.includes(column.toLowerCase());
 }
 
 async function requireUser() {
@@ -95,12 +757,14 @@ export async function getSession(): Promise<SessionInfo | null> {
   const { data } = await supabase.auth.getUser();
   const user = data.user;
   if (!user?.email) return null;
-  const username = typeof user.user_metadata.username === 'string'
-    ? user.user_metadata.username.trim()
-    : '';
-  const passwordChangedAt = typeof user.user_metadata.password_changed_at === 'string'
-    ? user.user_metadata.password_changed_at
-    : null;
+  const username =
+    (typeof user.user_metadata.username === 'string' && user.user_metadata.username.trim()) ||
+    (typeof user.user_metadata.display_name === 'string' && user.user_metadata.display_name.trim()) ||
+    '';
+  const passwordChangedAt =
+    typeof user.user_metadata.password_changed_at === 'string'
+      ? user.user_metadata.password_changed_at
+      : null;
   return { id: user.id, email: user.email, username, passwordChangedAt };
 }
 
@@ -108,7 +772,12 @@ export async function updateProfileUsername(username: string) {
   if (!supabaseConfigured || !supabase) throw new Error('Akun cloud belum dikonfigurasi.');
   const normalizedUsername = username.trim();
   if (normalizedUsername.length < 2) throw new Error('Username minimal 2 karakter.');
-  const { error } = await supabase.auth.updateUser({ data: { username: normalizedUsername } });
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      username: normalizedUsername,
+      display_name: normalizedUsername,
+    },
+  });
   if (error) throw new Error(formatSupabaseError(error));
 }
 
@@ -138,7 +807,27 @@ export async function signIn(email: string, password: string) {
 
 export async function signUp(email: string, password: string) {
   if (!supabaseConfigured || !supabase) throw new Error('Akun cloud belum dikonfigurasi.');
-  const { error } = await supabase.auth.signUp({ email, password });
+  const usernameGuess = email.trim().split('@')[0] || email.trim();
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        username: usernameGuess,
+        display_name: usernameGuess,
+      },
+    },
+  });
+  if (error) throw new Error(formatSupabaseError(error));
+}
+
+export async function requestPasswordReset(email: string) {
+  if (!supabaseConfigured || !supabase) throw new Error('Akun cloud belum dikonfigurasi.');
+  const normalizedEmail = email.trim();
+  if (!normalizedEmail) throw new Error('Email wajib diisi.');
+  const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+    redirectTo: `${window.location.origin}`,
+  });
   if (error) throw new Error(formatSupabaseError(error));
 }
 
@@ -157,8 +846,16 @@ export async function loadLibrary(): Promise<LibrarySnapshot> {
     supabase!.from('library_tags').select('*').eq('user_id', user.id).order('name'),
     supabase!.from('library_collections').select('*').eq('user_id', user.id).order('name'),
     supabase!.from('comic_labels').select('*').eq('user_id', user.id),
-    supabase!.from('comic_sources').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-    supabase!.from('reading_progresses').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }),
+    supabase!
+      .from('comic_sources')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase!
+      .from('reading_progresses')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false }),
   ]);
 
   if (comics.error) throw new Error(formatSupabaseError(comics.error));
@@ -194,43 +891,75 @@ export async function loadLibrary(): Promise<LibrarySnapshot> {
 
 export async function addComic(input: ComicInput) {
   const user = await requireUser();
-  const { data, error } = await supabase!
-    .from('comics')
-    .insert({
+  const rating = Number.isFinite(input.rating) ? Math.max(0, Math.min(5, Math.round(input.rating ?? 0))) : 0;
+  const payload = {
     user_id: user.id,
     title: input.title,
     source_url: input.sourceUrl ?? null,
     source_name: input.sourceName ?? null,
     cover_url: input.coverUrl ?? null,
+    ...(input.coverStoragePath ? { cover_storage_path: input.coverStoragePath } : {}),
+    favorite: input.favorite ?? false,
     genre: input.genre ?? null,
     collection: input.collection ?? null,
-    progress: input.progress ?? 0,
     history: input.history ?? null,
-    })
-    .select('id')
-    .single();
+    rating,
+    reading_status: input.readingStatus ?? 'wantToRead',
+  };
+  let { data, error } = await supabase!.from('comics').insert(payload).select('id').single();
+  if (
+    error &&
+    (('cover_storage_path' in payload && isMissingColumnError(error, 'cover_storage_path')) ||
+      isMissingColumnError(error, 'favorite') ||
+      isMissingColumnError(error, 'rating'))
+  ) {
+    const {
+      cover_storage_path: _ignoredPath,
+      favorite: _ignoredFavorite,
+      rating: _ignoredRating,
+      ...legacyPayload
+    } = payload;
+    const retry = await supabase!.from('comics').insert(legacyPayload).select('id').single();
+    data = retry.data;
+    error = retry.error;
+  }
   if (error) throw new Error(formatSupabaseError(error));
   return data?.id ?? null;
 }
 
 export async function updateComic(id: string, input: Partial<ComicInput>) {
   const user = await requireUser();
+  const rating = input.rating !== undefined ? Math.max(0, Math.min(5, Math.round(input.rating))) : undefined;
   const payload = {
     ...(input.title !== undefined ? { title: input.title } : {}),
     ...(input.sourceUrl !== undefined ? { source_url: input.sourceUrl || null } : {}),
     ...(input.sourceName !== undefined ? { source_name: input.sourceName || null } : {}),
     ...(input.coverUrl !== undefined ? { cover_url: input.coverUrl || null } : {}),
+    ...(input.coverStoragePath !== undefined ? { cover_storage_path: input.coverStoragePath || null } : {}),
+    ...(input.favorite !== undefined ? { favorite: input.favorite } : {}),
     ...(input.genre !== undefined ? { genre: input.genre || null } : {}),
     ...(input.collection !== undefined ? { collection: input.collection || null } : {}),
-    ...(input.progress !== undefined ? { progress: input.progress } : {}),
     ...(input.history !== undefined ? { history: input.history || null } : {}),
+    ...(rating !== undefined ? { rating } : {}),
+    ...(input.readingStatus !== undefined ? { reading_status: input.readingStatus } : {}),
     updated_at: new Date().toISOString(),
   };
-  const { error } = await supabase!
-    .from('comics')
-    .update(payload)
-    .eq('id', id)
-    .eq('user_id', user.id);
+  let { error } = await supabase!.from('comics').update(payload).eq('id', id).eq('user_id', user.id);
+  if (
+    error &&
+    (('cover_storage_path' in payload && isMissingColumnError(error, 'cover_storage_path')) ||
+      ('favorite' in payload && isMissingColumnError(error, 'favorite')) ||
+      ('rating' in payload && isMissingColumnError(error, 'rating')))
+  ) {
+    const {
+      cover_storage_path: _ignoredPath,
+      favorite: _ignoredFavorite,
+      rating: _ignoredRating,
+      ...legacyPayload
+    } = payload;
+    const retry = await supabase!.from('comics').update(legacyPayload).eq('id', id).eq('user_id', user.id);
+    error = retry.error;
+  }
   if (error) throw new Error(formatSupabaseError(error));
 }
 
@@ -245,11 +974,7 @@ export async function addLabel(name: string, kind = 'collection') {
   const normalizedName = name.trim().toLowerCase();
   const basePayload = { user_id: user.id, name: name.trim() || name, normalized_name: normalizedName };
   const targetTable =
-    kind === 'genre'
-      ? 'library_genres'
-      : kind === 'tag'
-        ? 'library_tags'
-        : 'library_collections';
+    kind === 'genre' ? 'library_genres' : kind === 'tag' ? 'library_tags' : 'library_collections';
 
   const [{ error: labelError }, { error: typedError }] = await Promise.all([
     supabase!.from('library_labels').insert({ ...basePayload, kind }),
@@ -332,31 +1057,69 @@ export async function deleteLabel(id: string, name: string, kind: string) {
 }
 
 function labelTable(kind: string) {
-  return kind === 'genre'
-    ? 'library_genres'
-    : kind === 'tag'
-      ? 'library_tags'
-      : 'library_collections';
+  return kind === 'genre' ? 'library_genres' : kind === 'tag' ? 'library_tags' : 'library_collections';
 }
 
 export async function updateProgress(comicId: string, pageIndex: number, chapterLabel?: string) {
   const user = await requireUser();
-  const { error } = await supabase!.from('reading_progresses').insert({
+  const progress = {
     user_id: user.id,
     comic_id: comicId,
     page_index: pageIndex,
     chapter_label: chapterLabel ?? null,
-  });
+  };
+  let { error } = await supabase!.from('reading_progresses').insert(progress);
+  if (requiresLegacyProgressFields(error)) {
+    ({ error } = await supabase!.from('reading_progresses').insert({
+      ...progress,
+      ...legacyProgressFields(),
+    }));
+  }
   if (error) throw new Error(formatSupabaseError(error));
+}
+
+export async function setLastReadChapter(comicId: string, chapterLabel: string) {
+  const user = await requireUser();
+  const { data: latest, error: lookupError } = await supabase!
+    .from('reading_progresses')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('comic_id', comicId)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (lookupError) throw new Error(formatSupabaseError(lookupError));
+
+  if (latest?.id) {
+    const updatedAt = new Date().toISOString();
+    let { error } = await supabase!
+      .from('reading_progresses')
+      .update({
+        chapter_label: chapterLabel,
+        page_index: 0,
+        updated_at: updatedAt,
+        client_updated_at: updatedAt,
+      })
+      .eq('id', latest.id)
+      .eq('user_id', user.id);
+    if (error && isMissingColumnError(error, 'client_updated_at')) {
+      const retry = await supabase!
+        .from('reading_progresses')
+        .update({ chapter_label: chapterLabel, page_index: 0, updated_at: updatedAt })
+        .eq('id', latest.id)
+        .eq('user_id', user.id);
+      error = retry.error;
+    }
+    if (error) throw new Error(formatSupabaseError(error));
+    return;
+  }
+
+  await updateProgress(comicId, 0, chapterLabel);
 }
 
 export async function deleteReadingProgress(id: string) {
   const user = await requireUser();
-  const { error } = await supabase!
-    .from('reading_progresses')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', user.id);
+  const { error } = await supabase!.from('reading_progresses').delete().eq('id', id).eq('user_id', user.id);
   if (error) throw new Error(formatSupabaseError(error));
 }
 
@@ -469,10 +1232,18 @@ export async function importLibraryJson(jsonText: string) {
     });
   }
   for (const progress of progresses) {
-    await supabase!.from('reading_progresses').upsert({
+    const restoredProgress = {
       ...progress,
       user_id: user.id,
-    });
+    };
+    let { error } = await supabase!.from('reading_progresses').upsert(restoredProgress);
+    if (requiresLegacyProgressFields(error)) {
+      ({ error } = await supabase!.from('reading_progresses').upsert({
+        ...restoredProgress,
+        ...legacyProgressFields(),
+      }));
+    }
+    if (error) throw new Error(formatSupabaseError(error));
   }
 }
 
@@ -486,33 +1257,104 @@ export async function importLibraryBundle(file: File) {
 
 export async function detectMetadata(url: string): Promise<DetectedMetadata> {
   const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
-  const sourceName = parsed.hostname.replace(/^www\./, '').split('.')[0] || 'Sumber';
+  const sourceName = normalizeSourceName(parsed.hostname);
+  const hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
+  let komiktapEmbed: KomiktapEmbedResponse | null = null;
+  if (hostname.includes('komiktap.')) {
+    try {
+      komiktapEmbed = await detectKomiktapEmbed(parsed);
+    } catch {
+      // Continue to the HTML fallbacks when the WordPress endpoint is unavailable.
+    }
+  }
+  const komiktapEmbedCover = resolveUrl(parsed.toString(), komiktapEmbed?.thumbnail_url);
   try {
-    const response = await fetch(parsed.toString(), { method: 'GET' });
-    const html = await response.text();
+    if (parsed.hostname.toLowerCase().includes('shinigami.asia')) {
+      try {
+        const metadata = await detectShinigamiMetadata(parsed);
+        if (metadata) return metadata;
+      } catch {
+        // Continue to the generic HTML and reader-proxy fallbacks when the API is unavailable.
+      }
+    }
+    const html = await fetchHtmlWithFallback(parsed.toString());
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    const meta = (selector: string) => document.querySelector(selector)?.getAttribute('content');
     const title =
-      html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)/i)?.[1] ??
-      html.match(/<title[^>]*>([^<]+)</i)?.[1] ??
-      parsed.pathname.split('/').filter(Boolean).at(-1) ??
+      komiktapEmbed?.title ??
+      meta('meta[property="og:title"]') ??
+      meta('meta[name="twitter:title"]') ??
+      extractMarkdownTitle(html)[0] ??
+      document.querySelector('title')?.textContent ??
+      humanizePathTitle(parsed.pathname) ??
       'Komik';
-    const coverUrl =
-      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)/i)?.[1] ??
-      html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)/i)?.[1] ??
-      null;
-    const genres = [...html.matchAll(/genre[^>]*content=["']([^"']+)/gi)]
-      .map((match) => match[1])
-      .filter(Boolean);
+    const titleText = cleanDetectedTitle(title, hostname);
+    const coverCandidates = collectAggressiveCandidates(html, document, parsed.toString());
+    const domainCover = detectDomainSpecificCover(
+      hostname,
+      html,
+      document,
+      parsed.toString(),
+      coverCandidates,
+    );
+    const domainTitle = detectDomainSpecificTitle(hostname, html, document, titleText);
+    const domainGenres = detectDomainSpecificGenres(hostname, html, document);
+    const description = detectPageDescription(html, document);
+    const genericGenres = uniqueStrings([
+      ...collectLabeledGenreCandidates(document),
+      ...Array.from(html.matchAll(/genre[^>]*content=["']([^"']+)/gi), (match) => match[1]),
+      ...Array.from(
+        html.matchAll(/<meta[^>]+(?:property|name)=["'][^"']*genre[^"']*["'][^>]+content=["']([^"']+)/gi),
+        (match) => match[1],
+      ),
+    ]);
+    // Merge every successful strategy while keeping the domain API result first.
+    const coverUrl = komiktapEmbedCover ?? domainCover ?? coverCandidates[0] ?? null;
+    const finalCoverCandidates = hostname.includes('mangaplus.shueisha.co.jp')
+      ? uniqueStrings([domainCover, coverUrl].filter(Boolean) as string[])
+      : hostname.includes('komiktap.')
+        ? uniqueStrings(
+            [
+              komiktapEmbedCover,
+              domainCover,
+              document.querySelector('.thumb[itemprop="image"] img')?.getAttribute('src'),
+              document.querySelector('.thumb img.wp-post-image')?.getAttribute('src'),
+              document.querySelector('meta[property="og:image:secure_url"]')?.getAttribute('content'),
+              document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+              document.querySelector('meta[name="twitter:image"]')?.getAttribute('content'),
+            ]
+              .map((candidate) => resolveUrl(parsed.toString(), candidate))
+              .filter(Boolean) as string[],
+          )
+        : hostname.includes('sektedoujin.')
+          ? uniqueStrings(
+              [domainCover, ...collectSektedoujinPageCovers(html, document, parsed.toString())].filter(
+                Boolean,
+              ) as string[],
+            )
+          : hostname.includes('mangadistrict.')
+            ? uniqueStrings(
+                [domainCover, ...collectMangaDistrictPageCovers(html, document, parsed.toString())].filter(
+                  Boolean,
+                ) as string[],
+              )
+            : uniqueStrings([domainCover, coverUrl, ...coverCandidates].filter(Boolean) as string[]);
     return {
-      title: title.trim(),
-      sourceName: sourceName[0].toUpperCase() + sourceName.slice(1),
+      title: domainTitle,
+      sourceName,
+      description,
       coverUrl,
-      genres,
+      coverCandidates: finalCoverCandidates,
+      genres: uniqueStrings([...domainGenres, ...genericGenres]),
     };
   } catch {
     return {
-      title: parsed.pathname.split('/').filter(Boolean).at(-1) || 'Komik',
-      sourceName: sourceName[0].toUpperCase() + sourceName.slice(1),
-      coverUrl: null,
+      title:
+        cleanDetectedTitle(komiktapEmbed?.title, hostname) || humanizePathTitle(parsed.pathname) || 'Komik',
+      sourceName,
+      description: null,
+      coverUrl: komiktapEmbedCover,
+      coverCandidates: komiktapEmbedCover ? [komiktapEmbedCover] : [],
       genres: [],
     };
   }
@@ -559,8 +1401,7 @@ export async function previewPublication(file: File): Promise<PublicationPreview
     const zip = await JSZip.loadAsync(await file.arrayBuffer());
     const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '' });
     const containerXml = await zip.file('META-INF/container.xml')?.async('string');
-    const rootPath =
-      containerXml && parser.parse(containerXml)?.container?.rootfiles?.rootfile?.full_path;
+    const rootPath = containerXml && parser.parse(containerXml)?.container?.rootfiles?.rootfile?.full_path;
     const opfXml = rootPath ? await zip.file(String(rootPath))?.async('string') : null;
     const opf = opfXml ? parser.parse(opfXml) : null;
     const spineIds = toArray(opf?.package?.spine?.itemref)

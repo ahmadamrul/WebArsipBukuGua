@@ -14,15 +14,18 @@ create table if not exists public.comics (
   source_url text,
   source_name text,
   cover_url text,
+  cover_storage_path text,
+  favorite boolean not null default false,
   genre text,
   collection text,
   progress integer not null default 0,
   history text,
+  rating integer not null default 0,
   updated_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
   normalized_title text,
   note text,
-  reading_status text,
+  reading_status text not null default 'wantToRead',
   priority integer,
   standalone boolean,
   deleted_at timestamptz,
@@ -90,23 +93,58 @@ create table if not exists public.reading_progresses (
   created_at timestamptz not null default now()
 );
 
+insert into storage.buckets (id, name, public)
+values ('covers', 'covers', true)
+on conflict (id) do update
+set name = excluded.name,
+    public = excluded.public;
+
 alter table public.comics
   add column if not exists source_url text,
   add column if not exists source_name text,
   add column if not exists cover_url text,
+  add column if not exists cover_storage_path text,
+  add column if not exists favorite boolean not null default false,
   add column if not exists genre text,
   add column if not exists collection text,
   add column if not exists progress integer not null default 0,
   add column if not exists history text,
+  add column if not exists rating integer not null default 0,
   add column if not exists updated_at timestamptz not null default now(),
   add column if not exists created_at timestamptz not null default now(),
   add column if not exists normalized_title text,
   add column if not exists note text,
-  add column if not exists reading_status text,
+  add column if not exists reading_status text default 'wantToRead',
   add column if not exists priority integer,
   add column if not exists standalone boolean,
   add column if not exists deleted_at timestamptz,
   add column if not exists revision bigint not null default 0;
+
+update public.comics
+set reading_status = 'wantToRead'
+where reading_status is null;
+
+alter table public.comics
+  alter column reading_status set default 'wantToRead',
+  alter column reading_status set not null;
+
+alter table public.comics
+  alter column rating set default 0;
+
+update public.comics
+set rating = 0
+where rating is null;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'comics_reading_status_check'
+  ) then
+    alter table public.comics
+      add constraint comics_reading_status_check
+      check (reading_status in ('wantToRead', 'reading', 'completed', 'dropped'));
+  end if;
+end $$;
 
 alter table public.comic_sources
   add column if not exists label text,
@@ -180,6 +218,7 @@ alter table public.library_tags enable row level security;
 alter table public.library_collections enable row level security;
 alter table public.comic_labels enable row level security;
 alter table public.reading_progresses enable row level security;
+alter table storage.objects enable row level security;
 
 drop policy if exists "profiles own row" on public.profiles;
 drop policy if exists "comics own rows" on public.comics;
@@ -190,6 +229,7 @@ drop policy if exists "tags own rows" on public.library_tags;
 drop policy if exists "collections own rows" on public.library_collections;
 drop policy if exists "comic labels own rows" on public.comic_labels;
 drop policy if exists "progress own rows" on public.reading_progresses;
+drop policy if exists "cover objects own rows" on storage.objects;
 
 create policy "profiles own row" on public.profiles
 for all
@@ -244,6 +284,18 @@ for all
 to authenticated
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
+
+create policy "cover objects own rows" on storage.objects
+for all
+to authenticated
+using (
+  bucket_id = 'covers'
+  and auth.uid()::text = split_part(name, '/', 1)
+)
+with check (
+  bucket_id = 'covers'
+  and auth.uid()::text = split_part(name, '/', 1)
+);
 
 create index if not exists comics_user_updated_idx on public.comics (user_id, updated_at desc);
 create index if not exists comic_sources_user_idx on public.comic_sources (user_id, created_at desc);

@@ -72,25 +72,34 @@ The application will be available at the address displayed by Vite, usually `htt
 ## Scripts
 
 ```bash
-npm run dev      # Start the development server
-npm run build    # Type-check and create a production build
-npm run preview  # Preview the production build locally
+npm run dev           # Start the development server
+npm run typecheck     # Check TypeScript without emitting files
+npm run lint          # Run ESLint with zero warnings allowed
+npm run format:check  # Verify Prettier formatting
+npm run build         # Type-check and create a production build
+npm run preview       # Preview the production build locally
 ```
 
 ## Project Structure
 
 ```text
 src/
-  App.tsx                  Main UI and application flow
-  styles.css               Styling and responsive layouts
+  app/                     Composition, providers, routes, and bootstrap
+  features/                Feature-owned UI, services, types, and rules
+  components/              Shared common and layout components
   lib/
-    libraryService.ts      Authentication, CRUD, imports, exports, and metadata
-    supabase.ts            Cloud client initialization
-    types.ts               Application data types
+    api/                   Supabase and persistence boundary
+    domain/                Domain contracts and business rules
+    constants/             Shared limits, keys, and regular expressions
+    utils/                 Small reusable helpers
+  styles/                  Theme, global, component, and layout styles
+  main.tsx                 Browser entry point
 supabase/
   schema.sql               Tables, compatibility migrations, RLS, and indexes
 public/                     Public assets and favicon
 ```
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for ownership and dependency rules.
 
 ## Database and Security
 
