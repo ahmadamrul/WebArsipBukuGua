@@ -38,12 +38,15 @@ type AppComicFormModalProps = {
   tagOptions: string[];
   collectionOptions: string[];
   comicFormTagIds: string[];
+  comicFormGenreIds: string[];
   comicFormCollectionIds: string[];
+  comicFormSaving: boolean;
   setFormMode: (value: 'create' | 'edit' | null) => void;
   setComicForm: React.Dispatch<React.SetStateAction<ComicFormState>>;
   setComicSourceLinks: React.Dispatch<React.SetStateAction<ComicSourceLink[]>>;
   setDismissedTitleSuggestion: (value: string) => void;
   setComicFormTagIds: React.Dispatch<React.SetStateAction<string[]>>;
+  setComicFormGenreIds: React.Dispatch<React.SetStateAction<string[]>>;
   setComicFormCollectionIds: React.Dispatch<React.SetStateAction<string[]>>;
   saveComicForm: (event: React.FormEvent<HTMLFormElement>) => void;
   handleAddComic: () => void;
@@ -68,12 +71,15 @@ export function AppComicFormModal({
   tagOptions,
   collectionOptions,
   comicFormTagIds,
+  comicFormGenreIds,
   comicFormCollectionIds,
+  comicFormSaving,
   setFormMode,
   setComicForm,
   setComicSourceLinks,
   setDismissedTitleSuggestion,
   setComicFormTagIds,
+  setComicFormGenreIds,
   setComicFormCollectionIds,
   saveComicForm,
   handleAddComic,
@@ -82,6 +88,9 @@ export function AppComicFormModal({
   checkCoverCandidates,
 }: AppComicFormModalProps) {
   if (!formMode) return null;
+
+  const genreLabels = labels.filter((label) => label.kind === 'genre');
+  const selectedCoverUrl = comicForm.coverUrl.trim();
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -267,6 +276,115 @@ export function AppComicFormModal({
               <button type="button" className="secondary" onClick={checkCoverCandidates} disabled={coverCheckState.loading}>
                 {coverCheckState.loading ? tr('Mengecek cover...', 'Checking covers...') : tr('Cek cover', 'Check covers')}
               </button>
+              {coverCheckState.coverCandidates.length > 0 ? (
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => setComicForm((current) => ({ ...current, coverUrl: coverCheckState.coverCandidates[0] }))}
+                >
+                  {tr('Pakai cover terbaik', 'Use best cover')}
+                </button>
+              ) : null}
+            </div>
+          </section>
+
+          {(coverCheckState.loading || coverCheckState.coverCandidates.length > 0 || coverCheckState.genres.length > 0) ? (
+            <section className="cover-check-panel" aria-live="polite">
+              <div className="cover-check-head">
+                <div>
+                  <strong>{tr('Hasil cek cover', 'Cover check results')}</strong>
+                  <span>
+                    {[coverCheckState.title, coverCheckState.sourceName].filter(Boolean).join(' · ') ||
+                      tr('Membaca data sumber...', 'Reading source data...')}
+                  </span>
+                </div>
+                <small>
+                  {coverCheckState.loading
+                    ? tr('Mengecek...', 'Checking...')
+                    : tr(
+                        `${coverCheckState.coverCandidates.length} kandidat ditemukan`,
+                        `${coverCheckState.coverCandidates.length} candidates found`,
+                      )}
+                </small>
+              </div>
+              <div className="cover-check-layout">
+                <div className="cover-check-scroll">
+                  {coverCheckState.coverCandidates.map((candidate, index) => (
+                    <button
+                      type="button"
+                      className={candidate === selectedCoverUrl ? 'cover-check-item active' : 'cover-check-item'}
+                      key={candidate}
+                      onClick={() => setComicForm((current) => ({ ...current, coverUrl: candidate }))}
+                    >
+                      <img src={candidate} alt={tr(`Kandidat cover ${index + 1}`, `Cover candidate ${index + 1}`)} />
+                      <span>
+                        <strong>{tr(`Kandidat ${index + 1}`, `Candidate ${index + 1}`)}</strong>
+                        <span>{candidate}</span>
+                      </span>
+                    </button>
+                  ))}
+                  {!coverCheckState.loading && coverCheckState.coverCandidates.length === 0 ? (
+                    <div className="cover-preview-placeholder">
+                      {tr('Belum ada kandidat cover dari sumber ini.', 'No cover candidates were found for these sources.')}
+                    </div>
+                  ) : null}
+                </div>
+                <aside className="cover-preview cover-preview-side">
+                  {selectedCoverUrl ? (
+                    <img src={selectedCoverUrl} alt={tr('Preview cover terpilih', 'Selected cover preview')} />
+                  ) : (
+                    <div className="cover-preview-placeholder">{tr('Pilih salah satu cover', 'Select a cover')}</div>
+                  )}
+                  <div>
+                    <strong>{tr('Preview cover', 'Cover preview')}</strong>
+                    <span>{selectedCoverUrl || tr('Belum ada cover dipilih', 'No cover selected')}</span>
+                  </div>
+                </aside>
+              </div>
+              {coverCheckState.genres.length > 0 ? (
+                <p className="cover-check-genres">
+                  <strong>{tr('Genre terdeteksi:', 'Detected genres:')}</strong> {coverCheckState.genres.join(' · ')}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+
+          <section className="comic-form-section comic-details-section">
+            <label>
+              {tr('Catatan / Keterangan', 'Notes / Description')}
+              <textarea
+                value={comicForm.history}
+                onChange={(event) => setComicForm((current) => ({ ...current, history: event.target.value }))}
+              />
+            </label>
+            <div>
+              <span className="filter-label">{tr('Genre', 'Genres')}</span>
+              <div className="chips comic-tag-grid">
+                {genreLabels.map((label) => {
+                  const selected = comicFormGenreIds.includes(label.id);
+                  return (
+                    <button
+                      type="button"
+                      className={selected ? 'chip active' : 'chip'}
+                      key={label.id}
+                      onClick={() =>
+                        setComicFormGenreIds((current) =>
+                          current.includes(label.id)
+                            ? current.filter((id) => id !== label.id)
+                            : [...current, label.id],
+                        )
+                      }
+                    >
+                      {label.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="chips comic-tag-grid">
+              {labels
+                .filter((label) => comicFormTagIds.includes(label.id) || comicFormCollectionIds.includes(label.id))
+                .map((label) => <span className="chip active" key={label.id}>{label.name}</span>)}
             </div>
           </section>
         </div>
@@ -275,7 +393,11 @@ export function AppComicFormModal({
             <strong>{t.info}</strong>
             <p>{comicPanelNotice || tr('Tambah lebih dari satu sumber link.', 'Add more than one source link.')}</p>
           </div>
-          <button type="submit" className="primary">{formMode === 'create' ? t.saveComic : t.saveChanges}</button>
+          <button type="submit" className="primary" disabled={comicFormSaving}>
+            {comicFormSaving
+              ? tr('Menyimpan...', 'Saving...')
+              : formMode === 'create' ? t.saveComic : t.saveChanges}
+          </button>
         </footer>
       </form>
     </div>

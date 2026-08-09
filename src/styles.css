@@ -1346,6 +1346,10 @@ input[type='file']::file-selector-button {
   padding-right: 2px;
 }
 
+.library-list-panel .comic-list.list-view {
+  gap: 5px;
+}
+
 .library-detail-stack .detail-hero {
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
 }
@@ -1937,6 +1941,14 @@ input[type='file']::file-selector-button {
     border-color 160ms ease;
 }
 
+.list-view .comic-card {
+  grid-template-columns: 68px minmax(0, 1fr) 132px;
+  min-height: 94px;
+  gap: 9px;
+  padding: 5px 7px;
+  align-items: stretch;
+}
+
 .comic-cover {
   position: relative;
   width: 54px;
@@ -1951,6 +1963,21 @@ input[type='file']::file-selector-button {
   border: 1px solid rgba(39, 81, 52, 0.08);
   font-size: 1.25rem;
   font-weight: 700;
+}
+
+.list-view .comic-cover {
+  width: 68px;
+  height: 100%;
+  min-height: 84px;
+  align-self: stretch;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.list-view .comic-favorite-badge {
+  top: 4px;
+  right: 4px;
+  font-size: 0.92rem;
 }
 
 .comic-cover img {
@@ -1984,6 +2011,40 @@ input[type='file']::file-selector-button {
   min-width: 0;
 }
 
+.list-view .comic-info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'title chapter'
+    'taxonomy chapter'
+    'source chapter'
+    'rating chapter';
+  column-gap: 10px;
+  row-gap: 0;
+  align-content: center;
+}
+
+.list-view .comic-info > h4 {
+  grid-area: title;
+}
+
+.list-view .comic-info > p {
+  grid-area: taxonomy;
+}
+
+.list-view .comic-info > a {
+  grid-area: source;
+}
+
+.list-view .comic-info > .comic-rating {
+  grid-area: rating;
+}
+
+.list-view .comic-info > .chapter-stepper {
+  grid-area: chapter;
+  align-self: center;
+}
+
 .comic-card:hover,
 .comic-card.active {
   transform: translateY(-2px);
@@ -1996,6 +2057,12 @@ input[type='file']::file-selector-button {
   margin-bottom: 4px;
 }
 
+.list-view .comic-card h4 {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.12;
+}
+
 .comic-card a {
   display: block;
   color: #2a67a0;
@@ -2003,10 +2070,24 @@ input[type='file']::file-selector-button {
   word-break: break-word;
 }
 
+.list-view .comic-card p,
+.list-view .comic-card a {
+  margin: 0;
+  font-size: 0.64rem;
+  line-height: 1.15;
+}
+
 .comic-rating {
   display: grid;
   gap: 6px;
   margin-top: 6px;
+}
+
+.list-view .comic-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 1px;
 }
 
 .comic-rating-label {
@@ -2017,11 +2098,26 @@ input[type='file']::file-selector-button {
   letter-spacing: 0.08em;
 }
 
+.list-view .comic-rating-label {
+  font-size: 0.56rem;
+}
+
 .comic-rating-stars {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
+}
+
+.list-view .comic-rating-stars {
+  gap: 2px;
+}
+
+.list-view .comic-rating-stars .comic-star-button {
+  width: 17px;
+  min-width: 17px;
+  height: 17px;
+  font-size: 0.68rem;
 }
 
 .comic-rating-stars.disabled {
@@ -2056,11 +2152,46 @@ input[type='file']::file-selector-button {
   font-weight: 600;
 }
 
+.list-view .comic-rating-value {
+  font-size: 0.62rem;
+}
+
 .comic-rating-footer {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.list-view .comic-rating-footer {
+  gap: 3px;
+}
+
+.list-view .chapter-stepper {
+  grid-template-columns: 24px minmax(76px, auto) 24px;
+  margin-top: 0;
+  border-radius: 8px;
+}
+
+.list-view .chapter-stepper button {
+  min-height: 29px;
+  font-size: 0.82rem;
+}
+
+.list-view .chapter-stepper span {
+  gap: 3px;
+  padding: 0 3px;
+  font-size: 0.7rem;
+}
+
+.list-view .chapter-stepper span small {
+  font-size: 0.58rem;
+}
+
+.list-view .chapter-stepper .chapter-value input {
+  width: 43px;
+  height: 23px;
+  padding: 1px 2px;
 }
 
 .comic-rating-select {
@@ -2189,6 +2320,12 @@ input[type='file']::file-selector-button {
   gap: 6px;
 }
 
+.list-view .comic-meta {
+  min-width: 132px;
+  align-content: center;
+  gap: 3px;
+}
+
 .reading-status-select {
   width: 100%;
   min-width: 0;
@@ -2198,6 +2335,12 @@ input[type='file']::file-selector-button {
   font-weight: 700;
   color: #17304a;
   background-color: rgba(235, 247, 255, 0.96);
+}
+
+.list-view .reading-status-select {
+  min-height: 28px;
+  padding: 3px 21px 3px 7px;
+  font-size: 0.64rem;
 }
 
 .comic-meta span {
@@ -2210,6 +2353,16 @@ input[type='file']::file-selector-button {
   display: flex;
   justify-content: flex-end;
   gap: 4px;
+}
+
+.list-view .comic-actions {
+  gap: 5px;
+}
+
+.list-view .comic-actions .mini-action {
+  min-height: 25px;
+  padding: 2px 8px;
+  font-size: 0.64rem;
 }
 
 .comic-list.grid-view {

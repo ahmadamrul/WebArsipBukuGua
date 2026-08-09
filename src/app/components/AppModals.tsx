@@ -49,7 +49,9 @@ type AppModalsProps = {
   tagOptions: string[];
   collectionOptions: string[];
   comicFormTagIds: string[];
+  comicFormGenreIds: string[];
   comicFormCollectionIds: string[];
+  comicFormSaving: boolean;
   openPanel: 'comic' | 'source' | 'label' | null;
   sourceForm: SourceFormState;
   sourceEditForm: SourceEditFormState;
@@ -62,6 +64,7 @@ type AppModalsProps = {
   setComicSourceLinks: Dispatch<SetStateAction<ComicSourceLink[]>>;
   setDismissedTitleSuggestion: (value: string) => void;
   setComicFormTagIds: Dispatch<SetStateAction<string[]>>;
+  setComicFormGenreIds: Dispatch<SetStateAction<string[]>>;
   setComicFormCollectionIds: Dispatch<SetStateAction<string[]>>;
   setOpenPanel: (value: 'comic' | 'source' | 'label' | null) => void;
   setSourceForm: Dispatch<SetStateAction<SourceFormState>>;
@@ -96,7 +99,9 @@ export function AppModals(props: AppModalsProps) {
     tagOptions,
     collectionOptions,
     comicFormTagIds,
+    comicFormGenreIds,
     comicFormCollectionIds,
+    comicFormSaving,
     openPanel,
     sourceForm,
     sourceEditForm,
@@ -108,12 +113,13 @@ export function AppModals(props: AppModalsProps) {
     setComicSourceLinks,
     setDismissedTitleSuggestion,
     setComicFormTagIds,
+    setComicFormGenreIds,
     setComicFormCollectionIds,
     setOpenPanel,
     setSourceForm,
-  setSourceEditForm,
-  setLabelForm,
-  setEditingLabel,
+    setSourceEditForm,
+    setLabelForm,
+    setEditingLabel,
   closeConfirm,
   saveComicForm,
   saveSourceForm,
@@ -143,12 +149,15 @@ export function AppModals(props: AppModalsProps) {
         tagOptions={tagOptions}
         collectionOptions={collectionOptions}
         comicFormTagIds={comicFormTagIds}
+        comicFormGenreIds={comicFormGenreIds}
         comicFormCollectionIds={comicFormCollectionIds}
+        comicFormSaving={comicFormSaving}
         setFormMode={setFormMode}
         setComicForm={setComicForm}
         setComicSourceLinks={setComicSourceLinks}
         setDismissedTitleSuggestion={setDismissedTitleSuggestion}
         setComicFormTagIds={setComicFormTagIds}
+        setComicFormGenreIds={setComicFormGenreIds}
         setComicFormCollectionIds={setComicFormCollectionIds}
         saveComicForm={saveComicForm}
         handleAddComic={handleAddComic}

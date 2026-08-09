@@ -127,11 +127,24 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
     const primarySource = sourceLinks[0] ?? null;
     const selectedGenreNames = labels.filter((label) => label.kind === 'genre' && comicForm.genre.split(',').map((v) => v.trim()).includes(label.name)).map((label) => label.name);
     const selectedCollectionNames = labels.filter((label) => label.kind === 'collection' && comicForm.collection.split(',').map((v) => v.trim()).includes(label.name)).map((label) => label.name);
-  let resolvedCoverUrl = comicForm.coverUrl.trim();
+    let resolvedCoverUrl = comicForm.coverUrl.trim();
     let coverQueued = false;
     let duplicateMergeMessage = '';
     const editingComic = formMode === 'edit' && selectedComicId ? comics.find((comic) => comic.id === selectedComicId) ?? null : null;
     const existingEditSourceUrls = new Set(editingComic ? [editingComic.source_url ?? '', ...sources.filter((source) => source.comic_id === editingComic.id).map((source) => source.url)].map(normalizeSourceUrl).filter(Boolean) : []);
+    const comicBySourceUrl = new Map<string, Comic>();
+    for (const comic of comics) {
+      const normalizedComicSource = normalizeSourceUrl(comic.source_url ?? '');
+      if (normalizedComicSource && !comicBySourceUrl.has(normalizedComicSource)) {
+        comicBySourceUrl.set(normalizedComicSource, comic);
+      }
+    }
+    for (const source of sources) {
+      const normalizedSourceUrl = normalizeSourceUrl(source.url ?? '');
+      if (!normalizedSourceUrl || comicBySourceUrl.has(normalizedSourceUrl)) continue;
+      const sourceComic = comics.find((comic) => comic.id === source.comic_id) ?? null;
+      if (sourceComic) comicBySourceUrl.set(normalizedSourceUrl, sourceComic);
+    }
     let detectedReplacementTitle = '';
     if (sourceLinks.length > 0) {
       for (const sourceLink of sourceLinks) {
@@ -153,6 +166,31 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
       if (replaceTitle) comicForm.title = detectedReplacementTitle;
     }
     if (formMode === 'create') {
+      const duplicateComicBySource = sourceLinks
+        .map((sourceLink) => comicBySourceUrl.get(normalizeSourceUrl(sourceLink.url)))
+        .find((comic): comic is Comic => Boolean(comic));
+      if (duplicateComicBySource) {
+        const shouldMergeBySource = await requestConfirm(
+          tr('Sumber komik sudah ada', 'Comic source already exists'),
+          tr(
+            `URL ini sudah terhubung ke "${duplicateComicBySource.title}". Tambahkan sumber baru ke komik itu supaya tidak jadi duplikat?`,
+            `This URL is already linked to "${duplicateComicBySource.title}". Add the new source to that comic to avoid a duplicate?`,
+          ),
+          tr('Tambahkan ke komik lama', 'Add to existing comic'),
+          tr('Batal', 'Cancel'),
+        );
+        if (!shouldMergeBySource) return;
+        for (const sourceLink of sourceLinks) {
+          await addComicSource({
+            comicId: duplicateComicBySource.id,
+            label: sourceLink.label || comicForm.sourceName || 'Sumber',
+            url: sourceLink.url,
+          });
+        }
+        setSelectedComicId(duplicateComicBySource.id);
+        setActiveComicId(duplicateComicBySource.id);
+        duplicateMergeMessage = tr('URL sumber sudah dipindahkan ke komik lama.', 'The source URL was added to the existing comic.');
+      } else {
       const similarComic = findSimilarComic(comicForm.title, comics);
       if (similarComic) {
         const shouldMerge = await requestConfirm(tr('Komik serupa sudah ada', 'A similar comic already exists'), tr(`Judul ini mirip dengan "${similarComic.comic.title}". Tambahkan URL dan label baru ke komik tersebut agar tidak membuat duplikat?`, `This title is similar to "${similarComic.comic.title}". Add the new URLs and labels to that comic to avoid a duplicate?`), tr('Tambahkan ke komik lama', 'Add to existing comic'), tr('Batal', 'Cancel'));
@@ -169,6 +207,7 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
           queueCoverSync({ comicId: createdComicId, coverUrl: resolvedCoverUrl, previousStoragePath: '' });
           coverQueued = true;
         }
+      }
       }
     }
     setOpenPanel(null);

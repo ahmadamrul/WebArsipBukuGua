@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AuthScreen } from '../features/auth';
 import {
   deleteComic,
@@ -172,8 +172,9 @@ export default function App() {
   const [sourceEditForm, setSourceEditForm] = useState<SourceEditFormState>(emptySourceEditForm);
   const [comicFormTagIds, setComicFormTagIds] = useState<string[]>([]);
   const [comicFormGenreIds, setComicFormGenreIds] = useState<string[]>([]);
-  void comicFormGenreIds;
   const [comicFormCollectionIds, setComicFormCollectionIds] = useState<string[]>([]);
+  const [comicFormSaving, setComicFormSaving] = useState(false);
+  const comicFormSubmitLockRef = useRef(false);
   const [activeComicId, setActiveComicId] = useState('');
   const [openPanel, setOpenPanel] = useState<'comic' | 'source' | 'label' | null>(null);
   const [detailTab, setDetailTab] = useState<'info' | 'source' | 'history' | 'label'>('info');
@@ -312,6 +313,10 @@ export default function App() {
     sources,
     comicForm,
     comicSourceLinks,
+    comicFormTagIds,
+    comicFormGenreIds,
+    comicFormCollectionIds,
+    comics,
     formMode,
     selectedComicId,
     setComicForm,
@@ -324,6 +329,14 @@ export default function App() {
     setActiveComicId,
     setOpenPanel,
     setComicPanelNotice,
+    setComicFormSaving,
+    comicFormSubmitLockRef,
+    setMessage,
+    setMessageTone,
+    setDebugError,
+    requestConfirm,
+    syncNow,
+    tr,
   });
 
   const {
@@ -657,7 +670,9 @@ export default function App() {
         tagOptions={tagOptions}
         collectionOptions={collectionOptions}
         comicFormTagIds={comicFormTagIds}
+        comicFormGenreIds={comicFormGenreIds}
         comicFormCollectionIds={comicFormCollectionIds}
+        comicFormSaving={comicFormSaving}
         openPanel={openPanel}
         sourceForm={sourceForm}
         sourceEditForm={sourceEditForm}
@@ -676,6 +691,7 @@ export default function App() {
         setComicSourceLinks={setComicSourceLinks}
         setDismissedTitleSuggestion={setDismissedTitleSuggestion}
         setComicFormTagIds={setComicFormTagIds}
+        setComicFormGenreIds={setComicFormGenreIds}
         setComicFormCollectionIds={setComicFormCollectionIds}
         setOpenPanel={setOpenPanel}
         setSourceForm={setSourceForm}
