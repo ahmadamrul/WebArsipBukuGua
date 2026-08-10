@@ -12,6 +12,22 @@ export interface ImportProgress {
   error?: string;
 }
 
+export interface CategoryMapping {
+  kotatsuCategoryId: number;
+  kotatsuCategoryName: string;
+  appCollectionId?: string;
+  appCollectionName?: string;
+  comicsInCategory: number;
+  autoMap?: boolean;
+}
+
+export interface CoverRecoveryRequest {
+  comicTitle: string;
+  failedUrl: string;
+  newUrl?: string;
+  manualInput?: boolean;
+}
+
 export type ImportProgressCallback = (progress: ImportProgress) => void;
 
 let currentProgress: ImportProgress = {
@@ -115,4 +131,44 @@ export function cancelImport() {
     currentProgress.error = 'Import cancelled by user';
     notifyProgress();
   }
+}
+
+// Category mapping helpers
+export function mapKotatsuCategories(kotatsuCategories: Array<{ category_id: number; title: string }>, appCollections: Array<{ id: string; name: string }>): CategoryMapping[] {
+  return kotatsuCategories.map((kotatsuCat) => {
+    // Try to find matching collection by name similarity
+    const matching = appCollections.find(
+      (appColl) => appColl.name.toLowerCase().includes(kotatsuCat.title.toLowerCase()) ||
+                   kotatsuCat.title.toLowerCase().includes(appColl.name.toLowerCase())
+    );
+
+    return {
+      kotatsuCategoryId: kotatsuCat.category_id,
+      kotatsuCategoryName: kotatsuCat.title,
+      appCollectionId: matching?.id,
+      appCollectionName: matching?.name,
+      comicsInCategory: 0, // Will be updated based on actual comics
+      autoMap: !!matching,
+    };
+  });
+}
+
+// Cover recovery callback
+export type CoverRecoveryCallback = (request: CoverRecoveryRequest) => Promise<string | null>;
+let coverRecoveryCallback: CoverRecoveryCallback | null = null;
+
+export function setCoverRecoveryCallback(callback: CoverRecoveryCallback) {
+  coverRecoveryCallback = callback;
+}
+
+export async function attemptCoverRecovery(comicTitle: string, failedUrl: string): Promise<string | null> {
+  if (!coverRecoveryCallback) {
+    console.warn(`No cover recovery callback set for ${comicTitle}`);
+    return null;
+  }
+
+  return coverRecoveryCallback({
+    comicTitle,
+    failedUrl,
+  });
 }
