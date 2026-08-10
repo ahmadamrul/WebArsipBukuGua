@@ -166,8 +166,8 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
 
       // Show toast notification
       const message = failed === 0
-        ? tr(`✅ ${succeeded} URL berhasil diganti!`, `✅ ${succeeded} URLs replaced successfully!`)
-        : tr(`✅ ${succeeded} berhasil, ❌ ${failed} gagal`, `✅ ${succeeded} succeeded, ❌ ${failed} failed`);
+        ? tr(`✅ ${succeeded} URL alternatif berhasil ditambahkan!`, `✅ ${succeeded} alternative URLs added successfully!`)
+        : tr(`✅ ${succeeded} ditambahkan, ❌ ${failed} gagal`, `✅ ${succeeded} added, ❌ ${failed} failed`);
 
       // Create simple toast
       const toast = document.createElement('div');
@@ -285,7 +285,7 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                             {result.currentUrl}
                           </code>
                           <small style={styles.newUrlLabel}>
-                            {tr('URL baru:', 'New URL:')}
+                            {tr('Tambah URL alternatif:', 'Add alternative URL:')}
                           </small>
                           <input
                             type="url"
@@ -343,8 +343,8 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                 <div style={styles.footer}>
                   <p style={styles.info}>
                     ℹ️ {tr(
-                      'Masukkan URL gambar baru untuk setiap komik yang ingin diperbaiki',
-                      'Enter new cover URL for each comic you want to fix'
+                      'Masukkan URL gambar alternatif untuk setiap komik. Sistem akan mencoba URL baru jika yang lama gagal.',
+                      'Enter an alternative cover URL for each comic. The system will try the new URL if the old one fails.'
                     )}
                   </p>
                   <button
@@ -354,8 +354,8 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                     style={styles.btnReplace}
                   >
                     {replacing
-                      ? tr('Mengganti...', 'Replacing...')
-                      : tr(`Ganti ${replaceableCount} URL`, `Replace ${replaceableCount} URLs`)}
+                      ? tr('Menambahkan...', 'Adding...')
+                      : tr(`Tambah ${replaceableCount} URL Alternatif`, `Add ${replaceableCount} Alternative URLs`)}
                   </button>
                 </div>
               </div>

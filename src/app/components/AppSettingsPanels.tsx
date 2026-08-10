@@ -4,7 +4,7 @@ import type { AdultContentMode, Locale } from '../../features/settings';
 import type { AppView } from '../routes';
 import type { SyncState } from '../../lib/types/shared';
 import { parseKotatsuBackup } from '../../features/import-export';
-import { importLibraryJson, importLibraryBundle, exportLibraryJson, exportLibraryBundle } from '../../lib/libraryService';
+import { importLibraryJson, importLibraryBundle, exportLibraryJson, exportLibraryBundle, addAlternativeCoverUrl } from '../../lib/libraryService';
 import { toErrorMessage } from '../../lib/utils/errors';
 import { startBackgroundImport, subscribeToImportProgress, getImportProgress, setReportCallback, type ImportProgress, type ImportReport } from '../../lib/services/backgroundImportService';
 import { ImportPreviewModal, type ImportPreviewData } from './ImportPreviewModal';
@@ -12,7 +12,7 @@ import { ImportReportModal } from './ImportReportModal';
 import { CollectionCreationModal, type CollectionCreationRequest } from './CollectionCreationModal';
 import { CoverReplaceModal } from './CoverReplaceModal';
 import { URLCheckerPanel, type URLCheckResult } from './URLCheckerPanel';
-import { addLabel, updateComic } from '../../lib/libraryService';
+import { addLabel } from '../../lib/libraryService';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
 
@@ -221,7 +221,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
   };
 
   const handleReplaceUrl = async (comicId: string, newUrl: string) => {
-    await updateComic(comicId, { coverUrl: newUrl });
+    await addAlternativeCoverUrl(comicId, newUrl);
   };
 
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {

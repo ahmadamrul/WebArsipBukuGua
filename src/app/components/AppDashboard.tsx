@@ -2,6 +2,7 @@ import { AdultCoverNotice, type Comic } from '../../features/comics';
 import { readingStatusLabel } from '../../features/reading-progress';
 import type { Locale } from '../../features/settings';
 import { formatShortDate } from '../../lib/utils/date';
+import { CoverImage } from './CoverImage';
 import type { AppView } from '../routes';
 
 type DashboardBar = { label: string; value: number; accent: string };
@@ -104,9 +105,9 @@ export function AppDashboard(props: AppDashboardProps) {
                     <b>{comic.title.trim().charAt(0).toUpperCase() || '?'}</b>
                     {shouldHideAdultCover(comic) ? (
                       <AdultCoverNotice locale={locale} />
-                    ) : comic.cover_url ? (
-                      <img src={comic.cover_url} alt="" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
-                    ) : null}
+                    ) : (
+                      <CoverImage comic={comic} alt="" loading="lazy" />
+                    )}
                   </span>
                   <span className="dashboard-comic-copy">
                     <strong>{comic.title}</strong>

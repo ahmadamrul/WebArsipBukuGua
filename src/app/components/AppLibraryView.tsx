@@ -2,6 +2,7 @@ import { AdultCoverNotice, chapterNumberFromLabel, deleteComic, type Comic } fro
 import { readingStatusLabel, READING_STATUSES, validReadingStatus, type ReadingProgress, type ReadingStatus } from '../../features/reading-progress';
 import type { ComicLabel, LibraryLabel } from '../../features/labels';
 import { AppLibraryPanel } from './AppLibraryPanel';
+import { CoverImage } from './CoverImage';
 import type { AppView } from '../routes';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
@@ -154,9 +155,13 @@ export function AppLibraryView(props: AppLibraryViewProps) {
                   {comic.favorite ? <span className="comic-favorite-badge" aria-label={tr('Favorit', 'Favorite')}>★</span> : null}
                   {shouldHideAdultCover(comic) ? (
                     <AdultCoverNotice locale={locale} />
-                  ) : comic.cover_url ? (
-                    <img src={comic.cover_url} alt={`Cover ${comic.title}`} loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
-                  ) : null}
+                  ) : (
+                    <CoverImage
+                      comic={comic}
+                      alt={`Cover ${comic.title}`}
+                      loading="lazy"
+                    />
+                  )}
                 </div>
                 <div className="comic-info">
                   <h4>{comic.title}</h4>

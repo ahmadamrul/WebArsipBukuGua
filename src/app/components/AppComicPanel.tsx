@@ -3,6 +3,7 @@ import { READING_STATUSES, readingStatusLabel, type ReadingProgress, type Readin
 import type { ComicLabel, LibraryLabel } from '../../features/labels';
 import type { Locale } from '../../features/settings';
 import { formatShortDate } from '../../lib/utils/date';
+import { CoverImage } from './CoverImage';
 
 type AppComicPanelProps = {
   locale: Locale;
@@ -105,7 +106,7 @@ export function AppComicPanel(props: AppComicPanelProps) {
       <section className="panel comic-page-hero">
         <div className={shouldHideAdultCover(activeComic) ? 'comic-page-cover adult-cover-hidden' : 'comic-page-cover'}>
           <span>{activeComic.title.trim().charAt(0).toUpperCase() || '?'}</span>
-          {shouldHideAdultCover(activeComic) ? <AdultCoverNotice locale={locale} /> : activeComic.cover_url ? <img src={activeComic.cover_url} alt={activeComic.title} onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : null}
+          {shouldHideAdultCover(activeComic) ? <AdultCoverNotice locale={locale} /> : <CoverImage comic={activeComic} alt={activeComic.title} />}
         </div>
         <div className="comic-page-intro">
           <p className="eyebrow">{tr('Detail komik', 'Comic details')}</p>
