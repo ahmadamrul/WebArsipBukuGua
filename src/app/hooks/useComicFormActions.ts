@@ -125,9 +125,24 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
       console.warn('Failed to fetch sources from Supabase, using local sources:', err);
     }
 
+    // The comic's original source can live only in the legacy comics.source_url /
+    // source_name columns (e.g. comics created before comic_sources rows existed,
+    // or imported comics). Merge it in as the first entry unless a comic_sources
+    // row already points at the same URL, so it never silently disappears when
+    // additional sources are added via the URL checker.
+    const legacyUrl = target.source_url?.trim();
+    const legacyAlreadyPresent =
+      !legacyUrl || allSources.some((source) => normalizeSourceUrl(source.url ?? '') === normalizeSourceUrl(legacyUrl));
+    const mergedSources: ComicSourceLink[] = [
+      ...(legacyUrl && !legacyAlreadyPresent
+        ? [{ id: crypto.randomUUID(), label: target.source_name ?? 'Sumber Utama', url: legacyUrl }]
+        : []),
+      ...allSources.map((source) => ({ id: source.id, label: source.label ?? '', url: source.url ?? '' })),
+    ];
+
     setComicSourceLinks(
-      allSources.length > 0
-        ? allSources.map((source) => ({ id: source.id, label: source.label ?? '', url: source.url ?? '' }))
+      mergedSources.length > 0
+        ? mergedSources
         : [{ id: crypto.randomUUID(), label: target.source_name ?? 'Sumber Utama', url: target.source_url ?? '' }],
     );
     setComicPanelNotice('');
