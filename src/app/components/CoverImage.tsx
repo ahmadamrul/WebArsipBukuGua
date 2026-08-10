@@ -22,6 +22,7 @@ export function CoverImage({
 }: CoverImageProps) {
   const [currentUrlIndex, setCurrentUrlIndex] = useState(0);
   const [urls] = useState(() => getAllCoverUrls(comic));
+  const [allFailed, setAllFailed] = useState(false);
 
   const currentUrl = urls[currentUrlIndex] || null;
 
@@ -31,11 +32,12 @@ export function CoverImage({
       setCurrentUrlIndex(currentUrlIndex + 1);
     } else {
       // All URLs exhausted
+      setAllFailed(true);
       if (onError) onError();
     }
   };
 
-  if (!currentUrl) {
+  if (!currentUrl || allFailed) {
     return null;
   }
 
