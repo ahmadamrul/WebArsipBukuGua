@@ -65,24 +65,6 @@ export function AppDashboard(props: AppDashboardProps) {
     sudahDibaca: allComics.filter(c => c.reading_status === 'Sudah Dibaca').length,
   };
 
-  const topRatedComics = allComics
-    .filter(c => c.rating && c.rating > 0)
-    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-    .slice(0, 5);
-
-  const favoriteComics = allComics.filter(c => c.favorite).slice(0, 5);
-
-  const genreMap = new Map<string, number>();
-  allComics.forEach(comic => {
-    // Count genres - would need genre data from comic object
-    // For now, we'll add placeholder
-  });
-
-  const mostReadComics = allComics
-    .filter(c => c.chapter && c.chapter > 0)
-    .sort((a, b) => (b.chapter || 0) - (a.chapter || 0))
-    .slice(0, 5);
-
   const quickStats = {
     totalChapters: allComics.reduce((sum, c) => sum + (c.chapter || 0), 0),
     averageRating: allComics.length > 0
@@ -181,6 +163,42 @@ export function AppDashboard(props: AppDashboardProps) {
             )}
           </div>
         </article>
+        <article className="panel dashboard-feed-panel continue-reading-panel">
+          <div className="dashboard-section-head">
+            <div>
+              <p className="eyebrow">{tr('Lanjutan', 'Continue')}</p>
+              <h3>{tr('Sedang Dibaca', 'In Progress')}</h3>
+            </div>
+          </div>
+          <div className="dashboard-comic-strip">
+            {recentComics
+              .filter((comic) => comic.reading_status === 'Sedang Dibaca')
+              .slice(0, 5).length === 0 ? (
+              <p className="dashboard-empty">{tr('Belum ada komik yang sedang dibaca.', 'No comics in progress.')}</p>
+            ) : (
+              recentComics
+                .filter((comic) => comic.reading_status === 'Sedang Dibaca')
+                .slice(0, 5)
+                .map((comic) => (
+                  <button type="button" className="dashboard-comic-card" key={comic.id} onClick={() => openComicPage(comic.id)}>
+                    <span className={shouldHideAdultCover(comic) ? 'dashboard-comic-cover adult-cover-hidden' : 'dashboard-comic-cover'}>
+                      <b>{comic.title.trim().charAt(0).toUpperCase() || '?'}</b>
+                      {shouldHideAdultCover(comic) ? (
+                        <AdultCoverNotice locale={locale} />
+                      ) : comic.cover_url ? (
+                        <img src={comic.cover_url} alt="" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
+                      ) : null}
+                    </span>
+                    <span className="dashboard-comic-copy">
+                      <strong>{comic.title}</strong>
+                      <small>Ch. {comic.chapter || 0}</small>
+                      <time>{formatShortDate(comic.updated_at ?? comic.created_at, locale)}</time>
+                    </span>
+                  </button>
+                ))
+            )}
+          </div>
+        </article>
       </section>
       <section className="dashboard-features-grid">
         <article className="panel dashboard-feature-card status-card">
@@ -215,60 +233,6 @@ export function AppDashboard(props: AppDashboardProps) {
               <span>{tr('Rating Rata-rata', 'Average Rating')}</span>
               <strong>⭐ {quickStats.averageRating}</strong>
             </div>
-          </div>
-        </article>
-        <article className="panel dashboard-feature-card favorites-card">
-          <div className="feature-header">
-            <h4>❤️ {tr('Favorit', 'Favorites')}</h4>
-            <span className="feature-count">{favoriteComics.length}</span>
-          </div>
-          <div className="feature-list">
-            {favoriteComics.length === 0 ? (
-              <p className="feature-empty">{tr('Belum ada favorit', 'No favorites yet')}</p>
-            ) : (
-              favoriteComics.map((comic) => (
-                <button type="button" className="feature-item" key={comic.id} onClick={() => openComicPage(comic.id)}>
-                  <span className="item-title">{comic.title}</span>
-                  {comic.rating ? <span className="item-rating">⭐ {comic.rating}</span> : null}
-                </button>
-              ))
-            )}
-          </div>
-        </article>
-        <article className="panel dashboard-feature-card top-rated-card">
-          <div className="feature-header">
-            <h4>⭐ {tr('Top Rating', 'Top Rated')}</h4>
-            <span className="feature-count">{topRatedComics.length}</span>
-          </div>
-          <div className="feature-list">
-            {topRatedComics.length === 0 ? (
-              <p className="feature-empty">{tr('Belum ada rating', 'No ratings yet')}</p>
-            ) : (
-              topRatedComics.map((comic) => (
-                <button type="button" className="feature-item" key={comic.id} onClick={() => openComicPage(comic.id)}>
-                  <span className="item-title">{comic.title}</span>
-                  <span className="item-rating">⭐ {comic.rating}</span>
-                </button>
-              ))
-            )}
-          </div>
-        </article>
-        <article className="panel dashboard-feature-card most-read-card">
-          <div className="feature-header">
-            <h4>📖 {tr('Paling Dibaca', 'Most Read')}</h4>
-            <span className="feature-count">{mostReadComics.length}</span>
-          </div>
-          <div className="feature-list">
-            {mostReadComics.length === 0 ? (
-              <p className="feature-empty">{tr('Belum ada chapter', 'No chapters yet')}</p>
-            ) : (
-              mostReadComics.map((comic) => (
-                <button type="button" className="feature-item" key={comic.id} onClick={() => openComicPage(comic.id)}>
-                  <span className="item-title">{comic.title}</span>
-                  <span className="item-chapter">{comic.chapter} {tr('ch', 'ch')}</span>
-                </button>
-              ))
-            )}
           </div>
         </article>
       </section>

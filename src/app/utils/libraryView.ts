@@ -73,7 +73,6 @@ export function buildDashboardBars(args: {
   const { dashboardComics, labels, dashboardProgresses, tr } = args;
   return [
     { label: tr('Komik', 'Comics'), value: dashboardComics.length, accent: 'linear-gradient(180deg, #8bb8ff, #d8ecff)' },
-    { label: tr('Label', 'Labels'), value: labels.length, accent: 'linear-gradient(180deg, #7edfd2, #d7f7f1)' },
     { label: tr('Riwayat baca', 'Reading history'), value: dashboardProgresses.length, accent: 'linear-gradient(180deg, #aacb7d, #eef7d8)' },
   ];
 }
