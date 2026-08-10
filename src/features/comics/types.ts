@@ -8,6 +8,7 @@ export type ComicFormState = {
   sourceUrl: string;
   sourceName: string;
   coverUrl: string;
+  coverUrls?: string[]; // Alternative cover URLs (multiple URL support)
   genre: string;
   collection: string;
   history: string;

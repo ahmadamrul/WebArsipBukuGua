@@ -217,6 +217,11 @@ export function AppComicFormModal({
                   value={comicForm.coverUrl}
                   onChange={(event) => setComicForm((current) => ({ ...current, coverUrl: event.target.value }))}
                 />
+                {comicForm.coverUrls && comicForm.coverUrls.length > 0 && (
+                  <small style={{ display: 'block', marginTop: '8px', color: '#666' }}>
+                    ✅ {tr(`${comicForm.coverUrls.length} URL alternatif tersimpan`, `${comicForm.coverUrls.length} alternative URL(s) saved`)}
+                  </small>
+                )}
               </label>
               <label>
                 {tr('Tag', 'Tags')}

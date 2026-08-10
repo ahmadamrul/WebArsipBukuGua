@@ -6,6 +6,7 @@ export type Comic = {
   source_url: string | null;
   source_name: string | null;
   cover_url: string | null;
+  cover_urls?: string[] | null; // Alternative cover URLs for fallback
   cover_storage_path: string | null;
   favorite: boolean;
   genre: string | null;
