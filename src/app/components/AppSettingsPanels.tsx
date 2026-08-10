@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PasswordRequirements } from '../../features/auth';
 import type { AdultContentMode, Locale } from '../../features/settings';
 import type { AppView } from '../routes';
 import type { SyncState } from '../../lib/types/shared';
 import { parseKotatsuBackup } from '../../features/import-export';
 import { importLibraryJson, importLibraryBundle, exportLibraryJson, exportLibraryBundle } from '../../lib/libraryService';
-import { addComic } from '../../features/comics';
 import { toErrorMessage } from '../../lib/utils/errors';
+import { startBackgroundImport, subscribeToImportProgress, getImportProgress, type ImportProgress } from '../../lib/services/backgroundImportService';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
 
@@ -72,6 +72,13 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
   } = props;
 
   const [importingFile, setImportingFile] = useState(false);
+  const [importProgress, setImportProgress] = useState<ImportProgress>(getImportProgress());
+
+  useEffect(() => {
+    return subscribeToImportProgress((progress) => {
+      setImportProgress(progress);
+    });
+  }, []);
 
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
@@ -82,38 +89,20 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     try {
       if (file.name.endsWith('.bk.zip')) {
         const kotatsuComics = await parseKotatsuBackup(file);
-        let successCount = 0;
-        for (const comic of kotatsuComics) {
-          try {
-            const type = (comic.readingStatus || 'wantToRead') as any;
-            await addComic({
-              title: comic.title,
-              sourceUrl: comic.sourceUrl,
-              sourceName: comic.sourceName,
-              coverUrl: comic.coverUrl || undefined,
-              genre: comic.genre,
-              collection: '',
-              history: '',
-              readingStatus: type,
-              coverStoragePath: undefined,
-            });
-            successCount++;
-          } catch (err) {
-            console.error(`Failed to import ${comic.title}:`, err);
-          }
-        }
-        console.log(tr(`${successCount} komik berhasil diimpor dari Kotatsu.`, `${successCount} comics imported from Kotatsu.`));
+        await startBackgroundImport(kotatsuComics);
+        console.log(tr(`Import dimulai untuk ${kotatsuComics.length} komik.`, `Import started for ${kotatsuComics.length} comics.`));
       } else if (file.name.endsWith('.json')) {
         const text = await file.text();
         await importLibraryJson(text);
         console.log(tr('Library JSON berhasil diimpor.', 'Library JSON imported successfully.'));
+        await syncNow(false, { suppressSuccessMessage: true });
       } else if (file.name.endsWith('.zip')) {
         await importLibraryBundle(file);
         console.log(tr('Library Bundle berhasil diimpor.', 'Library Bundle imported successfully.'));
+        await syncNow(false, { suppressSuccessMessage: true });
       } else {
         throw new Error(tr('Format file tidak didukung.', 'File format not supported.'));
       }
-      await syncNow(false, { suppressSuccessMessage: true });
     } catch (error) {
       const message = toErrorMessage(error);
       console.error(tr('Gagal mengimpor file:', 'Failed to import file:'), message);
@@ -293,9 +282,9 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               </div>
             </div>
             <div className="import-grid">
-              <label className="import-option" style={{ opacity: importingFile ? 0.6 : 1, pointerEvents: importingFile ? 'none' : 'auto' }}>
+              <label className="import-option" style={{ opacity: importingFile || importProgress.isRunning ? 0.6 : 1, pointerEvents: importingFile || importProgress.isRunning ? 'none' : 'auto' }}>
                 <div className="import-icon">
-                  {importingFile ? (
+                  {importingFile || importProgress.isRunning ? (
                     <div style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>
                       <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10" stroke="#5B8DEF" strokeWidth="2" strokeDasharray="15.7 47.1" />
@@ -310,10 +299,16 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
                   )}
                 </div>
                 <div>
-                  <strong>{importingFile ? tr('Sedang impor...', 'Importing...') : tr('Impor', 'Import')}</strong>
-                  <small>{importingFile ? tr('Tunggu sebentar', 'Please wait') : tr('JSON, ZIP, Kotatsu', 'JSON, ZIP, Kotatsu')}</small>
+                  <strong>{importingFile || importProgress.isRunning ? tr('Sedang impor...', 'Importing...') : tr('Impor', 'Import')}</strong>
+                  <small>
+                    {importProgress.isRunning
+                      ? tr(`${importProgress.completed}/${importProgress.total}`, `${importProgress.completed}/${importProgress.total}`)
+                      : importingFile
+                      ? tr('Tunggu sebentar', 'Please wait')
+                      : tr('JSON, ZIP, Kotatsu', 'JSON, ZIP, Kotatsu')}
+                  </small>
                 </div>
-                <input type="file" accept=".json,.zip,.bk.zip" onChange={handleFileImport} disabled={importingFile} style={{ display: 'none' }} />
+                <input type="file" accept=".json,.zip,.bk.zip" onChange={handleFileImport} disabled={importingFile || importProgress.isRunning} style={{ display: 'none' }} />
               </label>
               <button type="button" className="import-option import-option-json" onClick={handleExportJson}>
                 <div className="import-icon">
