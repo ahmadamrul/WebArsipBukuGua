@@ -7,9 +7,19 @@ export interface ImportProgress {
   total: number;
   completed: number;
   failed: number;
+  skipped: number;
   currentComic?: string;
   isRunning: boolean;
   error?: string;
+}
+
+export interface ImportReport {
+  total: number;
+  successful: number;
+  skipped: number;
+  failed: number;
+  failedComics: Array<{ title: string; reason: string }>;
+  duration: number;
 }
 
 export interface CategoryMapping {
@@ -34,10 +44,13 @@ let currentProgress: ImportProgress = {
   total: 0,
   completed: 0,
   failed: 0,
+  skipped: 0,
   isRunning: false,
 };
 
+let currentReport: ImportReport | null = null;
 const progressCallbacks = new Set<ImportProgressCallback>();
+let reportCallback: ((report: ImportReport) => void) | null = null;
 
 export function subscribeToImportProgress(callback: ImportProgressCallback) {
   progressCallbacks.add(callback);
@@ -59,8 +72,10 @@ export async function startBackgroundImport(comics: ImportedKotatsuComic[]) {
     total: comics.length,
     completed: 0,
     failed: 0,
+    skipped: 0,
     isRunning: true,
   };
+  currentReport = null;
   notifyProgress();
 
   // Start import in background without awaiting
@@ -68,6 +83,9 @@ export async function startBackgroundImport(comics: ImportedKotatsuComic[]) {
 }
 
 async function importComicsBackground(comics: ImportedKotatsuComic[]) {
+  const startTime = Date.now();
+  const failedComics: Array<{ title: string; reason: string }> = [];
+
   try {
     for (let i = 0; i < comics.length; i++) {
       const comic = comics[i];
@@ -124,6 +142,8 @@ async function importComicsBackground(comics: ImportedKotatsuComic[]) {
 
         currentProgress.completed++;
       } catch (err) {
+        const reason = toErrorMessage(err);
+        failedComics.push({ title: comic.title, reason });
         currentProgress.failed++;
         console.error(`Failed to import ${comic.title}:`, err);
       }
@@ -134,12 +154,37 @@ async function importComicsBackground(comics: ImportedKotatsuComic[]) {
     currentProgress.error = toErrorMessage(err);
   } finally {
     currentProgress.isRunning = false;
+
+    // Generate report
+    const duration = Date.now() - startTime;
+    currentReport = {
+      total: currentProgress.total,
+      successful: currentProgress.completed,
+      skipped: currentProgress.skipped,
+      failed: currentProgress.failed,
+      failedComics,
+      duration,
+    };
+
     notifyProgress();
+
+    // Notify report callback
+    if (reportCallback && currentReport) {
+      reportCallback(currentReport);
+    }
   }
 }
 
 export function getImportProgress(): ImportProgress {
   return { ...currentProgress };
+}
+
+export function getImportReport(): ImportReport | null {
+  return currentReport;
+}
+
+export function setReportCallback(callback: (report: ImportReport) => void) {
+  reportCallback = callback;
 }
 
 export function cancelImport() {
