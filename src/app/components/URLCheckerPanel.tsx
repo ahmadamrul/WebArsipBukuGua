@@ -29,6 +29,7 @@ export interface MetadataPreview {
   title?: string | null;
   genre?: string | null;
   description?: string | null;
+  sourceName?: string | null;
   isLoading: boolean;
 }
 
@@ -36,7 +37,7 @@ export interface URLCheckerPanelProps {
   comics: any[];
   isChecking: boolean;
   onCheck: () => Promise<URLCheckResult[]>;
-  onReplace: (comicId: string, newUrl: string, sourceName?: string) => Promise<void>;
+  onReplace: (params: { comicId: string; sourceUrl: string; coverUrl: string; sourceName?: string }) => Promise<void>;
   tr: (id: string, en: string) => string;
 }
 
@@ -139,10 +140,20 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
             title: metadata?.title,
             genre: metadata?.genres?.join(', '),
             description: metadata?.description,
+            sourceName: metadata?.sourceName,
             isLoading: false,
           });
           return next;
         });
+        // Auto-fill source name from detected metadata if user hasn't typed one manually
+        if (metadata?.sourceName) {
+          setSourceNames((prev) => {
+            if (prev.get(comicId)?.trim()) return prev; // don't override manual input
+            const next = new Map(prev);
+            next.set(comicId, metadata.sourceName);
+            return next;
+          });
+        }
       } catch (err) {
         console.warn(`Failed to detect metadata for ${newUrl}:`, err);
         setMetadataPreviews((prev) => {
@@ -168,7 +179,11 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
       for (const [comicId, newUrl] of replacements) {
         try {
           const sourceName = sourceNames.get(comicId);
-          await onReplace(comicId, newUrl, sourceName);
+          const preview = metadataPreviews.get(comicId);
+          // If the pasted URL is a page (not a direct image), use the detected cover
+          // image from metadata preview instead — a page URL can't render as an <img>.
+          const coverUrl = preview?.coverUrl || newUrl;
+          await onReplace({ comicId, sourceUrl: newUrl, coverUrl, sourceName });
           succeeded++;
         } catch (err) {
           failed++;
@@ -297,18 +312,18 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                             {result.currentUrl}
                           </code>
                           <small style={styles.newUrlLabel}>
-                            {tr('Tambah URL alternatif:', 'Add alternative URL:')}
+                            {tr('Tambah link sumber baru (halaman komik atau URL gambar):', 'Add new source link (comic page or direct image URL):')}
                           </small>
                           <input
                             type="url"
-                            placeholder={tr('https://contoh.com/gambar.jpg', 'https://example.com/image.jpg')}
+                            placeholder={tr('https://contoh.com/komik/judul-komik', 'https://example.com/comic/title')}
                             value={replacements.get(result.comicId) || ''}
                             onChange={(e) => handleUrlChange(result.comicId, e.target.value)}
                             disabled={replacing}
                             style={styles.urlInput}
                           />
                           <small style={{ ...styles.newUrlLabel, marginTop: '8px' }}>
-                            {tr('Nama sumber (opsional):', 'Source name (optional):')}
+                            {tr('Nama sumber (otomatis terisi, bisa diubah):', 'Source name (auto-filled, editable):')}
                           </small>
                           <input
                             type="text"
@@ -366,8 +381,8 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                 <div style={styles.footer}>
                   <p style={styles.info}>
                     ℹ️ {tr(
-                      'Masukkan URL gambar alternatif untuk setiap komik. Sistem akan mencoba URL baru jika yang lama gagal.',
-                      'Enter an alternative cover URL for each comic. The system will try the new URL if the old one fails.'
+                      'Tempel link halaman komik dari sumber lain. Sistem otomatis ambil nama sumber & gambar cover dari halaman itu, lalu simpan sebagai sumber baru dan cadangan cover.',
+                      'Paste a comic page link from another source. The system automatically detects the source name & cover image from that page, then saves it as a new source and a cover backup.'
                     )}
                   </p>
                   <button

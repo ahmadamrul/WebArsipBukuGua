@@ -221,17 +221,27 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     return results;
   };
 
-  const handleReplaceUrl = async (comicId: string, newUrl: string, sourceName?: string) => {
-    // Add as alternative cover URL
-    await addAlternativeCoverUrl(comicId, newUrl);
+  const handleReplaceUrl = async ({
+    comicId,
+    sourceUrl,
+    coverUrl,
+    sourceName,
+  }: {
+    comicId: string;
+    sourceUrl: string;
+    coverUrl: string;
+    sourceName?: string;
+  }) => {
+    // Add the actual image URL (detected cover, not the page URL) as an alternative cover
+    await addAlternativeCoverUrl(comicId, coverUrl);
 
-    // Create new source link if source name provided
+    // Create new source link using the page URL the user pasted
     if (sourceName && sourceName.trim()) {
       try {
         await addComicSource({
           comicId,
           label: sourceName.trim(),
-          url: newUrl.trim(),
+          url: sourceUrl.trim(),
         });
       } catch (err) {
         console.warn(`Failed to create source link for ${sourceName}:`, err);
