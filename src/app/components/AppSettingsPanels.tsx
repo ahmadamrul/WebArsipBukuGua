@@ -1,7 +1,12 @@
+import { useState } from 'react';
 import { PasswordRequirements } from '../../features/auth';
 import type { AdultContentMode, Locale } from '../../features/settings';
 import type { AppView } from '../routes';
 import type { SyncState } from '../../lib/types/shared';
+import { parseKotatsuBackup } from '../../features/import-export';
+import { importLibraryJson, importLibraryBundle, exportLibraryJson, exportLibraryBundle } from '../../lib/libraryService';
+import { addComic } from '../../features/comics';
+import { toErrorMessage } from '../../lib/utils/errors';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
 
@@ -66,21 +71,72 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     handleProfileSave,
   } = props;
 
-  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const [importingFile, setImportingFile] = useState(false);
+
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
     if (!file) return;
-    // TODO: Implement import handler
-    console.log('Importing file:', file.name);
+
+    setImportingFile(true);
+    try {
+      if (file.name.endsWith('.bk.zip')) {
+        const kotatsuComics = await parseKotatsuBackup(file);
+        let successCount = 0;
+        for (const comic of kotatsuComics) {
+          try {
+            const type = (comic.readingStatus || 'wantToRead') as any;
+            await addComic({
+              title: comic.title,
+              sourceUrl: comic.sourceUrl,
+              sourceName: comic.sourceName,
+              coverUrl: comic.coverUrl || undefined,
+              genre: comic.genre,
+              collection: '',
+              history: '',
+              readingStatus: type,
+              coverStoragePath: undefined,
+            });
+            successCount++;
+          } catch (err) {
+            console.error(`Failed to import ${comic.title}:`, err);
+          }
+        }
+        const message = tr(`${successCount} komik berhasil diimpor dari Kotatsu.`, `${successCount} comics imported from Kotatsu.`);
+        console.log(message);
+      } else if (file.name.endsWith('.json')) {
+        const text = await file.text();
+        await importLibraryJson(text);
+        console.log(tr('Library JSON berhasil diimpor.', 'Library JSON imported successfully.'));
+      } else if (file.name.endsWith('.zip')) {
+        await importLibraryBundle(file);
+        console.log(tr('Library Bundle berhasil diimpor.', 'Library Bundle imported successfully.'));
+      } else {
+        throw new Error(tr('Format file tidak didukung.', 'File format not supported.'));
+      }
+      await syncNow(false, { suppressSuccessMessage: true });
+    } catch (error) {
+      const message = toErrorMessage(error);
+      console.error(tr('Gagal mengimpor file:', 'Failed to import file:'), message);
+    } finally {
+      setImportingFile(false);
+      event.currentTarget.value = '';
+    }
   };
 
-  const handleExportJson = () => {
-    // TODO: Implement JSON export handler
-    console.log('Exporting JSON');
+  const handleExportJson = async () => {
+    try {
+      await exportLibraryJson();
+    } catch (error) {
+      console.error(tr('Gagal mengekspor JSON:', 'Failed to export JSON:'), error);
+    }
   };
 
-  const handleExportBundle = () => {
-    // TODO: Implement bundle export handler
-    console.log('Exporting bundle');
+  const handleExportBundle = async () => {
+    try {
+      await exportLibraryBundle();
+    } catch (error) {
+      console.error(tr('Gagal mengekspor Bundle:', 'Failed to export Bundle:'), error);
+    }
   };
 
   const syncLabel: Record<SyncState, string> = {
