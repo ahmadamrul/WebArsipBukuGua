@@ -10,6 +10,7 @@ import {
   type ComicSourceLink,
 } from '../../features/sources';
 import { toDebugMessage, toErrorMessage } from '../../lib/utils/errors';
+import { supabase } from '../../lib/api/supabaseClient';
 
 type SetState<T> = (value: T | ((current: T) => T)) => void;
 export type ComicFormActionsDeps = {
@@ -108,11 +109,25 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
       readingStatus: validReadingStatus(target.reading_status),
     });
 
-    // Use sources from state, ensuring we have all sources for the comic
-    const relatedSources = sources.filter((source) => source.comic_id === target.id);
+    // Fetch all sources directly from Supabase to ensure we have the latest
+    let allSources = sources.filter((source) => source.comic_id === target.id);
+    try {
+      if (supabase) {
+        const { data: dbSources } = await supabase
+          .from('comic_sources')
+          .select('*')
+          .eq('comic_id', target.id);
+        if (dbSources && dbSources.length > 0) {
+          allSources = dbSources as ComicSource[];
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch sources from Supabase, using local sources:', err);
+    }
+
     setComicSourceLinks(
-      relatedSources.length > 0
-        ? relatedSources.map((source) => ({ id: source.id, label: source.label ?? '', url: source.url ?? '' }))
+      allSources.length > 0
+        ? allSources.map((source) => ({ id: source.id, label: source.label ?? '', url: source.url ?? '' }))
         : [{ id: crypto.randomUUID(), label: target.source_name ?? 'Sumber Utama', url: target.source_url ?? '' }],
     );
     setComicPanelNotice('');
