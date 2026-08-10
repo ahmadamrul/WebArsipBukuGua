@@ -670,14 +670,14 @@ input[type='file']::file-selector-button {
 
 .dashboard-shell {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .dashboard-hero {
-  padding: 16px;
+  padding: 12px;
   border-radius: 18px;
   display: grid;
-  gap: 14px;
+  gap: 10px;
   overflow: hidden;
   background:
     radial-gradient(circle at 90% 8%, rgba(255, 196, 91, 0.3), transparent 22%),
@@ -688,7 +688,7 @@ input[type='file']::file-selector-button {
 
 .dashboard-header {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
 }
@@ -902,15 +902,15 @@ input[type='file']::file-selector-button {
 .dashboard-stats-simple {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .dashboard-stat-simple {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px;
+  padding: 12px 14px;
   background: linear-gradient(135deg, rgba(139, 184, 255, 0.12), rgba(216, 236, 255, 0.08));
   border: 1.5px solid rgba(120, 184, 255, 0.18);
   border-radius: 12px;
@@ -927,18 +927,18 @@ input[type='file']::file-selector-button {
 }
 
 .dashboard-stat-simple span {
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: rgba(23, 48, 74, 0.68);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .dashboard-stat-simple strong {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #0d47a1;
-  margin-left: 12px;
+  margin-left: 10px;
 }
 
 .dashboard-feed-grid {
@@ -1170,16 +1170,16 @@ input[type='file']::file-selector-button {
 
 .dashboard-activity-list {
   display: grid;
-  gap: 7px;
+  gap: 5px;
 }
 
 .dashboard-activity-item {
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 7px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 7px 8px;
   color: #17304a;
   text-align: left;
   background: rgba(247, 250, 255, 0.92);
@@ -1189,13 +1189,13 @@ input[type='file']::file-selector-button {
 
 .dashboard-activity-item > span:nth-child(2) {
   display: grid;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 
 .dashboard-activity-item strong {
   overflow: hidden;
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1203,7 +1203,7 @@ input[type='file']::file-selector-button {
 .dashboard-activity-item small,
 .dashboard-activity-item time {
   color: rgba(23, 48, 74, 0.6);
-  font-size: 0.64rem;
+  font-size: 0.58rem;
 }
 
 .dashboard-activity-item small {
