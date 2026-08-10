@@ -87,14 +87,6 @@ export function AppDashboard(props: AppDashboardProps) {
           ))}
         </div>
       </section>
-      <div className="stats-grid compact">
-        {stats.map((stat) => (
-          <article className={`stat-card tone-${stat.tone}`} key={stat.label}>
-            <span>{stat.label}</span>
-            <strong>{stat.value}</strong>
-          </article>
-        ))}
-      </div>
       <section className="dashboard-feed-grid">
         <article className="panel dashboard-feed-panel recent-comics-panel">
           <div className="dashboard-section-head">
@@ -129,22 +121,6 @@ export function AppDashboard(props: AppDashboardProps) {
               ))
             )}
           </div>
-          {recentComics.length > 0 ? (
-            <div className="dashboard-recent-footer">
-              <div className="dashboard-recent-note">
-                <span>{tr('Tampil sekarang', 'Showing now')}</span>
-                <strong>{recentComics.length} {tr('komik', 'comics')}</strong>
-              </div>
-              <div className="dashboard-recent-note">
-                <span>{tr('Terbaru', 'Latest')}</span>
-                <strong>{recentComics[0]?.title ?? '-'}</strong>
-              </div>
-              <div className="dashboard-recent-note">
-                <span>{tr('Update terakhir', 'Last update')}</span>
-                <strong>{formatShortDate(recentComics[0]?.updated_at ?? recentComics[0]?.created_at, locale)}</strong>
-              </div>
-            </div>
-          ) : null}
         </article>
         <article className="panel dashboard-feed-panel activity-panel">
           <div className="dashboard-section-head">
