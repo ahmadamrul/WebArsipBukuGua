@@ -11,7 +11,7 @@ export interface ImportPreviewData {
 export interface ImportPreviewProps {
   preview: ImportPreviewData | null;
   isOpen: boolean;
-  onConfirm: (categorySelection: Map<number, string>) => Promise<void>;
+  onConfirm: () => Promise<void>;
   onCancel: () => void;
   tr: (id: string, en: string) => string;
 }
@@ -24,7 +24,7 @@ export function ImportPreviewModal({ preview, isOpen, onConfirm, onCancel, tr }:
   const handleConfirm = async () => {
     setIsConfirming(true);
     try {
-      await onConfirm(new Map());
+      await onConfirm();
     } finally {
       setIsConfirming(false);
     }

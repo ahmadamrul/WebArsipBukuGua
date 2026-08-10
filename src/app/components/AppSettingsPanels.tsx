@@ -6,7 +6,9 @@ import type { SyncState } from '../../lib/types/shared';
 import { parseKotatsuBackup } from '../../features/import-export';
 import { importLibraryJson, importLibraryBundle, exportLibraryJson, exportLibraryBundle } from '../../lib/libraryService';
 import { toErrorMessage } from '../../lib/utils/errors';
-import { startBackgroundImport, subscribeToImportProgress, getImportProgress, type ImportProgress } from '../../lib/services/backgroundImportService';
+import { startBackgroundImport, subscribeToImportProgress, getImportProgress, setReportCallback, type ImportProgress, type ImportReport } from '../../lib/services/backgroundImportService';
+import { ImportPreviewModal, type ImportPreviewData } from './ImportPreviewModal';
+import { ImportReportModal } from './ImportReportModal';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
 
@@ -73,10 +75,21 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
 
   const [importingFile, setImportingFile] = useState(false);
   const [importProgress, setImportProgress] = useState<ImportProgress>(getImportProgress());
+  const [previewData, setPreviewData] = useState<ImportPreviewData | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [reportData, setReportData] = useState<ImportReport | null>(null);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     return subscribeToImportProgress((progress) => {
       setImportProgress(progress);
+    });
+  }, []);
+
+  useEffect(() => {
+    setReportCallback((report) => {
+      setReportData(report);
+      setShowReport(true);
     });
   }, []);
 
@@ -89,8 +102,14 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     try {
       if (file.name.endsWith('.bk.zip')) {
         const kotatsuComics = await parseKotatsuBackup(file);
-        await startBackgroundImport(kotatsuComics);
-        console.log(tr(`Import dimulai untuk ${kotatsuComics.length} komik.`, `Import started for ${kotatsuComics.length} comics.`));
+        // Show preview modal
+        setPreviewData({
+          comics: kotatsuComics,
+          duplicates: 0,
+          errors: 0,
+          categories: [],
+        });
+        setShowPreview(true);
       } else if (file.name.endsWith('.json')) {
         const text = await file.text();
         await importLibraryJson(text);
@@ -111,6 +130,19 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
       if (inputEl) {
         inputEl.value = '';
       }
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!previewData) return;
+
+    try {
+      await startBackgroundImport(previewData.comics);
+      setShowPreview(false);
+      console.log(tr(`Import dimulai untuk ${previewData.comics.length} komik.`, `Import started for ${previewData.comics.length} comics.`));
+    } catch (error) {
+      const message = toErrorMessage(error);
+      console.error(tr('Gagal memulai import:', 'Failed to start import:'), message);
     }
   };
 
@@ -442,6 +474,19 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
           </section>
         </section>
       )}
+      <ImportPreviewModal
+        preview={previewData}
+        isOpen={showPreview}
+        onConfirm={handleConfirmImport}
+        onCancel={() => setShowPreview(false)}
+        tr={tr}
+      />
+      <ImportReportModal
+        report={reportData}
+        isOpen={showReport}
+        onClose={() => setShowReport(false)}
+        tr={tr}
+      />
     </>
   );
 }
