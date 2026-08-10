@@ -184,30 +184,37 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
         continue;
       }
 
-      try {
-        const response = await fetch(comic.cover_url, { method: 'HEAD' });
-        results.push({
-          comicId: comic.id,
-          comicTitle: comic.title,
-          sourceName: comic.source_name || 'Unknown',
-          currentUrl: comic.cover_url,
-          coverUrl: comic.cover_url,
-          genre: comic.genre,
-          isAlive: response.ok,
-          error: !response.ok ? `HTTP ${response.status}` : undefined,
-        });
-      } catch (err) {
-        results.push({
-          comicId: comic.id,
-          comicTitle: comic.title,
-          sourceName: comic.source_name || 'Unknown',
-          currentUrl: comic.cover_url,
-          coverUrl: comic.cover_url,
-          genre: comic.genre,
-          isAlive: false,
-          error: toErrorMessage(err),
-        });
-      }
+      // Test image load using <img> tag (works with CORS)
+      const imageLoaded = await new Promise<boolean>((resolve) => {
+        const img = new Image();
+        const timeout = setTimeout(() => {
+          resolve(false);
+          img.src = ''; // Cancel loading
+        }, 5000); // 5 second timeout
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(true);
+        };
+
+        img.onerror = () => {
+          clearTimeout(timeout);
+          resolve(false);
+        };
+
+        img.src = comic.cover_url;
+      });
+
+      results.push({
+        comicId: comic.id,
+        comicTitle: comic.title,
+        sourceName: comic.source_name || 'Unknown',
+        currentUrl: comic.cover_url,
+        coverUrl: imageLoaded ? comic.cover_url : undefined,
+        genre: comic.genre,
+        isAlive: imageLoaded,
+        error: !imageLoaded ? tr('Gambar tidak dapat dimuat', 'Image failed to load') : undefined,
+      });
     }
 
     return results;
