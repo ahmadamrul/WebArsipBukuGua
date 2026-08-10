@@ -203,36 +203,40 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
             <div className="import-grid">
               <label className="import-option">
                 <div className="import-icon">
-                  <svg width="39" height="39" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2v20M2 12h20M6 8l6-6 6 6M6 16l6 6 6-6" />
+                  <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="8" width="18" height="12" rx="2" fill="#5B8DEF" opacity="0.1"/>
+                    <path d="M12 5v8M9 10l3-3 3 3" stroke="#5B8DEF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M6 20h12" stroke="#5B8DEF" strokeWidth="1.5"/>
                   </svg>
                 </div>
                 <div>
-                  <strong>{tr('Impor File', 'Import File')}</strong>
+                  <strong>{tr('Impor', 'Import')}</strong>
                   <small>{tr('JSON, ZIP, Kotatsu', 'JSON, ZIP, Kotatsu')}</small>
                 </div>
                 <input type="file" accept=".json,.zip,.bk.zip" style={{ display: 'none' }} />
               </label>
               <button type="button" className="import-option import-option-json">
                 <div className="import-icon">
-                  <svg width="39" height="39" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="#276451" opacity="0.1" stroke="#276451" strokeWidth="1.5"/>
+                    <text x="12" y="15" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#276451">JSON</text>
                   </svg>
                 </div>
                 <div>
                   <strong>{tr('Ekspor JSON', 'Export JSON')}</strong>
-                  <small>{tr('Backup library', 'Backup library')}</small>
+                  <small>{tr('Data terstruktur', 'Structured data')}</small>
                 </div>
               </button>
               <button type="button" className="import-option">
                 <div className="import-icon">
-                  <svg width="39" height="39" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-0.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-0.16.28-0.25.61-0.25.96 0 1.1.9 2 2 2h12v-2H7.42c-0.14 0-0.25-0.11-0.25-0.25l0.03-0.12 0.9-1.63h7.45c0.75 0 1.41-0.41 1.75-1.03l3.58-6.49c0.08-0.14 0.12-0.31 0.12-0.48 0-0.55-0.45-1-1-1H5.21l-0.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s0.89 2 1.99 2 2-0.9 2-2-0.9-2-2-2z" />
+                  <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 6h18v12c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6z" fill="#C97C1C" opacity="0.1" stroke="#C97C1C" strokeWidth="1.5"/>
+                    <path d="M8 9l-1.5 1.5M13 9l-1.5 1.5M8 14l-1.5 1.5M13 14l-1.5 1.5" stroke="#C97C1C" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </div>
                 <div>
                   <strong>{tr('Ekspor Bundle', 'Export Bundle')}</strong>
-                  <small>{tr('Backup ZIP', 'Backup as ZIP')}</small>
+                  <small>{tr('Dengan media', 'With media files')}</small>
                 </div>
               </button>
             </div>
