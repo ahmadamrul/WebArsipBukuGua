@@ -84,7 +84,7 @@ export function buildRecentComics(dashboardComics: Comic[]) {
         new Date(right.created_at ?? right.updated_at).getTime() -
         new Date(left.created_at ?? left.updated_at).getTime(),
     )
-    .slice(0, 10);
+    .slice(0, 14);
 }
 
 export function buildDashboardActivities(args: {
