@@ -274,19 +274,27 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               </div>
             </div>
             <div className="import-grid">
-              <label className="import-option">
+              <label className="import-option" style={{ opacity: importingFile ? 0.6 : 1, pointerEvents: importingFile ? 'none' : 'auto' }}>
                 <div className="import-icon">
-                  <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="8" width="18" height="12" rx="2" fill="#5B8DEF" opacity="0.1"/>
-                    <path d="M12 5v8M9 10l3-3 3 3" stroke="#5B8DEF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M6 20h12" stroke="#5B8DEF" strokeWidth="1.5"/>
-                  </svg>
+                  {importingFile ? (
+                    <div style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>
+                      <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="#5B8DEF" strokeWidth="2" strokeDasharray="15.7 47.1" />
+                      </svg>
+                    </div>
+                  ) : (
+                    <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="3" y="8" width="18" height="12" rx="2" fill="#5B8DEF" opacity="0.1"/>
+                      <path d="M12 5v8M9 10l3-3 3 3" stroke="#5B8DEF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M6 20h12" stroke="#5B8DEF" strokeWidth="1.5"/>
+                    </svg>
+                  )}
                 </div>
                 <div>
-                  <strong>{tr('Impor', 'Import')}</strong>
-                  <small>{tr('JSON, ZIP, Kotatsu', 'JSON, ZIP, Kotatsu')}</small>
+                  <strong>{importingFile ? tr('Sedang impor...', 'Importing...') : tr('Impor', 'Import')}</strong>
+                  <small>{importingFile ? tr('Tunggu sebentar', 'Please wait') : tr('JSON, ZIP, Kotatsu', 'JSON, ZIP, Kotatsu')}</small>
                 </div>
-                <input type="file" accept=".json,.zip,.bk.zip" onChange={handleFileImport} style={{ display: 'none' }} />
+                <input type="file" accept=".json,.zip,.bk.zip" onChange={handleFileImport} disabled={importingFile} style={{ display: 'none' }} />
               </label>
               <button type="button" className="import-option import-option-json" onClick={handleExportJson}>
                 <div className="import-icon">
