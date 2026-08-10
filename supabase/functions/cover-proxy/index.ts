@@ -8,12 +8,12 @@ serve(async (req) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
       },
     });
   }
 
-  if (req.method !== "POST") {
+  if (req.method !== "GET" && req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
       headers: { "Access-Control-Allow-Origin": "*" },
@@ -21,7 +21,15 @@ serve(async (req) => {
   }
 
   try {
-    const { coverUrl } = await req.json();
+    // Get coverUrl from GET query param or POST body
+    let coverUrl: string | null = null;
+
+    if (req.method === "GET") {
+      coverUrl = new URL(req.url).searchParams.get("coverUrl");
+    } else {
+      const body = await req.json();
+      coverUrl = body.coverUrl;
+    }
 
     if (!coverUrl) {
       return new Response(JSON.stringify({ error: "Missing coverUrl" }), {
