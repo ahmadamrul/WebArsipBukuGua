@@ -5,6 +5,7 @@ import type { AppView } from '../routes';
 import type { SyncState } from '../../lib/types/shared';
 import { parseKotatsuBackup } from '../../features/import-export';
 import { importLibraryJson, importLibraryBundle, exportLibraryJson, exportLibraryBundle, addAlternativeCoverUrl } from '../../lib/libraryService';
+import { addComicSource } from '../../features/sources/services/sourceService';
 import { toErrorMessage } from '../../lib/utils/errors';
 import { startBackgroundImport, subscribeToImportProgress, getImportProgress, setReportCallback, type ImportProgress, type ImportReport } from '../../lib/services/backgroundImportService';
 import { ImportPreviewModal, type ImportPreviewData } from './ImportPreviewModal';
@@ -220,8 +221,23 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     return results;
   };
 
-  const handleReplaceUrl = async (comicId: string, newUrl: string) => {
+  const handleReplaceUrl = async (comicId: string, newUrl: string, sourceName?: string) => {
+    // Add as alternative cover URL
     await addAlternativeCoverUrl(comicId, newUrl);
+
+    // Create new source link if source name provided
+    if (sourceName && sourceName.trim()) {
+      try {
+        await addComicSource({
+          comicId,
+          label: sourceName.trim(),
+          url: newUrl.trim(),
+        });
+      } catch (err) {
+        console.warn(`Failed to create source link for ${sourceName}:`, err);
+        // Don't fail the whole operation if source creation fails
+      }
+    }
   };
 
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {

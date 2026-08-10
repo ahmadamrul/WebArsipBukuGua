@@ -36,7 +36,7 @@ export interface URLCheckerPanelProps {
   comics: any[];
   isChecking: boolean;
   onCheck: () => Promise<URLCheckResult[]>;
-  onReplace: (comicId: string, newUrl: string) => Promise<void>;
+  onReplace: (comicId: string, newUrl: string, sourceName?: string) => Promise<void>;
   tr: (id: string, en: string) => string;
 }
 
@@ -45,6 +45,7 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
   const [checking, setChecking] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [replacements, setReplacements] = useState<Map<string, string>>(new Map());
+  const [sourceNames, setSourceNames] = useState<Map<string, string>>(new Map());
   const [replacing, setReplacing] = useState(false);
   const [metadataPreviews, setMetadataPreviews] = useState<Map<string, MetadataPreview>>(new Map());
   const debounceTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -84,6 +85,16 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
       newReplacements.delete(comicId);
     }
     setReplacements(newReplacements);
+  };
+
+  const handleSourceNameChange = (comicId: string, name: string) => {
+    const newSourceNames = new Map(sourceNames);
+    if (name.trim()) {
+      newSourceNames.set(comicId, name.trim());
+    } else {
+      newSourceNames.delete(comicId);
+    }
+    setSourceNames(newSourceNames);
   };
 
   const handleUrlChange = (comicId: string, newUrl: string) => {
@@ -156,7 +167,8 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
 
       for (const [comicId, newUrl] of replacements) {
         try {
-          await onReplace(comicId, newUrl);
+          const sourceName = sourceNames.get(comicId);
+          await onReplace(comicId, newUrl, sourceName);
           succeeded++;
         } catch (err) {
           failed++;
@@ -292,6 +304,17 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                             placeholder={tr('https://contoh.com/gambar.jpg', 'https://example.com/image.jpg')}
                             value={replacements.get(result.comicId) || ''}
                             onChange={(e) => handleUrlChange(result.comicId, e.target.value)}
+                            disabled={replacing}
+                            style={styles.urlInput}
+                          />
+                          <small style={{ ...styles.newUrlLabel, marginTop: '8px' }}>
+                            {tr('Nama sumber (opsional):', 'Source name (optional):')}
+                          </small>
+                          <input
+                            type="text"
+                            placeholder={tr('Contoh: MangaDex, KissManga', 'Example: MangaDex, KissManga')}
+                            value={sourceNames.get(result.comicId) || ''}
+                            onChange={(e) => handleSourceNameChange(result.comicId, e.target.value)}
                             disabled={replacing}
                             style={styles.urlInput}
                           />

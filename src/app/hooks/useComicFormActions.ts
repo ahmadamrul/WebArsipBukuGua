@@ -101,7 +101,7 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
       sourceUrl: target.source_url ?? '',
       sourceName: target.source_name ?? '',
       coverUrl: target.cover_url ?? '',
-      coverUrls: target.cover_urls,
+      coverUrls: target.cover_urls ?? undefined,
       genre: target.genre ?? '',
       collection: target.collection ?? '',
       history: target.history ?? '',
