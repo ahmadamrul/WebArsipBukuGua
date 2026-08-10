@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { detectMetadata } from '../../lib/libraryService';
 
 export interface URLCheckResult {
   comicId: string;
@@ -9,6 +10,26 @@ export interface URLCheckResult {
   genre?: string;
   isAlive: boolean;
   error?: string;
+}
+
+export interface URLCheckResult {
+  comicId: string;
+  comicTitle: string;
+  sourceName: string;
+  currentUrl: string;
+  coverUrl?: string;
+  genre?: string;
+  isAlive: boolean;
+  error?: string;
+}
+
+export interface MetadataPreview {
+  url: string;
+  coverUrl?: string | null;
+  title?: string | null;
+  genre?: string | null;
+  description?: string | null;
+  isLoading: boolean;
 }
 
 export interface URLCheckerPanelProps {
@@ -25,6 +46,8 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [replacements, setReplacements] = useState<Map<string, string>>(new Map());
   const [replacing, setReplacing] = useState(false);
+  const [metadataPreviews, setMetadataPreviews] = useState<Map<string, MetadataPreview>>(new Map());
+  const debounceTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const handleCheck = async () => {
     setChecking(true);
@@ -61,6 +84,68 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
       newReplacements.delete(comicId);
     }
     setReplacements(newReplacements);
+  };
+
+  const handleUrlChange = (comicId: string, newUrl: string) => {
+    const newReplacements = new Map(replacements);
+    if (newUrl.trim()) {
+      newReplacements.set(comicId, newUrl.trim());
+    } else {
+      newReplacements.delete(comicId);
+    }
+    setReplacements(newReplacements);
+
+    // Debounce metadata fetch
+    if (debounceTimers.current.has(comicId)) {
+      clearTimeout(debounceTimers.current.get(comicId));
+    }
+
+    if (!newUrl.trim() || !newUrl.includes('http')) {
+      setMetadataPreviews((prev) => {
+        const next = new Map(prev);
+        next.delete(comicId);
+        return next;
+      });
+      return;
+    }
+
+    // Set loading state
+    setMetadataPreviews((prev) => {
+      const next = new Map(prev);
+      next.set(comicId, { url: newUrl, isLoading: true });
+      return next;
+    });
+
+    // Fetch metadata after delay
+    const timer = setTimeout(async () => {
+      try {
+        const metadata = await detectMetadata(newUrl);
+        setMetadataPreviews((prev) => {
+          const next = new Map(prev);
+          next.set(comicId, {
+            url: newUrl,
+            coverUrl: metadata?.coverUrl,
+            title: metadata?.title,
+            genre: metadata?.genres?.join(', '),
+            description: metadata?.description,
+            isLoading: false,
+          });
+          return next;
+        });
+      } catch (err) {
+        console.warn(`Failed to detect metadata for ${newUrl}:`, err);
+        setMetadataPreviews((prev) => {
+          const next = new Map(prev);
+          next.set(comicId, {
+            url: newUrl,
+            isLoading: false,
+          });
+          return next;
+        });
+      }
+    }, 800); // 800ms debounce
+
+    debounceTimers.current.set(comicId, timer);
   };
 
   const handleReplaceAll = async () => {
@@ -206,10 +291,50 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                             type="url"
                             placeholder={tr('https://contoh.com/gambar.jpg', 'https://example.com/image.jpg')}
                             value={replacements.get(result.comicId) || ''}
-                            onChange={(e) => handleUpdateUrl(result.comicId, e.target.value)}
+                            onChange={(e) => handleUrlChange(result.comicId, e.target.value)}
                             disabled={replacing}
                             style={styles.urlInput}
                           />
+
+                          {/* Metadata Preview */}
+                          {metadataPreviews.has(result.comicId) && (
+                            <div style={styles.metadataPreview}>
+                              {metadataPreviews.get(result.comicId)?.isLoading ? (
+                                <small style={styles.previewLoading}>⏳ {tr('Mengambil metadata...', 'Fetching metadata...')}</small>
+                              ) : (
+                                (() => {
+                                  const preview = metadataPreviews.get(result.comicId);
+                                  return preview?.coverUrl || preview?.genre || preview?.title ? (
+                                    <div style={styles.previewContent}>
+                                      {preview?.coverUrl && (
+                                        <img
+                                          src={preview.coverUrl}
+                                          alt="preview"
+                                          style={styles.previewCover}
+                                          onError={(e) => {
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                          }}
+                                        />
+                                      )}
+                                      <div style={styles.previewInfo}>
+                                        {preview?.title && (
+                                          <small style={styles.previewTitle}>{preview.title}</small>
+                                        )}
+                                        {preview?.genre && (
+                                          <small style={styles.previewGenre}>🏷️ {preview.genre}</small>
+                                        )}
+                                        <small style={styles.previewCheck}>✅ {tr('Gambar ditemukan', 'Image found')}</small>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <small style={styles.previewNotFound}>
+                                      ❌ {tr('Metadata tidak ditemukan', 'Metadata not found')}
+                                    </small>
+                                  );
+                                })()
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -412,5 +537,60 @@ const styles = {
     textAlign: 'center' as const,
     fontSize: '14px',
     marginTop: '16px',
+  },
+  metadataPreview: {
+    marginTop: '8px',
+    padding: '8px',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '6px',
+    borderLeft: '3px solid #2196f3',
+  },
+  previewLoading: {
+    color: '#2196f3',
+    fontSize: '12px',
+    display: 'block',
+  },
+  previewContent: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'flex-start',
+  },
+  previewCover: {
+    width: '35px',
+    height: '50px',
+    objectFit: 'cover' as const,
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+  },
+  previewInfo: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2px',
+  },
+  previewTitle: {
+    color: '#333',
+    fontSize: '11px',
+    fontWeight: '500',
+    display: 'block',
+    maxWidth: '150px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap' as const,
+  },
+  previewGenre: {
+    color: '#666',
+    fontSize: '11px',
+    display: 'block',
+  },
+  previewCheck: {
+    color: '#4caf50',
+    fontSize: '11px',
+    display: 'block',
+    fontWeight: '500',
+  },
+  previewNotFound: {
+    color: '#f44336',
+    fontSize: '12px',
+    display: 'block',
   },
 };
