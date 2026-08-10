@@ -9,6 +9,8 @@ import { toErrorMessage } from '../../lib/utils/errors';
 import { startBackgroundImport, subscribeToImportProgress, getImportProgress, setReportCallback, type ImportProgress, type ImportReport } from '../../lib/services/backgroundImportService';
 import { ImportPreviewModal, type ImportPreviewData } from './ImportPreviewModal';
 import { ImportReportModal } from './ImportReportModal';
+import { CollectionCreationModal, type CollectionCreationRequest } from './CollectionCreationModal';
+import { addLabel } from '../../lib/libraryService';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
 
@@ -79,6 +81,9 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [reportData, setReportData] = useState<ImportReport | null>(null);
   const [showReport, setShowReport] = useState(false);
+  const [collectionsToCreate, setCollectionsToCreate] = useState<CollectionCreationRequest[]>([]);
+  const [showCollectionCreation, setShowCollectionCreation] = useState(false);
+  const [creatingCollections, setCreatingCollections] = useState(false);
 
   useEffect(() => {
     return subscribeToImportProgress((progress) => {
@@ -90,8 +95,29 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     setReportCallback((report) => {
       setReportData(report);
       setShowReport(true);
+      // Show collection creation prompt if there are new collections
+      if (report.newCollections && report.newCollections.length > 0) {
+        setCollectionsToCreate(report.newCollections);
+        setShowCollectionCreation(true);
+      }
     });
   }, []);
+
+  const handleCreateCollections = async (selectedCollections: CollectionCreationRequest[]) => {
+    setCreatingCollections(true);
+    try {
+      for (const collection of selectedCollections) {
+        try {
+          await addLabel(collection.kotatsuName, 'collection');
+        } catch (err) {
+          console.error(`Failed to create collection ${collection.kotatsuName}:`, err);
+        }
+      }
+      setShowCollectionCreation(false);
+    } finally {
+      setCreatingCollections(false);
+    }
+  };
 
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
@@ -485,6 +511,14 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
         report={reportData}
         isOpen={showReport}
         onClose={() => setShowReport(false)}
+        tr={tr}
+      />
+      <CollectionCreationModal
+        collections={collectionsToCreate}
+        isOpen={showCollectionCreation}
+        isCreating={creatingCollections}
+        onConfirm={handleCreateCollections}
+        onSkip={() => setShowCollectionCreation(false)}
         tr={tr}
       />
     </>
