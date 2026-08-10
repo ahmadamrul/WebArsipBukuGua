@@ -248,6 +248,107 @@ Setelah satu strategi gagal, lanjutkan strategi berikutnya pada link yang sama. 
 - UI memberikan feedback yang terlihat untuk setiap proses berhasil/gagal.
 - Build, lint, dan tes otomatis lulus.
 
+---
+
+## HASIL TESTING REAL - 10 AGUSTUS 2026
+
+### Status Phase 1: PASS ✅
+
+- [x] Add 1 sumber + metadata + kandidat cover + genre + simpan → SUCCESS
+- [x] Add 2 sumber + merge candidates → SUCCESS
+- [x] Rapid save 5x → Lock working, hanya 1 record (SUCCESS)
+- [x] Edit comic delete source → Source deleted di DB (SUCCESS)
+- [x] Error path (title kosong) → Modal tetap buka (SUCCESS)
+- [x] Duplicate cancel → Form input preserved (SUCCESS)
+- [x] Duplicate open old → Switch ke edit mode (SUCCESS)
+- [x] Network fail → Modal open + error shown (SUCCESS)
+
+**Verdict:** ✅ PHASE 1 ALL PASS
+
+### Status Phase 2: PASS WITH KNOWN LIMITATION ⚠️
+
+**Metadata Detection Results:**
+
+| Site          | Judul | Cover | Genre | Status |
+| ------------- | ----- | ----- | ----- | ------ |
+| Webtoons      | ✅    | ✅    | ❌    | PASS   |
+| MangaPlus     | ✅    | ✅    | ❌    | PASS   |
+| Komiktap      | ✅    | ✅    | ❌    | PASS   |
+| MangaDistrict | ✅    | ✅    | ❌    | PASS   |
+| Shinigami     | ✅    | ✅    | ✅    | PASS   |
+| Ryukomik      | ✅    | ✅    | ❌    | PASS   |
+
+**Temuan:**
+
+- [x] Title detection: 100% (semua site dapat judul benar)
+- [x] Cover detection: 100% (semua site dapat cover)
+- [x] Genre detection: 17% (hanya Shinigami via API)
+- [x] Duplicate detection: Working (URL + nama validation bekerja)
+- [x] Manual genre selection: Workaround OK (user dapat select via dropdown)
+
+**Root Cause Genre:**
+
+- Shinigami: API endpoint + JSON response → Genre extracted
+- Others: HTML parsing + site-specific CSS selector
+  - Webtoons: HTML structure mismatch
+  - MangaPlus: Structured data format berbeda
+  - Komiktap: oEmbed tidak include genre
+  - MangaDistrict: Genre tag format berbeda
+  - Ryukomik: CSS selector `.rk-shell` tidak match (line 1067 libraryService.ts)
+
+**Decision:** ACCEPT AS KNOWN LIMITATION
+
+- Genre adalah "nice-to-have" (bukan critical)
+- Workaround: User manual select genre dari dropdown (30 detik/comic)
+- Dapat diperbaiki Phase 4 post-launch (Option B/C di TESTING-ISSUE-REPORT-1.md)
+- **Phase 2 VERDICT: PASS ✅** (proceed Phase 3)
+
+**Dokumentasi:** Lihat TESTING-ISSUE-REPORT-1.md untuk detail teknis
+
+---
+
+## IMPROVEMENT UNTUK PHASE 3+
+
+### Urgent Improvement: Instant Scrape on URL Paste
+
+**Current Flow:**
+
+1. User paste URL
+2. Tunggu 1 detik
+3. Metadata load
+
+**Suggested Flow:**
+
+```
+1. User paste URL
+2. **INSTANTLY** trigger detectMetadata() (jangan nunggu)
+3. Show loading indicator
+4. Metadata load in background
+5. Auto-populate candidates seiring data datang
+```
+
+**Technical:**
+
+- useEffect jangan debounce, langsung trigger
+- File: `src/app/hooks/useComicCoverCheck.ts`
+- Check: Apakah ada setTimeout/debounce di sini?
+
+**Benefit:**
+
+- Faster UX (tidak perlu tunggu)
+- Langsung lihat hasil saat paste
+- Reduce perceived latency
+
+---
+
+## TODO untuk Phase 3+
+
+- [ ] Verify instant scrape flow
+- [ ] Check debounce settings di useComicCoverCheck.ts
+- [ ] Optional: Improve Ryukomik selector (30 min)
+- [ ] Optional: Add Webtoons genre parser (1 hour)
+- [ ] Document genre limitation di user guide
+
 ## Catatan Tambahan Perubahan Terakhir untuk Audit Besok
 
 Bagian ini hanya mencatat perubahan refactor/perbaikan terakhir yang belum diuji menyeluruh di browser. Isi catatan sebelumnya tetap menjadi acuan utama.

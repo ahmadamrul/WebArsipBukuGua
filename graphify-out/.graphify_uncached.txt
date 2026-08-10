@@ -1,0 +1,11 @@
+D:\Code\Sys\WebArsipBukuGua\README.md
+D:\Code\Sys\WebArsipBukuGua\docs\ARCHITECTURE.md
+D:\Code\Sys\WebArsipBukuGua\docs\AUDIT-FITUR-DAN-BUG.md
+D:\Code\Sys\WebArsipBukuGua\index.html
+D:\Code\Sys\WebArsipBukuGua\public\app-icon.png
+D:\Code\Sys\WebArsipBukuGua\public\favicon.svg
+D:\Code\Sys\WebArsipBukuGua\public\icons.svg
+D:\Code\Sys\WebArsipBukuGua\public\import-publication.svg
+D:\Code\Sys\WebArsipBukuGua\public\restore-bundle.svg
+D:\Code\Sys\WebArsipBukuGua\public\restore-json.svg
+D:\Code\Sys\WebArsipBukuGua\src\assets\hero.png

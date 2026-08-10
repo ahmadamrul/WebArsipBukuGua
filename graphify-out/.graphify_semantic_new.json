@@ -1,0 +1,1000 @@
+{
+  "nodes": [
+    {
+      "id": "readme_arsip_buku_gua_project",
+      "label": "Arsip Buku Gua Web Application",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_react_19",
+      "label": "React 19",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_typescript",
+      "label": "TypeScript",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_vite",
+      "label": "Vite Build Tool",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_supabase_auth",
+      "label": "Supabase Authentication",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_postgres",
+      "label": "PostgreSQL Database",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_jszipjs",
+      "label": "JSZip Library",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_fast_xml_parser",
+      "label": "fast-xml-parser",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_row_level_security",
+      "label": "Row Level Security (RLS)",
+      "file_type": "rationale",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Database and Security section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_user_scoped_data",
+      "label": "User-Scoped Data Isolation",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Database and Security section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_feature_based_clean_architecture",
+      "label": "Feature-Based Clean Architecture",
+      "file_type": "rationale",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Architecture section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_dependency_direction",
+      "label": "Dependency Direction Rules",
+      "file_type": "rationale",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_auth_feature",
+      "label": "Auth Feature Module",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_comics_feature",
+      "label": "Comics Feature Module",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_labels_feature",
+      "label": "Labels Feature Module",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_sources_feature",
+      "label": "Sources Feature Module",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_reading_progress_feature",
+      "label": "Reading Progress Feature Module",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_import_export_feature",
+      "label": "Import/Export Feature Module",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_metadata_detection_feature",
+      "label": "Metadata Detection Feature Module",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_settings_feature",
+      "label": "Settings Feature Module",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_lib_api",
+      "label": "lib/api - Cloud and Persistence Boundary",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_lib_domain",
+      "label": "lib/domain - Domain Contracts and Business Rules",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_lib_utils",
+      "label": "lib/utils - Reusable Helpers",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_lib_constants",
+      "label": "lib/constants - Shared Configuration",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_app_shell",
+      "label": "app/ - Composition and Providers",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_components_shared",
+      "label": "components/ - Shared Presentation Components",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_architecture_legacy_library_service",
+      "label": "lib/libraryService.ts - Legacy Supabase Implementation",
+      "file_type": "concept",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Compatibility Boundary section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_auth_system",
+      "label": "Authentication and Profile Management",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Autentikasi dan Profil section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_comic_crud",
+      "label": "Comic CRUD Operations",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Tambah dan Edit Komik section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_duplicate_prevention",
+      "label": "Duplicate Prevention Strategy",
+      "file_type": "rationale",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Pencegahan Duplikat section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_metadata_scraping_strategy",
+      "label": "Metadata and Cover Scraping Strategy",
+      "file_type": "rationale",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Scraping Metadata dan Cover section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_cover_sync",
+      "label": "Cover Storage and Synchronization",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Penyimpanan Cover dan Sinkronisasi section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_collection_view",
+      "label": "Collection View Modes (List/Grid)",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Koleksi section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_comic_details",
+      "label": "Comic Detail Page",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Detail Komik section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_rating_favorite",
+      "label": "Rating and Favorite System",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Rating dan Favorit section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_adult_content_filter",
+      "label": "Adult Content Filtering",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Adult Content section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_dashboard",
+      "label": "Dashboard Statistics",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Dashboard section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_label_management",
+      "label": "Label Management (Genres/Collections/Tags)",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Label section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_settings_import_export",
+      "label": "Settings and Import/Export",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Settings dan Import/Export section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_audit_supabase_schema",
+      "label": "Supabase Database Schema",
+      "file_type": "document",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Database Supabase section",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_app_icon_png",
+      "label": "App Icon - Book Collection Management",
+      "file_type": "image",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\public\\app-icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_assets_hero_png",
+      "label": "Hero Image - Layered Architecture Visualization",
+      "file_type": "image",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\src\\assets\\hero.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "index_html_app_entry",
+      "label": "HTML App Entry Point",
+      "file_type": "code",
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\index.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "readme_react_19",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Tech Stack section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "readme_typescript",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Tech Stack section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "readme_vite",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Tech Stack section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "readme_supabase_auth",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Tech Stack section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "readme_postgres",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Tech Stack section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "readme_jszipjs",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Tech Stack section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "readme_fast_xml_parser",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Tech Stack section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "readme_row_level_security",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Database and Security section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_row_level_security",
+      "target": "readme_user_scoped_data",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Database and Security section",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_arsip_buku_gua_project",
+      "target": "docs_architecture_feature_based_clean_architecture",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md",
+      "source_location": "Project Structure section references docs/ARCHITECTURE.md",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_feature_based_clean_architecture",
+      "target": "docs_architecture_auth_feature",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_feature_based_clean_architecture",
+      "target": "docs_architecture_comics_feature",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_feature_based_clean_architecture",
+      "target": "docs_architecture_labels_feature",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_feature_based_clean_architecture",
+      "target": "docs_architecture_sources_feature",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_feature_based_clean_architecture",
+      "target": "docs_architecture_reading_progress_feature",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_feature_based_clean_architecture",
+      "target": "docs_architecture_import_export_feature",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_feature_based_clean_architecture",
+      "target": "docs_architecture_metadata_detection_feature",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_feature_based_clean_architecture",
+      "target": "docs_architecture_settings_feature",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_dependency_direction",
+      "target": "docs_architecture_feature_based_clean_architecture",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction and Architecture sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_dependency_direction",
+      "target": "docs_architecture_lib_api",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_dependency_direction",
+      "target": "docs_architecture_lib_domain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_dependency_direction",
+      "target": "docs_architecture_lib_utils",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_dependency_direction",
+      "target": "docs_architecture_lib_constants",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Dependency Direction section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_auth_feature",
+      "target": "docs_architecture_lib_domain",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership and Dependency Direction sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_comics_feature",
+      "target": "docs_architecture_lib_domain",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership and Dependency Direction sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_labels_feature",
+      "target": "docs_architecture_lib_domain",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership and Dependency Direction sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_sources_feature",
+      "target": "docs_architecture_lib_domain",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership and Dependency Direction sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_reading_progress_feature",
+      "target": "docs_architecture_lib_domain",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership and Dependency Direction sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_import_export_feature",
+      "target": "docs_architecture_lib_domain",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership and Dependency Direction sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_metadata_detection_feature",
+      "target": "docs_architecture_lib_domain",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership and Dependency Direction sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_settings_feature",
+      "target": "docs_architecture_lib_domain",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Feature Ownership and Dependency Direction sections",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_legacy_library_service",
+      "target": "docs_architecture_lib_api",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md",
+      "source_location": "Compatibility Boundary section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_comic_crud",
+      "target": "docs_architecture_comics_feature",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Tambah dan Edit Komik section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_duplicate_prevention",
+      "target": "docs_architecture_comics_feature",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Pencegahan Duplikat section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_metadata_scraping_strategy",
+      "target": "docs_architecture_metadata_detection_feature",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Scraping Metadata dan Cover section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_cover_sync",
+      "target": "docs_architecture_comics_feature",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Penyimpanan Cover dan Sinkronisasi section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_collection_view",
+      "target": "docs_architecture_comics_feature",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Koleksi section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_adult_content_filter",
+      "target": "docs_architecture_settings_feature",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Adult Content section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_rating_favorite",
+      "target": "docs_architecture_comics_feature",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Rating dan Favorit section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_label_management",
+      "target": "docs_architecture_labels_feature",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Label section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_settings_import_export",
+      "target": "docs_architecture_import_export_feature",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Settings dan Import/Export section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_supabase_schema",
+      "target": "readme_supabase_auth",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Database Supabase section",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_audit_supabase_schema",
+      "target": "readme_postgres",
+      "relation": "cites",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\AUDIT-FITUR-DAN-BUG.md",
+      "source_location": "Database Supabase section",
+      "weight": 1.0
+    },
+    {
+      "source": "public_app_icon_png",
+      "target": "docs_architecture_comics_feature",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\public\\app-icon.png",
+      "source_location": "Visual design represents book management",
+      "weight": 1.0
+    },
+    {
+      "source": "public_app_icon_png",
+      "target": "docs_audit_reading_progress_tracking",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\public\\app-icon.png",
+      "source_location": "Icon shows book with reading indicator",
+      "weight": 1.0
+    },
+    {
+      "source": "src_assets_hero_png",
+      "target": "docs_architecture_feature_based_clean_architecture",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\src\\assets\\hero.png",
+      "source_location": "Hero image visualization of layered architecture",
+      "weight": 1.0
+    },
+    {
+      "source": "index_html_app_entry",
+      "target": "readme_arsip_buku_gua_project",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\index.html",
+      "source_location": "Script loads src/main.tsx",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "feature_modules_architecture",
+      "label": "Feature Modules in Clean Architecture",
+      "nodes": [
+        "docs_architecture_auth_feature",
+        "docs_architecture_comics_feature",
+        "docs_architecture_labels_feature",
+        "docs_architecture_sources_feature",
+        "docs_architecture_reading_progress_feature",
+        "docs_architecture_import_export_feature",
+        "docs_architecture_metadata_detection_feature",
+        "docs_architecture_settings_feature"
+      ],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md"
+    },
+    {
+      "id": "core_modules_layer",
+      "label": "Core Modules Layer - Infrastructure Support",
+      "nodes": [
+        "docs_architecture_lib_api",
+        "docs_architecture_lib_domain",
+        "docs_architecture_lib_utils",
+        "docs_architecture_lib_constants"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\docs\\ARCHITECTURE.md"
+    },
+    {
+      "id": "tech_stack_integration",
+      "label": "Integrated Technology Stack",
+      "nodes": [
+        "readme_react_19",
+        "readme_typescript",
+        "readme_vite",
+        "readme_supabase_auth",
+        "readme_postgres"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "D:\\Code\\Sys\\WebArsipBukuGua\\README.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
