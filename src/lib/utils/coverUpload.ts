@@ -62,7 +62,10 @@ export async function uploadCoverToStorage(
     const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cover-proxy`;
     const response = await fetch(proxyUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify({ coverUrl }),
     });
     if (!response.ok) throw new Error(`Failed to fetch cover: ${response.statusText}`);
