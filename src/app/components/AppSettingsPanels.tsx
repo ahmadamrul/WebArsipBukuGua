@@ -200,6 +200,42 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
                 <h3>{tr('Kelola file library', 'Manage library files')}</h3>
               </div>
             </div>
+            <div className="import-grid">
+              <label className="import-option">
+                <div className="import-icon">
+                  <svg width="39" height="39" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2v20M2 12h20M6 8l6-6 6 6M6 16l6 6 6-6" />
+                  </svg>
+                </div>
+                <div>
+                  <strong>{tr('Impor File', 'Import File')}</strong>
+                  <small>{tr('JSON, ZIP, Kotatsu', 'JSON, ZIP, Kotatsu')}</small>
+                </div>
+                <input type="file" accept=".json,.zip,.bk.zip" style={{ display: 'none' }} />
+              </label>
+              <button type="button" className="import-option import-option-json">
+                <div className="import-icon">
+                  <svg width="39" height="39" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  </svg>
+                </div>
+                <div>
+                  <strong>{tr('Ekspor JSON', 'Export JSON')}</strong>
+                  <small>{tr('Backup library', 'Backup library')}</small>
+                </div>
+              </button>
+              <button type="button" className="import-option">
+                <div className="import-icon">
+                  <svg width="39" height="39" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-0.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-0.16.28-0.25.61-0.25.96 0 1.1.9 2 2 2h12v-2H7.42c-0.14 0-0.25-0.11-0.25-0.25l0.03-0.12 0.9-1.63h7.45c0.75 0 1.41-0.41 1.75-1.03l3.58-6.49c0.08-0.14 0.12-0.31 0.12-0.48 0-0.55-0.45-1-1-1H5.21l-0.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s0.89 2 1.99 2 2-0.9 2-2-0.9-2-2-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <strong>{tr('Ekspor Bundle', 'Export Bundle')}</strong>
+                  <small>{tr('Backup ZIP', 'Backup as ZIP')}</small>
+                </div>
+              </button>
+            </div>
           </section>
           <section className="panel compact-panel label-manager">
             <div className="panel-head">
