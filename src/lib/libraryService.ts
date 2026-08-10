@@ -19,6 +19,7 @@ import {
   scoreCoverCandidate,
 } from './libraryServiceHelpers';
 import { normalizeComparableText } from './utils/text';
+import { normalizeSourceUrl } from '../features/sources';
 import type { Comic, LibraryLabel, PublicationItem, PublicationKind } from './types';
 import type {
   ComicInput,
@@ -1355,6 +1356,36 @@ export async function loadLibrary(): Promise<LibrarySnapshot> {
 
 export async function addComic(input: ComicInput) {
   const user = await requireUser();
+
+  // Server-side duplikat prevention
+  if (input.sourceUrl) {
+    const normalizedSubmitted = normalizeSourceUrl(input.sourceUrl);
+    if (normalizedSubmitted) {
+      const { data: existingComics, error: comicsError } = await supabase!
+        .from('comics')
+        .select('id, source_url')
+        .eq('user_id', user.id);
+      if (comicsError) throw new Error(formatSupabaseError(comicsError));
+
+      const { data: existingSources, error: sourcesError } = await supabase!
+        .from('comic_sources')
+        .select('url')
+        .eq('user_id', user.id);
+      if (sourcesError) throw new Error(formatSupabaseError(sourcesError));
+
+      const existingUrls = [
+        ...(existingComics ?? []).map((c) => c.source_url).filter(Boolean),
+        ...(existingSources ?? []).map((s) => s.url).filter(Boolean),
+      ]
+        .map((url) => normalizeSourceUrl(url))
+        .filter(Boolean);
+
+      if (existingUrls.includes(normalizedSubmitted)) {
+        throw new Error('DUPLICATE_SOURCE_URL');
+      }
+    }
+  }
+
   const rating = Number.isFinite(input.rating) ? Math.max(0, Math.min(5, Math.round(input.rating ?? 0))) : 0;
   const payload = {
     user_id: user.id,
@@ -1671,23 +1702,75 @@ export async function importLibraryJson(jsonText: string) {
   const comicLabels = Array.isArray(parsed.comicLabels) ? parsed.comicLabels : [];
   const sources = Array.isArray(parsed.sources) ? parsed.sources : [];
   const progresses = Array.isArray(parsed.progresses) ? parsed.progresses : [];
-  for (const comic of comics) {
+
+  // Build map of existing source URLs for duplicate detection during import
+  const { data: existingComics } = await supabase!
+    .from('comics')
+    .select('id, source_url')
+    .eq('user_id', user.id);
+  const { data: existingSources } = await supabase!
+    .from('comic_sources')
+    .select('comic_id, url')
+    .eq('user_id', user.id);
+
+  const existingUrlsByComicId = new Map<string, string[]>();
+  (existingComics ?? []).forEach((comic) => {
+    if (comic.source_url) {
+      const urls = existingUrlsByComicId.get(comic.id) || [];
+      urls.push(comic.source_url);
+      existingUrlsByComicId.set(comic.id, urls);
+    }
+  });
+  (existingSources ?? []).forEach((source) => {
+    const urls = existingUrlsByComicId.get(source.comic_id) || [];
+    urls.push(source.url);
+    existingUrlsByComicId.set(source.comic_id, urls);
+  });
+
+  const normalizedExistingUrls = new Set<string>();
+  for (const urls of existingUrlsByComicId.values()) {
+    urls.forEach((url) => {
+      const normalized = normalizeSourceUrl(url);
+      if (normalized) normalizedExistingUrls.add(normalized);
+    });
+  }
+
+  // Filter out comics that would create duplicates
+  const comicsToImport = comics.filter((comic) => {
+    const comicUrls = [
+      comic.source_url,
+      ...sources.filter((s) => s.comic_id === comic.id).map((s) => s.url),
+    ]
+      .filter(Boolean)
+      .map((url) => normalizeSourceUrl(url))
+      .filter(Boolean);
+    return !comicUrls.some((url) => normalizedExistingUrls.has(url));
+  });
+
+  // Only import comics without duplicate sources
+  for (const comic of comicsToImport) {
     await supabase!.from('comics').upsert({
       ...comic,
       user_id: user.id,
     });
   }
+
   for (const label of labels) {
     await supabase!.from('library_labels').upsert({
       ...label,
       user_id: user.id,
     });
   }
+
+  // Only import sources for comics that were imported
+  const importedComicIds = new Set(comicsToImport.map((c) => c.id));
   for (const source of sources) {
-    await supabase!.from('comic_sources').upsert({
-      ...source,
-      user_id: user.id,
-    });
+    if (importedComicIds.has(source.comic_id)) {
+      await supabase!.from('comic_sources').upsert({
+        ...source,
+        user_id: user.id,
+      });
+    }
   }
   for (const relation of comicLabels) {
     await supabase!.from('comic_labels').upsert({

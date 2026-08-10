@@ -188,12 +188,17 @@ export function createSessionActions(deps: SessionActionsDeps) {
   const handleRecoveryPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isPasswordStrongEnough(recoveryPassword) || recoveryPassword !== recoveryPasswordConfirm) return;
-    await updateAccountPassword(recoveryPassword);
-    setRecoveryMode(false);
-    setRecoveryPassword('');
-    setRecoveryPasswordConfirm('');
-    setMessage('Password berhasil diperbarui. Silakan login ulang.');
-    setMessageTone('success');
+    try {
+      await updateAccountPassword(recoveryPassword);
+      setRecoveryMode(false);
+      setRecoveryPassword('');
+      setRecoveryPasswordConfirm('');
+      setMessage('Password berhasil diperbarui. Silakan login ulang.');
+      setMessageTone('success');
+    } catch (error) {
+      setMessage(normalizeAuthError(error, 'Perbarui password gagal'));
+      setMessageTone('error');
+    }
   };
 
   const syncNow = async (
@@ -221,7 +226,8 @@ export function createSessionActions(deps: SessionActionsDeps) {
             if (pendingCover.previousStoragePath && pendingCover.previousStoragePath !== uploadedCover.coverStoragePath) {
               await deleteStoredComicCover(pendingCover.previousStoragePath);
             }
-          } catch {
+          } catch (error) {
+            console.error('Failed to sync cover:', error);
             remainingCovers.push(pendingCover);
           }
         }

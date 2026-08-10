@@ -22,7 +22,7 @@ import type { AppView } from './routes';
 import { cloudConfigMissing } from '../lib/api/supabaseClient';
 import type { SyncState } from '../lib/types/shared';
 import { MAX_COMIC_RATING } from '../lib/constants/limits';
-import { toDebugMessage } from '../lib/utils/errors';
+import { toDebugMessage, toErrorMessage } from '../lib/utils/errors';
 import { normalizeComparableText } from '../lib/utils/text';
 import { AppSidebar } from '../components/layout';
 import { NotificationToast } from '../components/common';
@@ -208,7 +208,7 @@ export default function App() {
         setDebugError('');
       })
       .catch((error) => {
-        setMessage(`Gagal memuat data cloud: ${String(error)}`);
+        setMessage(`Gagal memuat data cloud: ${toErrorMessage(error)}`);
         setDebugError(toDebugMessage(error));
         setSyncState('gagal');
       });

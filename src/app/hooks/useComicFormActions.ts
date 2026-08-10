@@ -201,10 +201,38 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
         setSelectedComicId(createdComicId);
         setActiveComicId(createdComicId);
       } else if (formMode === 'edit' && selectedComicId) {
-        await updateComic(selectedComicId, { ...payload, coverUrl: payload.coverUrl || undefined });
+        // Check for duplicate sources in other comics during edit
         const persistedSources = sources.filter((source) => source.comic_id === selectedComicId);
         const persistedSourceIds = new Set(persistedSources.map((source) => source.id));
         const submittedSourceIds = new Set(sourceLinks.map((sourceLink) => sourceLink.id).filter(Boolean));
+        const newSourceUrls = sourceLinks
+          .filter((link) => !persistedSourceIds.has(link.id) && link.url)
+          .map((link) => normalizeSourceUrl(link.url))
+          .filter(Boolean);
+
+        if (newSourceUrls.length > 0) {
+          const duplicateComic = comics.find((comic) => {
+            if (comic.id === selectedComicId) return false;
+            const urls = [
+              comic.source_url,
+              ...sources.filter((source) => source.comic_id === comic.id).map((source) => source.url),
+            ]
+              .map((url) => normalizeSourceUrl(url ?? ''))
+              .filter(Boolean);
+            return urls.some((url) => newSourceUrls.includes(url));
+          });
+          if (duplicateComic) {
+            setComicPanelNotice(
+              tr(
+                `Sumber ini sudah terhubung ke "${duplicateComic.title}". Hapus dari komik lain atau gunakan sumber berbeda.`,
+                `This source is already linked to "${duplicateComic.title}". Remove it from the other comic or use a different source.`,
+              ),
+            );
+            return;
+          }
+        }
+
+        await updateComic(selectedComicId, { ...payload, coverUrl: payload.coverUrl || undefined });
         for (const sourceLink of sourceLinks) {
           if (persistedSourceIds.has(sourceLink.id)) {
             await updateComicSource(sourceLink.id, {
@@ -236,7 +264,6 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
       setMessageTone('success');
       setMessage(formMode === 'create' ? tr('Komik berhasil ditambahkan.', 'Comic added successfully.') : tr('Perubahan komik berhasil disimpan.', 'Comic changes saved successfully.'));
       setComicPanelNotice('');
-      setOpenPanel(null);
       setFormMode(null);
       const synced = await syncNow(false, { suppressSuccessMessage: true, suppressErrorMessage: true });
       if (!synced) {
@@ -248,6 +275,7 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
           ),
         );
       }
+      setOpenPanel(null);
     } catch (error) {
       const message = toErrorMessage(error);
       setComicPanelNotice(`${tr('Gagal menyimpan komik:', 'Failed to save comic:')} ${message}`);

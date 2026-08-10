@@ -47,7 +47,8 @@ export function useSessionState({ setMessage, setMessageTone, setDebugError }: S
           setDebugError('');
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Failed to load session:', error);
         if (active) {
           setMessage('Wajib login untuk masuk.');
           setMessageTone('warning');

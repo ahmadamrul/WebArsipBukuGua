@@ -3,6 +3,7 @@ import { addComicSource, updateComicSource } from '../../features/sources';
 import type { ComicLabel, LibraryLabel } from '../../features/labels';
 import type { LabelFormState } from '../../features/labels';
 import type { SourceEditFormState, SourceFormState } from '../../features/sources';
+import { toDebugMessage, toErrorMessage } from '../../lib/utils/errors';
 
 type SetState<T> = (value: T | ((current: T) => T)) => void;
 
@@ -60,8 +61,8 @@ export function createLibraryActions(deps: LibraryActionsDeps) {
       setSourceForm({ comicId: '', label: '', url: '' });
       await syncNow();
     } catch (error) {
-      setMessage(`Simpan sumber gagal: ${String(error)}`);
-      setDebugError(String(error));
+      setMessage(`Simpan sumber gagal: ${toErrorMessage(error)}`);
+      setDebugError(toDebugMessage(error));
     }
   };
 
@@ -81,8 +82,8 @@ export function createLibraryActions(deps: LibraryActionsDeps) {
       setSourceEditForm({ id: '', comicId: '', label: '', url: '' });
       await syncNow();
     } catch (error) {
-      setMessage(`Edit sumber gagal: ${String(error)}`);
-      setDebugError(String(error));
+      setMessage(`Edit sumber gagal: ${toErrorMessage(error)}`);
+      setDebugError(toDebugMessage(error));
     }
   };
 

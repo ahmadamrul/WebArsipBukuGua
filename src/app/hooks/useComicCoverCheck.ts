@@ -204,7 +204,8 @@ export function useComicCoverCheck({
                 return { ...current, history: metadata.description ?? '' };
               });
             }
-          } catch {
+          } catch (error) {
+            console.error('Failed to detect metadata for URL:', sourceLink.url, error);
             continue;
           }
         }

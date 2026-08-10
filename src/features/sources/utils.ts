@@ -11,8 +11,41 @@ export function normalizeSourceUrl(value: string) {
   try {
     const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
     parsed.hash = '';
-    parsed.hostname = parsed.hostname.toLowerCase();
+    parsed.hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
     parsed.pathname = parsed.pathname.length > 1 ? parsed.pathname.replace(/\/+$/, '') : parsed.pathname;
+
+    // Remove tracking and marketing parameters while preserving content-related ones
+    const trackingParams = new Set([
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_content',
+      'utm_term',
+      'fbclid',
+      'gclid',
+      'msclkid',
+      'ttclid',
+      'ref',
+      'referrer',
+      'source',
+    ]);
+
+    const params = new URLSearchParams(parsed.search);
+    const filtered = new Map<string, string>();
+    params.forEach((value, key) => {
+      if (!trackingParams.has(key.toLowerCase())) {
+        filtered.set(key.toLowerCase(), value);
+      }
+    });
+
+    // Rebuild search string with sorted keys for consistency
+    if (filtered.size > 0) {
+      const sorted = Array.from(filtered.entries()).sort(([a], [b]) => a.localeCompare(b));
+      parsed.search = new URLSearchParams(sorted).toString();
+    } else {
+      parsed.search = '';
+    }
+
     return parsed.toString().replace(/\/$/, '').toLowerCase();
   } catch {
     return trimmed.replace(/\/+$/, '').toLowerCase();
