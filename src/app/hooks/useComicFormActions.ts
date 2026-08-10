@@ -88,7 +88,7 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
     setOpenPanel('comic');
   };
 
-  const handleEditComic = (target: Comic) => {
+  const handleEditComic = async (target: Comic) => {
     const targetLabelIds = comicLabels.filter((link) => link.comic_id === target.id).map((link) => link.label_id);
     const selectedIdsForKind = (kind: 'tag' | 'genre' | 'collection', legacyValue = '') => {
       const linkedIds = targetLabelIds.filter((labelId) => labels.some((label) => label.id === labelId && label.kind === kind));
@@ -107,6 +107,8 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
       history: target.history ?? '',
       readingStatus: validReadingStatus(target.reading_status),
     });
+
+    // Use sources from state, ensuring we have all sources for the comic
     const relatedSources = sources.filter((source) => source.comic_id === target.id);
     setComicSourceLinks(
       relatedSources.length > 0
