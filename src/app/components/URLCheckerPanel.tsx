@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 export interface URLCheckResult {
   comicId: string;
   comicTitle: string;
+  sourceName: string;
   currentUrl: string;
   isAlive: boolean;
   error?: string;
@@ -149,6 +150,7 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                           />
                           <div style={styles.itemContent}>
                             <strong>{result.comicTitle}</strong>
+                            <small style={styles.sourceName}>📍 {result.sourceName}</small>
                             <small style={styles.error}>{result.error || 'URL tidak dapat diakses'}</small>
                           </div>
                         </label>
@@ -286,9 +288,17 @@ const styles = {
     gap: '2px',
     flex: 1,
   },
+  sourceName: {
+    color: '#0288d1',
+    fontSize: '11px',
+    display: 'block',
+    marginTop: '2px',
+  },
   error: {
     color: '#d32f2f',
     fontSize: '12px',
+    display: 'block',
+    marginTop: '2px',
   },
   urlSection: {
     display: 'flex',

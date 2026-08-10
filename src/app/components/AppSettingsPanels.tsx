@@ -189,6 +189,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
         results.push({
           comicId: comic.id,
           comicTitle: comic.title,
+          sourceName: comic.source_name || 'Unknown',
           currentUrl: comic.cover_url,
           isAlive: response.ok,
           error: !response.ok ? `HTTP ${response.status}` : undefined,
@@ -197,6 +198,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
         results.push({
           comicId: comic.id,
           comicTitle: comic.title,
+          sourceName: comic.source_name || 'Unknown',
           currentUrl: comic.cover_url,
           isAlive: false,
           error: toErrorMessage(err),
