@@ -59,26 +59,23 @@ export async function uploadCoverToStorage(
   if (!coverUrl) return null;
 
   try {
-    const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cover-proxy?coverUrl=${encodeURIComponent(coverUrl)}`;
-    const response = await fetch(proxyUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-      },
+    const { data: proxyData, error: invokeError } = await supabase.functions.invoke('cover-proxy', {
+      body: { coverUrl },
     });
-    if (!response.ok) throw new Error(`Failed to fetch cover: ${response.statusText}`);
+    if (invokeError) throw invokeError;
+    if (!proxyData) throw new Error('Cover proxy returned no data');
 
-    const blob = await response.blob();
+    const blob = proxyData instanceof Blob ? proxyData : new Blob([proxyData]);
     const compressedBlob = await compressImageToWebp(blob);
 
     const fileName = `${comicId}.webp`;
     const path = `covers/${fileName}`;
 
-    const { data, error } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('comic-covers')
       .upload(path, compressedBlob, { upsert: true, contentType: 'image/webp' });
 
-    if (error) throw error;
+    if (uploadError) throw uploadError;
 
     const { data: publicUrlData } = supabase.storage
       .from('comic-covers')
