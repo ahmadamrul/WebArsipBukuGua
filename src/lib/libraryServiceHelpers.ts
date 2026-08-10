@@ -95,14 +95,23 @@ export function cleanDescription(value: string | null | undefined) {
 }
 
 export function detectPageDescription(html: string, document: Document) {
-  const markdownSynopsis = html.match(
+  // Strict form: heading on its own line, followed by a blank line, then the body.
+  const strictMarkdownSynopsis = html.match(
     /(?:^|\n)(?:#{1,4}\s*)?(?:Sinopsis(?:\s+Lengkap)?|Synopsis|Description|Deskripsi)\s*:?\s*\n+([\s\S]{20,3000}?)(?=\n#{1,4}\s|\n(?:Chapter|Daftar\s+Chapter)\b|$)/i,
+  )?.[1];
+  // Looser form: heading and body share a line (common in reader-proxy Markdown
+  // output that doesn't insert a line break after the label), e.g.
+  // "Sinopsis Demon and Angel run a bakery together..." or "Synopsis: ...".
+  const looseMarkdownSynopsis = html.match(
+    /(?:Sinopsis(?:\s+Lengkap)?|Synopsis|Description|Deskripsi)\s*:?\s+([^\n]{20,1000})/i,
   )?.[1];
   const candidates = [
     document.querySelector('.rk-shell .line-clamp-3')?.textContent,
     document.querySelector('.rk-shell p.line-clamp-3')?.textContent,
     document.querySelector('.rk-shell [class*="line-clamp"]')?.textContent,
     document.querySelector('.sinopsis-content')?.textContent,
+    document.querySelector('.komik_info-description-sinopsis p')?.textContent,
+    document.querySelector('.komik_info-description-sinopsis')?.textContent,
     document.querySelector('.entry-content p')?.textContent,
     document.querySelector('.entry-content')?.textContent,
     document.querySelector('.manga-info .desc')?.textContent,
@@ -119,7 +128,8 @@ export function detectPageDescription(html: string, document: Document) {
     document.querySelector('.synopsis')?.textContent,
     document.querySelector('.summary__content')?.textContent,
     document.querySelector('.description')?.textContent,
-    markdownSynopsis,
+    strictMarkdownSynopsis,
+    looseMarkdownSynopsis,
   ];
   return candidates.map(cleanDescription).find(Boolean) ?? null;
 }

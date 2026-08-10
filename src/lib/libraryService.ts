@@ -1030,6 +1030,18 @@ function detectDomainSpecificGenres(hostname: string, html: string, document: Do
       ...Array.from(html.matchAll(/genre[^>]*>([^<]+)</gi), (match) => match[1]),
     ]);
   }
+  if (hostname.includes('komikcast')) {
+    return filterMeaningfulGenres([
+      ...[
+        ...document.querySelectorAll(
+          '.komik_info-content-genre a, .genre-info a, a[href*="/genres/"], a[href*="/genre/"], .genxed a, .infox .genre a',
+        ),
+      ].map((node) => node.textContent),
+      ...Array.from(html.matchAll(/<a[^>]+href=["'][^"']*\/genres?\/[^"']+["'][^>]*>([^<]+)<\/a>/gi), (match) => match[1]),
+      ...Array.from(html.matchAll(/<span[^>]*class="[^"]*genre[^"]*"[^>]*>([^<]+)<\/span>/gi), (match) => match[1]),
+      ...extractKnownGenresFromText(html),
+    ]);
+  }
   if (hostname.includes('shinigami.asia')) {
     return filterMeaningfulGenres([
       ...[...document.querySelectorAll('a[href*="genre"], span.genre, .genres a, .tags a')].map(
@@ -1940,7 +1952,13 @@ export async function detectMetadata(url: string): Promise<DetectedMetadata> {
     ]);
     const markdownGenres = collectMarkdownGenreCandidates(html);
     const genericGenres = collectGenericGenreLinkCandidates(document, html);
-    const mergedGenres = rankGenresByEvidence([domainGenres, metaGenres, markdownGenres, genericGenres]);
+    // Last resort: some sources (e.g. pages only reachable through the reader
+    // proxy, which returns Markdown text with no real <a>/<meta> elements)
+    // never match any of the structured extractors above even though the
+    // genre names are plainly present in the text. Scan the whole page text
+    // against the known genre vocabulary as a final fallback.
+    const wholeTextGenres = filterMeaningfulGenres(extractKnownGenresFromText(html));
+    const mergedGenres = rankGenresByEvidence([domainGenres, metaGenres, markdownGenres, genericGenres, wholeTextGenres]);
     // Merge every successful strategy while keeping the domain API result first.
     const coverUrl = pickBestCoverFromCandidates([komiktapEmbedCover, domainCover, ...coverCandidates].filter(Boolean) as string[]);
     const finalCoverCandidates = hostname.includes('mangaplus.shueisha.co.jp')
