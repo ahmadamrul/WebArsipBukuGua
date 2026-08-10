@@ -1,4 +1,5 @@
 import { normalizeComparableText } from '../../lib/utils/text';
+import { normalizeSourceName } from '../../lib/libraryServiceHelpers';
 import type { ComicSourceLink } from './types';
 
 export function createSourceLink(label = '', url = ''): ComicSourceLink {
@@ -56,11 +57,7 @@ export function sourceLabelFromUrl(value: string) {
   if (!value.trim()) return '';
   try {
     const parsed = new URL(value.startsWith('http') ? value : `https://${value}`);
-    const hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
-    if (hostname.includes('shinigami.asia')) return 'Shinigami';
-    const firstLabel = hostname.split('.')[0] ?? '';
-    if (/^\d+$/.test(firstLabel) && hostname.includes('shinigami')) return 'Shinigami';
-    return firstLabel;
+    return normalizeSourceName(parsed.hostname);
   } catch {
     return '';
   }
