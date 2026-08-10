@@ -37,10 +37,28 @@ export function legacyProgressFields() {
   };
 }
 
+const GENERIC_SUBDOMAIN_TOKENS = new Set([
+  'www', 'cdn', 'img', 'image', 'images', 'static', 'assets', 'api', 'm', 'mobile', 'app', 'web', 'read', 'reader',
+]);
+
 export function normalizeSourceName(hostname: string) {
   if (hostname.includes('shinigami.asia')) return 'Shinigami';
-  const base = hostname.replace(/^www\./, '').split('.')[0] || 'Sumber';
-  return base[0].toUpperCase() + base.slice(1);
+
+  const parts = hostname.replace(/^www\./, '').toLowerCase().split('.').filter(Boolean);
+  const isVersionToken = (token: string) => /^v?\d+$/i.test(token);
+
+  // Pick the most meaningful label: skip the TLD (last part), generic
+  // infra subdomains (cdn, api, ...), and version-style subdomains
+  // (v1, v2, v3, or bare numbers like the "11" in 11.shinigami.asia)
+  // so mirrors like "v3.komikcast.fit" resolve to "Komikcast", not "V3".
+  const candidate = parts.find(
+    (token, index) => index < parts.length - 1 && !GENERIC_SUBDOMAIN_TOKENS.has(token) && !isVersionToken(token),
+  );
+
+  // Strip a trailing numeric mirror suffix (komikcast02 -> komikcast) so
+  // different mirrors of the same site normalize to the same source name.
+  const base = (candidate ?? parts[0] ?? 'Sumber').replace(/\d+$/, '') || candidate || 'Sumber';
+  return base.charAt(0).toUpperCase() + base.slice(1);
 }
 
 export function isChallengePage(html: string) {
