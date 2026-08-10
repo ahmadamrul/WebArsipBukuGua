@@ -3554,7 +3554,7 @@ input[type='file']::file-selector-button {
 .import-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
+  gap: 14px;
 }
 
 .import-option {
@@ -3563,8 +3563,8 @@ input[type='file']::file-selector-button {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
+  gap: 14px;
+  padding: 16px;
   border-radius: 14px;
   background: linear-gradient(145deg, rgba(248, 252, 255, 0.98), rgba(238, 246, 255, 0.9));
   border: 1px solid rgba(80, 142, 205, 0.14);
@@ -3631,7 +3631,7 @@ input[type='file']::file-selector-button {
 .import-copy {
   min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 8px;
 }
 
 .import-copy strong,
