@@ -1741,7 +1741,7 @@ export async function importLibraryJson(jsonText: string) {
       comic.source_url,
       ...sources.filter((s) => s.comic_id === comic.id).map((s) => s.url),
     ]
-      .filter(Boolean)
+      .filter((url): url is string => Boolean(url))
       .map((url) => normalizeSourceUrl(url))
       .filter(Boolean);
     return !comicUrls.some((url) => normalizedExistingUrls.has(url));

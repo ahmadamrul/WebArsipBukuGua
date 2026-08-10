@@ -66,6 +66,23 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     handleProfileSave,
   } = props;
 
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+    // TODO: Implement import handler
+    console.log('Importing file:', file.name);
+  };
+
+  const handleExportJson = () => {
+    // TODO: Implement JSON export handler
+    console.log('Exporting JSON');
+  };
+
+  const handleExportBundle = () => {
+    // TODO: Implement bundle export handler
+    console.log('Exporting bundle');
+  };
+
   const syncLabel: Record<SyncState, string> = {
     'belum-login': tr('Belum login', 'Not logged in'),
     'siap-sync': tr('Siap sinkron', 'Ready to sync'),
@@ -213,9 +230,9 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
                   <strong>{tr('Impor', 'Import')}</strong>
                   <small>{tr('JSON, ZIP, Kotatsu', 'JSON, ZIP, Kotatsu')}</small>
                 </div>
-                <input type="file" accept=".json,.zip,.bk.zip" style={{ display: 'none' }} />
+                <input type="file" accept=".json,.zip,.bk.zip" onChange={handleFileImport} style={{ display: 'none' }} />
               </label>
-              <button type="button" className="import-option import-option-json">
+              <button type="button" className="import-option import-option-json" onClick={handleExportJson}>
                 <div className="import-icon">
                   <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="#276451" opacity="0.1" stroke="#276451" strokeWidth="1.5"/>
@@ -227,7 +244,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
                   <small>{tr('Data terstruktur', 'Structured data')}</small>
                 </div>
               </button>
-              <button type="button" className="import-option">
+              <button type="button" className="import-option" onClick={handleExportBundle}>
                 <div className="import-icon">
                   <svg width="39" height="39" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M3 6h18v12c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6z" fill="#C97C1C" opacity="0.1" stroke="#C97C1C" strokeWidth="1.5"/>
