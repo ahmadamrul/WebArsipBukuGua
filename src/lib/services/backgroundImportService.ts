@@ -74,7 +74,9 @@ export function subscribeToImportProgress(callback: ImportProgressCallback) {
 }
 
 function notifyProgress() {
-  progressCallbacks.forEach((cb) => cb(currentProgress));
+  // Create new object reference so React detects the change
+  const progress = { ...currentProgress };
+  progressCallbacks.forEach((cb) => cb(progress));
 }
 
 export async function startBackgroundImport(comics: ImportedKotatsuComic[]) {
