@@ -191,6 +191,8 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
           comicTitle: comic.title,
           sourceName: comic.source_name || 'Unknown',
           currentUrl: comic.cover_url,
+          coverUrl: comic.cover_url,
+          genre: comic.genre,
           isAlive: response.ok,
           error: !response.ok ? `HTTP ${response.status}` : undefined,
         });
@@ -200,6 +202,8 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
           comicTitle: comic.title,
           sourceName: comic.source_name || 'Unknown',
           currentUrl: comic.cover_url,
+          coverUrl: comic.cover_url,
+          genre: comic.genre,
           isAlive: false,
           error: toErrorMessage(err),
         });

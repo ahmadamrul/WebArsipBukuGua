@@ -5,6 +5,8 @@ export interface URLCheckResult {
   comicTitle: string;
   sourceName: string;
   currentUrl: string;
+  coverUrl?: string;
+  genre?: string;
   isAlive: boolean;
   error?: string;
 }
@@ -77,11 +79,30 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
         }
       }
 
-      // Show result
-      alert(tr(
-        `Berhasil: ${succeeded}, Gagal: ${failed}`,
-        `Succeeded: ${succeeded}, Failed: ${failed}`
-      ));
+      // Show toast notification
+      const message = failed === 0
+        ? tr(`✅ ${succeeded} URL berhasil diganti!`, `✅ ${succeeded} URLs replaced successfully!`)
+        : tr(`✅ ${succeeded} berhasil, ❌ ${failed} gagal`, `✅ ${succeeded} succeeded, ❌ ${failed} failed`);
+
+      // Create simple toast
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: ${failed === 0 ? '#4caf50' : '#ff9800'};
+        color: white;
+        padding: 16px 24px;
+        borderRadius: 8px;
+        boxShadow: 0 4px 12px rgba(0,0,0,0.2);
+        zIndex: 10000;
+        animation: slideIn 0.3s ease-out;
+        fontWeight: 500;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.remove(), 3000);
 
       // Refresh check
       await handleCheck();
@@ -141,19 +162,30 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                     .filter((r) => !r.isAlive)
                     .map((result) => (
                       <div key={result.comicId} style={styles.item}>
-                        <label style={styles.itemLabel}>
+                        <div style={styles.itemRow}>
                           <input
                             type="checkbox"
                             checked={selectedIds.has(result.comicId)}
                             onChange={() => handleToggleSelect(result.comicId)}
                             style={styles.checkbox}
                           />
+                          {result.coverUrl && (
+                            <img
+                              src={result.coverUrl}
+                              alt={result.comicTitle}
+                              style={styles.coverThumb}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          )}
                           <div style={styles.itemContent}>
                             <strong>{result.comicTitle}</strong>
                             <small style={styles.sourceName}>📍 {result.sourceName}</small>
-                            <small style={styles.error}>{result.error || 'URL tidak dapat diakses'}</small>
+                            {result.genre && <small style={styles.genre}>🏷️ {result.genre}</small>}
+                            <small style={styles.error}>{result.error || '❌ URL tidak dapat diakses'}</small>
                           </div>
-                        </label>
+                        </div>
                         <div style={styles.urlSection}>
                           <small style={styles.oldUrlLabel}>
                             {tr('URL yang gagal:', 'Failed URL:')}
@@ -271,34 +303,50 @@ const styles = {
     borderRadius: '8px',
     borderLeft: '3px solid #ff9800',
   },
-  itemLabel: {
+  itemRow: {
     display: 'flex',
     alignItems: 'flex-start',
     gap: '12px',
     marginBottom: '8px',
-    cursor: 'pointer',
   },
   checkbox: {
     marginTop: '2px',
     cursor: 'pointer',
+    flex: 0,
+  },
+  coverThumb: {
+    width: '50px',
+    height: '70px',
+    objectFit: 'cover' as const,
+    borderRadius: '4px',
+    flex: 0,
+    border: '1px solid #ddd',
   },
   itemContent: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '2px',
+    gap: '3px',
     flex: 1,
   },
   sourceName: {
     color: '#0288d1',
     fontSize: '11px',
     display: 'block',
-    marginTop: '2px',
+  },
+  genre: {
+    color: '#666',
+    fontSize: '11px',
+    display: 'block',
+    maxWidth: '200px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap' as const,
   },
   error: {
     color: '#d32f2f',
     fontSize: '12px',
     display: 'block',
-    marginTop: '2px',
+    fontWeight: '500',
   },
   urlSection: {
     display: 'flex',
