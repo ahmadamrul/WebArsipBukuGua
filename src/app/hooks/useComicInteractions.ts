@@ -17,7 +17,7 @@ export type ComicInteractionsDeps = {
   setDebugError: SetState<string>;
   setChapterUpdatingComicId: SetState<string>;
   setChapterDrafts: SetState<Record<string, string>>;
-  syncNow: (force?: boolean) => Promise<void> | void;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
   tr: Translate;
 };
 

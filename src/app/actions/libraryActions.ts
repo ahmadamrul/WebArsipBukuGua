@@ -21,7 +21,7 @@ export type LibraryActionsDeps = {
   setMessage: SetState<string>;
   setDebugError: SetState<string>;
   requestConfirm: (title: string, message: string, confirmLabel?: string, cancelLabel?: string) => Promise<boolean>;
-  syncNow: (force?: boolean) => Promise<void> | void;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
 };
 
 export function createLibraryActions(deps: LibraryActionsDeps) {

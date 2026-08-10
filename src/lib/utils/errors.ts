@@ -5,7 +5,12 @@ export function toErrorMessage(error: unknown) {
     const message = (error as { message?: unknown }).message;
     if (typeof message === 'string') return message;
   }
-  return JSON.stringify(error);
+  try {
+    const serialized = JSON.stringify(error);
+    return serialized && serialized !== '{}' ? serialized : String(error);
+  } catch {
+    return String(error);
+  }
 }
 
 export function toDebugMessage(error: unknown) {

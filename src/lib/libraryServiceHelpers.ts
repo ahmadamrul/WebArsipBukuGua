@@ -69,7 +69,7 @@ export function cleanDescription(value: string | null | undefined) {
   if (!value) return null;
   const parsed = new DOMParser().parseFromString(value, 'text/html');
   const text = (parsed.body.textContent || value)
-    .replace(/^\s*(?:sinopsis|synopsis|description|deskripsi)\s*:?\s*/i, '')
+    .replace(/^\s*(?:sinopsis(?:\s+lengkap)?|synopsis|description|deskripsi)\s*:?\s*/i, '')
     .replace(/\s+/g, ' ')
     .trim();
   if (text.length < 20) return null;
@@ -78,9 +78,18 @@ export function cleanDescription(value: string | null | undefined) {
 
 export function detectPageDescription(html: string, document: Document) {
   const markdownSynopsis = html.match(
-    /(?:^|\n)(?:#{1,4}\s*)?(?:Sinopsis|Synopsis|Description|Deskripsi)\s*:?\s*\n+([\s\S]{20,3000}?)(?=\n#{1,4}\s|\n(?:Chapter|Daftar\s+Chapter)\b|$)/i,
+    /(?:^|\n)(?:#{1,4}\s*)?(?:Sinopsis(?:\s+Lengkap)?|Synopsis|Description|Deskripsi)\s*:?\s*\n+([\s\S]{20,3000}?)(?=\n#{1,4}\s|\n(?:Chapter|Daftar\s+Chapter)\b|$)/i,
   )?.[1];
   const candidates = [
+    document.querySelector('.rk-shell .line-clamp-3')?.textContent,
+    document.querySelector('.rk-shell p.line-clamp-3')?.textContent,
+    document.querySelector('.rk-shell [class*="line-clamp"]')?.textContent,
+    document.querySelector('.sinopsis-content')?.textContent,
+    document.querySelector('.entry-content p')?.textContent,
+    document.querySelector('.entry-content')?.textContent,
+    document.querySelector('.manga-info .desc')?.textContent,
+    document.querySelector('.manga-info .summary')?.textContent,
+    document.querySelector('.infox .summary')?.textContent,
     document.querySelector('meta[property="og:description"]')?.getAttribute('content'),
     document.querySelector('meta[name="description"]')?.getAttribute('content'),
     document.querySelector('meta[name="twitter:description"]')?.getAttribute('content'),
@@ -117,6 +126,9 @@ export function scoreCoverCandidate(url: string) {
   if (lower.includes('webtoon-phinf') || lower.includes('pstatic.net')) score += 30;
   if (lower.includes('/uploads/') || lower.includes('/images/')) score += 18;
   if (lower.includes('thumb') || lower.includes('thumb_')) score += 12;
+  if (/\b(?:fav|favicon|apple-touch-icon|icon|logo|brand|badge|sprite|avatar|profile|avatar)\b/.test(lower))
+    score -= 120;
+  if (/(?:^|[\/_.-])(?:logo|icon|fav|favicon)(?:[\/_.-]|$)/.test(lower)) score -= 80;
   if (
     lower.includes('logo') ||
     lower.includes('sprite') ||
@@ -126,6 +138,8 @@ export function scoreCoverCandidate(url: string) {
     score -= 80;
   if (lower.includes('avatar') || lower.includes('profile')) score -= 30;
   if (lower.includes('1x1') || lower.includes('spacer')) score -= 100;
+  if (/[\?&](?:w|width|h|height)=?(?:16|24|32|48|50|64|80|96|100|120)(?:&|$)/.test(lower)) score -= 50;
+  if (/\b(?:16x16|32x32|48x48|64x64|96x96)\b/.test(lower)) score -= 120;
   return score;
 }
 

@@ -1,7 +1,14 @@
 import { addComic, updateComic, queueCoverSync, type Comic, type ComicFormState } from '../../features/comics';
 import { addComicLabel, removeComicLabel, type ComicLabel, type LibraryLabel } from '../../features/labels';
 import { validReadingStatus } from '../../features/reading-progress';
-import { addComicSource, normalizeSourceUrl, updateComicSource, type ComicSource, type ComicSourceLink } from '../../features/sources';
+import {
+  addComicSource,
+  deleteComicSource,
+  normalizeSourceUrl,
+  updateComicSource,
+  type ComicSource,
+  type ComicSourceLink,
+} from '../../features/sources';
 import { toDebugMessage, toErrorMessage } from '../../lib/utils/errors';
 
 type SetState<T> = (value: T | ((current: T) => T)) => void;
@@ -33,7 +40,7 @@ export type ComicFormActionsDeps = {
   setMessageTone: SetState<'success' | 'error' | 'info' | 'warning'>;
   setDebugError: SetState<string>;
   requestConfirm: (title: string, message: string, confirmLabel?: string, cancelLabel?: string) => Promise<boolean>;
-  syncNow: (force?: boolean) => Promise<void> | void;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
   tr: (indonesian: string, english: string) => string;
 };
 
@@ -198,8 +205,11 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
         setSelectedComicId(createdComicId);
         setActiveComicId(createdComicId);
       } else if (formMode === 'edit' && selectedComicId) {
+        const previousComic = comics.find((comic) => comic.id === selectedComicId) ?? null;
         await updateComic(selectedComicId, { ...payload, coverUrl: payload.coverUrl || undefined });
-        const persistedSourceIds = new Set(sources.filter((source) => source.comic_id === selectedComicId).map((source) => source.id));
+        const persistedSources = sources.filter((source) => source.comic_id === selectedComicId);
+        const persistedSourceIds = new Set(persistedSources.map((source) => source.id));
+        const submittedSourceIds = new Set(sourceLinks.map((sourceLink) => sourceLink.id).filter(Boolean));
         for (const sourceLink of sourceLinks) {
           if (persistedSourceIds.has(sourceLink.id)) {
             await updateComicSource(sourceLink.id, {
@@ -213,6 +223,18 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
               url: sourceLink.url,
             });
           }
+        }
+        for (const source of persistedSources) {
+          if (!submittedSourceIds.has(source.id)) {
+            await deleteComicSource(source.id);
+          }
+        }
+        if (payload.coverUrl) {
+          queueCoverSync({
+            comicId: selectedComicId,
+            coverUrl: payload.coverUrl,
+            previousStoragePath: previousComic?.cover_storage_path ?? '',
+          });
         }
         const currentLabelIds = new Set(comicLabels.filter((link) => link.comic_id === selectedComicId).map((link) => link.label_id));
         for (const labelId of selectedLabelIds) {
@@ -228,7 +250,16 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
       setComicPanelNotice('');
       setOpenPanel(null);
       setFormMode(null);
-      await syncNow();
+      const synced = await syncNow(false, { suppressSuccessMessage: true, suppressErrorMessage: true });
+      if (!synced) {
+        setMessageTone('warning');
+        setMessage(
+          tr(
+            'Komik tersimpan lokal, tetapi sinkronisasi cloud gagal. Coba sinkronisasi lagi dari sidebar.',
+            'The comic was saved locally, but cloud sync failed. Try syncing again from the sidebar.',
+          ),
+        );
+      }
     } catch (error) {
       const message = toErrorMessage(error);
       setComicPanelNotice(`${tr('Gagal menyimpan komik:', 'Failed to save comic:')} ${message}`);

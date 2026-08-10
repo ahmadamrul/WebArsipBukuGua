@@ -22,7 +22,7 @@ export type ActiveComicViewDeps = {
   setActiveMenu: SetState<AppView>;
   setDetailTab: SetState<'info' | 'source' | 'history' | 'label'>;
   setDescriptionLoadingComicId: SetState<string>;
-  syncNow: (force?: boolean) => Promise<void> | void;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
 };
 
 export function useActiveComicView({

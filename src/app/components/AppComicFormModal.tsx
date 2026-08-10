@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { createSourceLink } from '../../features/sources';
 import { READING_STATUSES, readingStatusLabel, type ReadingStatus } from '../../features/reading-progress';
 import type { ComicFormState } from '../../features/comics';
@@ -32,6 +33,7 @@ type AppComicFormModalProps = {
     genres: string[];
     sourceSizeLabel: string | null;
     optimizedSizeLabel: string | null;
+    sourceResults: Array<{ url: string; title: string; coverFound: boolean; descriptionFound: boolean; genresFound: number }>;
   };
   comicPanelNotice: string;
   labels: LibraryLabel[];
@@ -89,6 +91,7 @@ export function AppComicFormModal({
 }: AppComicFormModalProps) {
   if (!formMode) return null;
 
+  const [showSourceStatusPanel, setShowSourceStatusPanel] = useState(false);
   const genreLabels = labels.filter((label) => label.kind === 'genre');
   const selectedCoverUrl = comicForm.coverUrl.trim();
 
@@ -272,15 +275,23 @@ export function AppComicFormModal({
                 </select>
               </label>
             </div>
-            <div className="inline-actions comic-cover-actions">
-              <button type="button" className="secondary" onClick={checkCoverCandidates} disabled={coverCheckState.loading}>
-                {coverCheckState.loading ? tr('Mengecek cover...', 'Checking covers...') : tr('Cek cover', 'Check covers')}
-              </button>
+          <div className="inline-actions comic-cover-actions">
+            <button
+              type="button"
+              className="secondary"
+              onClick={async () => {
+                setShowSourceStatusPanel(true);
+                await checkCoverCandidates();
+              }}
+              disabled={coverCheckState.loading}
+            >
+              {coverCheckState.loading ? tr('Mengecek sumber...', 'Checking sources...') : tr('Cek sumber', 'Check sources')}
+            </button>
               {coverCheckState.coverCandidates.length > 0 ? (
                 <button
                   type="button"
                   className="ghost"
-                  onClick={() => setComicForm((current) => ({ ...current, coverUrl: coverCheckState.coverCandidates[0] }))}
+                  onClick={() => setComicForm((current) => ({ ...current, coverUrl: coverCheckState.coverUrl ?? coverCheckState.coverCandidates[0] }))}
                 >
                   {tr('Pakai cover terbaik', 'Use best cover')}
                 </button>
@@ -288,24 +299,33 @@ export function AppComicFormModal({
             </div>
           </section>
 
-          {(coverCheckState.loading || coverCheckState.coverCandidates.length > 0 || coverCheckState.genres.length > 0) ? (
+          {coverCheckState.loading || coverCheckState.coverCandidates.length > 0 || coverCheckState.genres.length > 0 ? (
             <section className="cover-check-panel" aria-live="polite">
               <div className="cover-check-head">
                 <div>
-                  <strong>{tr('Hasil cek cover', 'Cover check results')}</strong>
+                  <strong>{tr('Hasil cek sumber', 'Source check results')}</strong>
                   <span>
                     {[coverCheckState.title, coverCheckState.sourceName].filter(Boolean).join(' · ') ||
                       tr('Membaca data sumber...', 'Reading source data...')}
                   </span>
                 </div>
-                <small>
-                  {coverCheckState.loading
-                    ? tr('Mengecek...', 'Checking...')
-                    : tr(
-                        `${coverCheckState.coverCandidates.length} kandidat ditemukan`,
-                        `${coverCheckState.coverCandidates.length} candidates found`,
-                      )}
-                </small>
+                <div className="cover-check-head-actions">
+                  <small>
+                    {coverCheckState.loading
+                      ? tr('Mengecek...', 'Checking...')
+                      : tr(
+                          `${coverCheckState.coverCandidates.length} kandidat ditemukan`,
+                          `${coverCheckState.coverCandidates.length} candidates found`,
+                        )}
+                  </small>
+                  <button
+                    type="button"
+                    className="ghost cover-check-close"
+                    onClick={() => setShowSourceStatusPanel(false)}
+                  >
+                    {tr('Tutup', 'Close')}
+                  </button>
+                </div>
               </div>
               <div className="cover-check-layout">
                 <div className="cover-check-scroll">
@@ -346,6 +366,49 @@ export function AppComicFormModal({
                   <strong>{tr('Genre terdeteksi:', 'Detected genres:')}</strong> {coverCheckState.genres.join(' · ')}
                 </p>
               ) : null}
+            </section>
+          ) : null}
+
+          {showSourceStatusPanel && coverCheckState.sourceResults.length > 0 ? (
+            <section className="source-summary-float" aria-live="polite">
+              <div className="source-summary-float-head">
+                <div>
+                  <strong>{tr('Rangkuman sumber', 'Source summary')}</strong>
+                  <span>
+                    {coverCheckState.loading
+                      ? tr('Memperbarui detail...', 'Refreshing details...')
+                      : tr(
+                          `${coverCheckState.sourceResults.length} sumber diperiksa`,
+                          `${coverCheckState.sourceResults.length} sources checked`,
+                        )}
+                  </span>
+                </div>
+                <button type="button" className="ghost source-summary-float-close" onClick={() => setShowSourceStatusPanel(false)}>
+                  {tr('Tutup', 'Close')}
+                </button>
+              </div>
+              <div className="cover-source-results-list">
+                {coverCheckState.sourceResults.map((item, index) => (
+                  <article className="cover-source-result" key={`${item.url}-${index}`}>
+                    <div>
+                      <span>{tr(`Sumber ${index + 1}`, `Source ${index + 1}`)}</span>
+                      <strong>{item.title || item.url}</strong>
+                      <small>{item.url}</small>
+                    </div>
+                    <div className="cover-source-result-flags">
+                      <span className={item.coverFound ? 'badge tone-success' : 'badge tone-warning'}>
+                        {item.coverFound ? tr('Cover OK', 'Cover OK') : tr('Cover kosong', 'No cover')}
+                      </span>
+                      <span className={item.descriptionFound ? 'badge tone-success' : 'badge tone-warning'}>
+                        {item.descriptionFound ? tr('Catatan OK', 'Description OK') : tr('Catatan kosong', 'No description')}
+                      </span>
+                      <span className="badge">
+                        {item.genresFound} {tr('genre', 'genres')}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </section>
           ) : null}
 

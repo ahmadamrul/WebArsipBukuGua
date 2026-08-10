@@ -18,6 +18,7 @@ import {
   resolveUrl,
   scoreCoverCandidate,
 } from './libraryServiceHelpers';
+import { normalizeComparableText } from './utils/text';
 import type { Comic, LibraryLabel, PublicationItem, PublicationKind } from './types';
 import type {
   ComicInput,
@@ -200,6 +201,12 @@ function cleanDetectedTitle(value: string | null | undefined, hostname: string) 
   return title;
 }
 
+function pickBestCoverFromCandidates(candidates: string[]) {
+  return candidates
+    .slice()
+    .sort((left, right) => scoreCoverCandidate(right) - scoreCoverCandidate(left))[0] ?? null;
+}
+
 function extractMarkdownTitle(html: string) {
   return uniqueStrings([html.match(/^Title:\s*(.+)$/im)?.[1], html.match(/^#\s+(.+)$/m)?.[1]]);
 }
@@ -303,7 +310,14 @@ function collectAggressiveCandidates(html: string, document: Document, baseUrl: 
   ])
     .map((candidate) => resolveUrl(baseUrl, candidate))
     .filter(Boolean)
-    .sort((a, b) => scoreCoverCandidate(b!) - scoreCoverCandidate(a!)) as string[];
+    .sort((a, b) => scoreCoverCandidate(b!) - scoreCoverCandidate(a!))
+    .slice(0, 40) as string[];
+}
+
+function pickBestCoverCandidate(candidates: Array<string | null | undefined>) {
+  return candidates
+    .filter((candidate): candidate is string => Boolean(candidate))
+    .sort((a, b) => scoreCoverCandidate(b) - scoreCoverCandidate(a))[0] ?? null;
 }
 
 function collectSektedoujinPageCovers(html: string, document: Document, baseUrl: string) {
@@ -432,7 +446,7 @@ function detectDomainSpecificCover(
     const resolved = candidates
       .map((candidate) => resolveUrl(baseUrl, candidate))
       .filter(Boolean) as string[];
-    return resolved.sort((a, b) => scoreCoverCandidate(b) - scoreCoverCandidate(a)).find(Boolean) ?? null;
+    return pickBestCoverCandidate(resolved);
   }
   if (hostname.includes('komiktap.')) {
     const candidates = uniqueStrings([
@@ -446,7 +460,27 @@ function detectDomainSpecificCover(
         /wp-content\/uploads\/.+\.(?:jpe?g|png|webp)(?:\?|$)/i.test(candidate),
       ),
     ]);
-    return candidates.map((candidate) => resolveUrl(baseUrl, candidate)).find(Boolean) ?? null;
+    return pickBestCoverCandidate(candidates.map((candidate) => resolveUrl(baseUrl, candidate)));
+  }
+  if (hostname.includes('komikindo.')) {
+    const candidates = uniqueStrings([
+      document.querySelector('.entry-content img')?.getAttribute('src'),
+      document.querySelector('.entry-content img')?.getAttribute('data-src'),
+      document.querySelector('.chapter-content img')?.getAttribute('src'),
+      document.querySelector('.chapter-content img')?.getAttribute('data-src'),
+      document.querySelector('.manga-info img')?.getAttribute('src'),
+      document.querySelector('.manga-info img')?.getAttribute('data-src'),
+      document.querySelector('.thumb img')?.getAttribute('src'),
+      document.querySelector('.thumb img')?.getAttribute('data-src'),
+      document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+      document.querySelector('meta[property="og:image:secure_url"]')?.getAttribute('content'),
+      document.querySelector('meta[name="twitter:image"]')?.getAttribute('content'),
+      ...fallbackCandidates,
+    ]);
+    const resolved = candidates
+      .map((candidate) => resolveUrl(baseUrl, candidate))
+      .filter(Boolean) as string[];
+    return pickBestCoverCandidate(resolved);
   }
   if (hostname.includes('sektedoujin.')) {
     return collectSektedoujinPageCovers(html, document, baseUrl)[0] ?? null;
@@ -468,7 +502,7 @@ function detectDomainSpecificCover(
     const resolved = candidates
       .map((candidate) => resolveUrl(baseUrl, candidate))
       .filter(Boolean) as string[];
-    return resolved.sort((a, b) => scoreCoverCandidate(b) - scoreCoverCandidate(a)).find(Boolean) ?? null;
+    return pickBestCoverCandidate(resolved);
   }
   return null;
 }
@@ -588,7 +622,351 @@ function collectLabeledGenreCandidates(document: Document) {
   ]);
 }
 
+function collectMetaGenreCandidates(html: string, document: Document) {
+  const keywords = [
+    ...Array.from(
+      html.matchAll(/<meta[^>]+(?:property|name)=["'][^"']*(?:keywords|genre)[^"']*["'][^>]+content=["']([^"']+)/gi),
+      (match) => match[1],
+    ),
+    ...Array.from(
+      html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi),
+      (match) => match[1],
+    ).flatMap((jsonText) => {
+      try {
+        const parsed = JSON.parse(jsonText) as unknown;
+        const items = Array.isArray(parsed) ? parsed : [parsed];
+        return items.flatMap((item) => {
+          if (!item || typeof item !== 'object') return [];
+          const record = item as Record<string, unknown>;
+          const values = [record.genre, record.keywords].flatMap((value) => {
+            if (Array.isArray(value)) return value.map(String);
+            if (typeof value === 'string') return value.split(/[,|•·]/g);
+            return [];
+          });
+          return values;
+        });
+      } catch {
+        return [];
+      }
+    }),
+    ...Array.from(document.querySelectorAll('meta[name="keywords"], meta[property="article:tag"]'), (node) =>
+      node.getAttribute('content'),
+    ),
+  ].flatMap((value) => (value ?? '').split(/[,|•·]/g));
+  return filterMeaningfulGenres(keywords);
+}
+
+function collectContentBlockGenreCandidates(document: Document) {
+  const blocks = [...document.querySelectorAll('article, main, section, .entry-content, .post-content, .summary, .summary__content, .manga-info, .infox')];
+  const candidates = blocks.flatMap((block) => {
+    const text = (block.textContent ?? '').replace(/\s+/g, ' ').trim();
+    if (!text || text.length < 40) return [];
+    if (/chapter\s+list/i.test(text) && text.length > 200) {
+      const beforeChapter = text.split(/chapter\s+list/i)[0] ?? '';
+      const lines = beforeChapter
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const tail = lines.slice(-4).join(' ');
+      return [
+        ...extractKnownGenresFromText(tail),
+        ...extractGenresFromSentenceText(tail),
+        ...expandGenreText(tail),
+      ];
+    }
+    if (text.length > 1200) return [];
+    return [...extractKnownGenresFromText(text), ...extractGenresFromSentenceText(text), ...expandGenreText(text)];
+  });
+  return filterMeaningfulGenres(candidates);
+}
+
+function collectContentBlockDescriptionCandidates(document: Document) {
+  const blocks = [...document.querySelectorAll('article, main, section, .entry-content, .post-content, .summary, .summary__content, .manga-info, .infox')];
+  const candidates = blocks.flatMap((block) => {
+    const text = (block.textContent ?? '').replace(/\s+/g, ' ').trim();
+    if (!text || text.length < 40) return [];
+    if (/chapter\s+list/i.test(text)) {
+      const beforeChapter = text.split(/chapter\s+list/i)[0] ?? '';
+      const lines = beforeChapter
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const paragraph = lines.slice(0, Math.max(1, lines.length - 1)).join(' ');
+      return [paragraph || beforeChapter];
+    }
+    return [text];
+  });
+  return candidates.map(cleanDescription).filter(Boolean) as string[];
+}
+
+function expandGenreText(value: string) {
+  const cleaned = value
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/www\.\S+/gi, ' ')
+    .replace(/\[[^\]]+\]\([^)]+\)/g, ' ');
+  return uniqueStrings([
+    cleaned,
+    ...cleaned.split(/[\n,|•·\/&+]+/g),
+    ...cleaned
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .split(/\s+/g)
+      .reduce<string[]>((acc, word, index, words) => {
+        if (index === 0) return acc;
+        const pair = `${words[index - 1]} ${word}`.trim();
+        if (pair.length > 2 && pair.length <= 24) acc.push(pair);
+        return acc;
+      }, []),
+  ])
+    .map((candidate) => candidate.trim())
+    .filter(Boolean);
+}
+
+function extractKnownGenresFromText(value: string) {
+  const normalized = value
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/www\.\S+/gi, ' ')
+    .replace(/\[[^\]]+\]\([^)]+\)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!normalized) return [];
+  const genreDictionary = [
+    'Action',
+    'Adventure',
+    'Comedy',
+    'Drama',
+    'Fantasy',
+    'Historical',
+    'Horror',
+    'Isekai',
+    'Josei',
+    'Martial Arts',
+    'Mecha',
+    'Mystery',
+    'Psychological',
+    'Romance',
+    'School Life',
+    'Sci-Fi',
+    'Science Fiction',
+    'Seinen',
+    'Shoujo',
+    'Shounen',
+    'Slice of Life',
+    'Sports',
+    'Supernatural',
+    'Tragedy',
+    'Webtoon',
+    'Manhwa',
+    'Manhua',
+    'Manga',
+    'Harem',
+    'Adult',
+    'Reincarnation',
+    'Magic',
+    'Military',
+    'Monster',
+    'Time Travel',
+    'Regression',
+    'Villainess',
+  ];
+  const result: string[] = [];
+  let remaining = normalized;
+  for (const genre of genreDictionary.sort((left, right) => right.length - left.length)) {
+    const pattern = new RegExp(`\\b${genre.replace(/\s+/g, '\\s*')}\\b`, 'i');
+    const compactPattern = new RegExp(genre.replace(/\s+/g, ''), 'i');
+    if (pattern.test(remaining) || compactPattern.test(remaining)) {
+      result.push(genre);
+      remaining = remaining.replace(compactPattern, ' ');
+    }
+  }
+  return uniqueStrings(result);
+}
+
+function extractGenresFromSentenceText(value: string) {
+  const normalized = value
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/www\.\S+/gi, ' ')
+    .replace(/\[[^\]]+\]\([^)]+\)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!normalized) return [];
+  const sentenceMatches = [
+    normalized.match(/bergenre\s+([^.;:]+)(?:[.;:]|$)/i)?.[1],
+    normalized.match(/genre(?:nya)?\s*[:\-]?\s*([^.;:]+)(?:[.;:]|$)/i)?.[1],
+    normalized.match(/(?:genres?|types?|formats?)\s*[:\-]?\s*([^.;:]+)(?:[.;:]|$)/i)?.[1],
+  ].filter((value): value is string => Boolean(value));
+  const extracted = sentenceMatches.flatMap((chunk) =>
+    uniqueStrings([
+      ...expandGenreText(chunk),
+      ...extractKnownGenresFromText(chunk),
+      ...chunk.split(/\s+/g).filter(Boolean),
+    ]),
+  );
+  return filterMeaningfulGenres(extracted);
+}
+
+function collectMarkdownGenreCandidates(html: string) {
+  const sectionPatterns = [
+    /(?:^|\n)(?:#{1,4}\s*)?(?:Genre(?:s)?|Type(?:s)?|Format(?:s)?)\s*:?\s*\n+([\s\S]{0,500}?)(?=\n#{1,4}\s|\n(?:Sinopsis|Synopsis|Description|Deskripsi|Chapter|Daftar\s+Chapter)\b|$)/gi,
+  ];
+  const candidates: string[] = [];
+  for (const pattern of sectionPatterns) {
+    for (const match of html.matchAll(pattern)) {
+      const body = match[1] ?? '';
+      candidates.push(...expandGenreText(body));
+      candidates.push(...extractKnownGenresFromText(body));
+      candidates.push(...extractGenresFromSentenceText(body));
+      candidates.push(...(body.match(/[A-Z][a-z]+(?:[A-Z][a-z]+)+|[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?/g)?.map((value) => value.trim()) ?? []));
+    }
+  }
+  return filterMeaningfulGenres(candidates);
+}
+
+function collectGenericGenreLinkCandidates(document: Document, html: string) {
+  const sectionCandidates = [...document.querySelectorAll('section, div, dl, tr, ul, ol')].flatMap((container) => {
+    const heading =
+      container.querySelector('h1, h2, h3, h4, h5, h6, dt, .label, .heading, .title')?.textContent?.trim() ?? '';
+    if (!/^(?:genres?|genre|types?|type|formats?|format)\s*(?:\(s\))?\s*:?$/i.test(heading)) return [];
+    return [...container.querySelectorAll('a, button, span, li')].flatMap((node) =>
+      expandGenreText(node.textContent ?? node.getAttribute('title') ?? ''),
+    );
+  });
+  const layers: string[][] = [];
+  const layer1 = [
+    ...[...document.querySelectorAll('[itemprop="genre"], meta[name="keywords"], meta[property="article:tag"]')].flatMap(
+      (node) => expandGenreText(node.getAttribute('content') ?? node.textContent ?? ''),
+    ),
+    ...[...document.querySelectorAll('[itemprop="genre"], meta[name="keywords"], meta[property="article:tag"]')].flatMap(
+      (node) => extractKnownGenresFromText(node.getAttribute('content') ?? node.textContent ?? ''),
+    ),
+    ...Array.from(
+      html.matchAll(/<meta[^>]+(?:property|name)=["'][^"']*(?:keywords|genre)[^"']*["'][^>]+content=["']([^"']+)/gi),
+      (match) => match[1],
+    ).flatMap((value) => [...expandGenreText(value), ...extractKnownGenresFromText(value)]),
+  ];
+  if (layer1.length > 0) layers.push(layer1);
+  const layer2 = [
+    ...[...document.querySelectorAll('a[href*="/genre/"], a[href*="/genres/"], a[href*="/tag/"], a[href*="/tags/"]')].flatMap(
+      (node) => expandGenreText(node.textContent ?? node.getAttribute('title') ?? ''),
+    ),
+    ...[...document.querySelectorAll('a[href*="/genre/"], a[href*="/genres/"], a[href*="/tag/"], a[href*="/tags/"]')].flatMap(
+      (node) => extractKnownGenresFromText(node.textContent ?? node.getAttribute('title') ?? ''),
+    ),
+    ...Array.from(
+      html.matchAll(/<a[^>]+href=["'][^"']*(?:\/genres?\/|\/tags?\/)[^"']*["'][^>]*>([^<]+)<\/a>/gi),
+      (match) => match[1],
+    ).flatMap((value) => [...expandGenreText(value), ...extractKnownGenresFromText(value)]),
+  ];
+  if (layer2.length > 0) layers.push(layer2);
+  const layer3 = [
+    ...[...document.querySelectorAll('a[href*="genre="], a[href*="genres="], a[href*="tag="], a[href*="tags="]')].flatMap(
+      (node) => expandGenreText(node.textContent ?? node.getAttribute('title') ?? ''),
+    ),
+    ...[...document.querySelectorAll('a[href*="genre="], a[href*="genres="], a[href*="tag="], a[href*="tags="]')].flatMap(
+      (node) => extractKnownGenresFromText(node.textContent ?? node.getAttribute('title') ?? ''),
+    ),
+    ...Array.from(
+      html.matchAll(/<a[^>]+href=["'][^"']*[?&](?:genre|genres|tag|tags)=[^"']*["'][^>]*>([^<]+)<\/a>/gi),
+      (match) => match[1],
+    ).flatMap((value) => [...expandGenreText(value), ...extractKnownGenresFromText(value)]),
+  ];
+  if (layer3.length > 0) layers.push(layer3);
+  const layer4 = [
+    ...[...document.querySelectorAll('a[title*="genre" i], a[aria-label*="genre" i], a[class*="genre" i], a[class*="tag" i], span[class*="genre" i], span[class*="tag" i]')].flatMap(
+      (node) => expandGenreText(node.textContent ?? node.getAttribute('title') ?? ''),
+    ),
+    ...[...document.querySelectorAll('a[title*="genre" i], a[aria-label*="genre" i], a[class*="genre" i], a[class*="tag" i], span[class*="genre" i], span[class*="tag" i]')].flatMap(
+      (node) => extractKnownGenresFromText(node.textContent ?? node.getAttribute('title') ?? ''),
+    ),
+    ...Array.from(
+      html.matchAll(/<span[^>]*class=["'][^"']*(?:genre|genres|tag|tags)[^"']*["'][^>]*>([^<]+)<\/span>/gi),
+      (match) => match[1],
+    ).flatMap((value) => [...expandGenreText(value), ...extractKnownGenresFromText(value)]),
+    ...sectionCandidates,
+  ];
+  if (layer4.length > 0) layers.push(layer4);
+  for (const layer of layers) {
+    const found = filterMeaningfulGenres(layer);
+    if (found.length > 0) return found;
+  }
+  return [];
+}
+
+function filterMeaningfulGenres(candidates: string[]) {
+  const ignored = new Set([
+    'genre',
+    'genres',
+    'tag',
+    'tags',
+    'type',
+    'types',
+    'format',
+    'formats',
+    'komik',
+    'comic',
+    'manga',
+    'manhwa',
+    'manhua',
+    'webtoon',
+    'webtoons',
+    'novel',
+    'lightnovel',
+    'fullcolor',
+    'adult',
+    'ongoing',
+    'completed',
+    'finished',
+    'sub',
+    'indo',
+    'indonesia',
+  ]);
+  return uniqueStrings(
+    candidates
+      .map((candidate) => candidate?.trim())
+      .filter((candidate): candidate is string => Boolean(candidate))
+      .filter((candidate) => {
+        const normalized = normalizeComparableText(candidate);
+        if (!normalized || ignored.has(normalized)) return false;
+        if (normalized.length > 24) return false;
+        if (/^\d+$/.test(normalized)) return false;
+        if (normalized.includes('http') || normalized.includes('www')) return false;
+        return true;
+      }),
+  );
+}
+
+function rankGenresByEvidence(genresBySource: string[][]) {
+  const counts = new Map<string, number>();
+  const firstSeen = new Map<string, number>();
+  const displayByKey = new Map<string, string>();
+  genresBySource.forEach((genres, sourceIndex) => {
+    genres.forEach((genre) => {
+      const key = normalizeComparableText(genre);
+      if (!key) return;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+      if (!firstSeen.has(key)) firstSeen.set(key, sourceIndex);
+      if (!displayByKey.has(key)) displayByKey.set(key, genre.trim());
+    });
+  });
+  return Array.from(counts.entries())
+    .sort((left, right) => {
+      const countScore = right[1] - left[1];
+      if (countScore !== 0) return countScore;
+      return (firstSeen.get(left[0]) ?? 99) - (firstSeen.get(right[0]) ?? 99);
+    })
+    .map(([genre]) => displayByKey.get(genre) ?? genre);
+}
+
 function detectDomainSpecificGenres(hostname: string, html: string, document: Document) {
+  if (hostname.includes('ryukomik.my.id')) {
+    return filterMeaningfulGenres([
+      ...[...document.querySelectorAll('.rk-shell a[href^="/genre/"], .rk-shell a[href*="/genre/"], .rk-shell a[href*="/genres/"]')].map(
+        (node) => node.textContent,
+      ),
+      ...Array.from(html.matchAll(/<a[^>]+href=["'][^"']*\/genre\/[^"']+["'][^>]*>([^<]+)<\/a>/gi), (match) => match[1]),
+      ...Array.from(html.matchAll(/<a[^>]+href=["'][^"']*\/genres?\/[^"']+["'][^>]*>([^<]+)<\/a>/gi), (match) => match[1]),
+      ...Array.from(html.matchAll(/<a[^>]+href=["'][^"']*\/genre\/[^"']+["'][^>]*>([^<]+)<\/a>/gi), (match) => match[1]),
+    ]);
+  }
   if (hostname.includes('mangadistrict.')) {
     const typeItem = [...document.querySelectorAll('.post-content_item')].find((item) =>
       /^type$/i.test(item.querySelector('.summary-heading')?.textContent?.trim() ?? ''),
@@ -641,8 +1019,18 @@ function detectDomainSpecificGenres(hostname: string, html: string, document: Do
     ]);
     return candidates.filter((candidate) => !/^genres?$/i.test(candidate));
   }
+  if (hostname.includes('komikindo.')) {
+    return filterMeaningfulGenres([
+      ...[...document.querySelectorAll('a[href*="/genre/"], a[href*="/genres/"], .genres a, .manga-info a, .infox a, .series-genres a')].map(
+        (node) => node.textContent,
+      ),
+      ...Array.from(html.matchAll(/<a[^>]+href=["'][^"']*\/genre\/[^"']+["'][^>]*>([^<]+)<\/a>/gi), (match) => match[1]),
+      ...Array.from(html.matchAll(/<span[^>]*class="[^"]*(?:genre|genres)[^"]*"[^>]*>([^<]+)<\/span>/gi), (match) => match[1]),
+      ...Array.from(html.matchAll(/genre[^>]*>([^<]+)</gi), (match) => match[1]),
+    ]);
+  }
   if (hostname.includes('shinigami.asia')) {
-    return uniqueStrings([
+    return filterMeaningfulGenres([
       ...[...document.querySelectorAll('a[href*="genre"], span.genre, .genres a, .tags a')].map(
         (node) => node.textContent,
       ),
@@ -650,7 +1038,7 @@ function detectDomainSpecificGenres(hostname: string, html: string, document: Do
     ]);
   }
   if (hostname.includes('webtoons.com')) {
-    return uniqueStrings([
+    return filterMeaningfulGenres([
       ...[...document.querySelectorAll('a[href*="/genre/"], .genre, .genres a, .info_area a')].map(
         (node) => node.textContent,
       ),
@@ -664,7 +1052,22 @@ function detectDomainSpecificGenres(hostname: string, html: string, document: Do
       ),
     ]);
   }
-  return collectLabeledGenreCandidates(document);
+  return filterMeaningfulGenres([
+    ...collectLabeledGenreCandidates(document),
+    ...collectMetaGenreCandidates(html, document),
+    ...collectMarkdownGenreCandidates(html),
+    ...collectContentBlockGenreCandidates(document),
+    ...collectRyukomikTitleGenreCandidates(document),
+    ...collectGenericGenreLinkCandidates(document, html),
+  ]);
+}
+
+function collectRyukomikTitleGenreCandidates(document: Document) {
+  return filterMeaningfulGenres([
+    ...[...document.querySelectorAll('.rk-shell a[href^="/genre/"], .rk-shell a[href*="/genres/"], .rk-shell a[href*="/genre/"]')].map(
+      (node) => node.textContent ?? '',
+    ),
+  ]);
 }
 
 type ShinigamiTaxonomyItem = { name?: string };
@@ -686,6 +1089,64 @@ type KomiktapEmbedResponse = {
   thumbnail_height?: number;
 };
 
+function parseShinigamiHtmlMetadata(html: string, document: Document, parsed: URL): DetectedMetadata | null {
+  const title = uniqueStrings([
+    document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+    document.querySelector('meta[name="twitter:title"]')?.getAttribute('content'),
+    document.querySelector('h1')?.textContent,
+    document.querySelector('.series-title')?.textContent,
+    document.querySelector('.post-title')?.textContent,
+    document.querySelector('.entry-title')?.textContent,
+    document.querySelector('title')?.textContent,
+  ]).find(Boolean);
+  const coverCandidates = uniqueStrings([
+    document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+    document.querySelector('meta[property="og:image:secure_url"]')?.getAttribute('content'),
+    document.querySelector('meta[name="twitter:image"]')?.getAttribute('content'),
+    document.querySelector('meta[name="twitter:image:src"]')?.getAttribute('content'),
+    document.querySelector('img[alt*="cover" i]')?.getAttribute('src'),
+    document.querySelector('img[alt*="poster" i]')?.getAttribute('src'),
+    ...Array.from(html.matchAll(/["'](?:cover|poster|thumbnail|series_image|image)["']\s*:\s*["']([^"']+)["']/gi), (match) => match[1]),
+    ...Array.from(html.matchAll(/(?:data-src|src)=["']([^"']+\.(?:jpe?g|png|webp)(?:\?[^"']*)?)["']/gi), (match) => match[1]),
+  ])
+    .map((candidate) => resolveUrl(parsed.toString(), candidate))
+    .filter(Boolean) as string[];
+  const genres = uniqueStrings([
+    ...filterMeaningfulGenres([
+      ...[...document.querySelectorAll('a[href*="genre"], a[href*="tag"], span.genre, .genres a, .tags a, [itemprop="genre"]')].map(
+        (node) => node.textContent ?? node.getAttribute('title') ?? '',
+      ),
+      ...Array.from(html.matchAll(/genre[^>]*>([^<]+)</gi), (match) => match[1]),
+    ]),
+    ...filterMeaningfulGenres(
+      Array.from(
+        html.matchAll(/<meta[^>]+(?:property|name)=["'][^"']*(?:keywords|genre)[^"']*["'][^>]+content=["']([^"']+)/gi),
+        (match) => match[1],
+      ),
+    ),
+  ]);
+  const description = cleanDescription(
+    document.querySelector('meta[property="og:description"]')?.getAttribute('content') ??
+      document.querySelector('meta[name="description"]')?.getAttribute('content') ??
+      document.querySelector('.summary__content')?.textContent ??
+      document.querySelector('.synopsis')?.textContent ??
+      document.querySelector('.description')?.textContent ??
+      document.querySelector('.series-description')?.textContent ??
+      document.querySelector('.post-content')?.textContent ??
+      document.querySelector('.entry-content')?.textContent ??
+      null,
+  ) ?? collectContentBlockDescriptionCandidates(document)[0] ?? null;
+  if (!title && coverCandidates.length === 0 && genres.length === 0 && !description) return null;
+  return {
+    title: cleanDetectedTitle(title ?? humanizePathTitle(parsed.pathname), parsed.hostname),
+    sourceName: 'Shinigami',
+    description,
+    coverUrl: coverCandidates[0] ?? null,
+    coverCandidates,
+    genres,
+  };
+}
+
 async function detectKomiktapEmbed(parsed: URL) {
   const endpoint = new URL('/wp-json/oembed/1.0/embed', parsed.origin);
   endpoint.searchParams.set('url', parsed.toString());
@@ -696,32 +1157,44 @@ async function detectKomiktapEmbed(parsed: URL) {
 
 async function detectShinigamiMetadata(parsed: URL): Promise<DetectedMetadata | null> {
   const seriesId = parsed.pathname.match(/\/series\/([0-9a-f-]{20,})/i)?.[1];
-  if (!seriesId) return null;
-  const response = await fetch(`https://api.shngm.io/v1/manga/detail/${encodeURIComponent(seriesId)}`, {
-    method: 'GET',
-    headers: { Accept: 'application/json' },
-    cache: 'no-store',
-  });
-  if (!response.ok) throw new Error(`API Shinigami gagal: ${response.status}`);
-  const payload = (await response.json()) as ShinigamiDetailResponse;
-  const data = payload.data;
-  if (!data?.title) return null;
-  const coverCandidates = uniqueStrings([
-    resolveUrl(parsed.toString(), data.cover_portrait_url),
-    resolveUrl(parsed.toString(), data.cover_image_url),
-  ]);
-  const genres = uniqueStrings([
-    ...(data.taxonomy?.Genre ?? []).map((item) => item.name),
-    ...(data.taxonomy?.Format ?? []).map((item) => item.name),
-  ]);
-  return {
-    title: cleanDetectedTitle(data.title, parsed.hostname),
-    sourceName: 'Shinigami',
-    description: cleanDescription(data.description ?? data.synopsis),
-    coverUrl: coverCandidates[0] ?? null,
-    coverCandidates,
-    genres,
-  };
+  let apiMetadata: DetectedMetadata | null = null;
+  if (seriesId) {
+    try {
+      const response = await fetch(`https://api.shngm.io/v1/manga/detail/${encodeURIComponent(seriesId)}`, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      });
+      if (response.ok) {
+        const payload = (await response.json()) as ShinigamiDetailResponse;
+        const data = payload.data;
+        if (data?.title) {
+          const coverCandidates = uniqueStrings([
+            resolveUrl(parsed.toString(), data.cover_portrait_url),
+            resolveUrl(parsed.toString(), data.cover_image_url),
+          ]);
+          const genres = uniqueStrings([
+            ...(data.taxonomy?.Genre ?? []).map((item) => item.name),
+            ...(data.taxonomy?.Format ?? []).map((item) => item.name),
+          ]);
+          apiMetadata = {
+            title: cleanDetectedTitle(data.title, parsed.hostname),
+            sourceName: 'Shinigami',
+            description: cleanDescription(data.description ?? data.synopsis),
+            coverUrl: coverCandidates[0] ?? null,
+            coverCandidates,
+            genres,
+          };
+          if (apiMetadata.description || apiMetadata.coverUrl || apiMetadata.genres.length > 0) return apiMetadata;
+        }
+      }
+    } catch {
+      // Fall through to the HTML fallback for mirrored Shinigami pages.
+    }
+  }
+  const html = await fetchHtmlWithFallback(parsed.toString());
+  const document = new DOMParser().parseFromString(html, 'text/html');
+  return parseShinigamiHtmlMetadata(html, document, parsed) ?? apiMetadata;
 }
 
 function formatSupabaseError(error: unknown) {
@@ -1300,7 +1773,7 @@ export async function detectMetadata(url: string): Promise<DetectedMetadata> {
     const domainTitle = detectDomainSpecificTitle(hostname, html, document, titleText);
     const domainGenres = detectDomainSpecificGenres(hostname, html, document);
     const description = detectPageDescription(html, document);
-    const genericGenres = uniqueStrings([
+    const metaGenres = filterMeaningfulGenres([
       ...collectLabeledGenreCandidates(document),
       ...Array.from(html.matchAll(/genre[^>]*content=["']([^"']+)/gi), (match) => match[1]),
       ...Array.from(
@@ -1308,8 +1781,11 @@ export async function detectMetadata(url: string): Promise<DetectedMetadata> {
         (match) => match[1],
       ),
     ]);
+    const markdownGenres = collectMarkdownGenreCandidates(html);
+    const genericGenres = collectGenericGenreLinkCandidates(document, html);
+    const mergedGenres = rankGenresByEvidence([domainGenres, metaGenres, markdownGenres, genericGenres]);
     // Merge every successful strategy while keeping the domain API result first.
-    const coverUrl = komiktapEmbedCover ?? domainCover ?? coverCandidates[0] ?? null;
+    const coverUrl = pickBestCoverFromCandidates([komiktapEmbedCover, domainCover, ...coverCandidates].filter(Boolean) as string[]);
     const finalCoverCandidates = hostname.includes('mangaplus.shueisha.co.jp')
       ? uniqueStrings([domainCover, coverUrl].filter(Boolean) as string[])
       : hostname.includes('komiktap.')
@@ -1345,7 +1821,7 @@ export async function detectMetadata(url: string): Promise<DetectedMetadata> {
       description,
       coverUrl,
       coverCandidates: finalCoverCandidates,
-      genres: uniqueStrings([...domainGenres, ...genericGenres]),
+      genres: mergedGenres,
     };
   } catch {
     return {

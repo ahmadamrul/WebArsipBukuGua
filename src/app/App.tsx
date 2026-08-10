@@ -15,7 +15,7 @@ import {
   readingStatusLabel,
   type ReadingProgress,
 } from '../features/reading-progress';
-import { isUsefulDetectedTitle } from '../features/metadata-detection';
+import { isUsefulDetectedTitle, titleMatchesSourceSlug } from '../features/metadata-detection';
 import { localeLabels } from '../features/settings/services/localization';
 import { loadLibrary } from './bootstrap/library';
 import type { AppView } from './routes';
@@ -365,6 +365,7 @@ export default function App() {
   const {
     activeComic,
     activeSources,
+    activeProgresses,
     activeLabelLinks,
     openComicPage,
     handleLibraryComicClick,
@@ -390,18 +391,19 @@ export default function App() {
     formMode,
     openPanel,
     setComicForm,
-    setComicSourceLinks,
     setComicFormGenreIds,
     setComicPanelNotice,
     setDebugError,
   });
+  const hasMeaningfulCurrentTitle = Boolean(comicForm.title.trim());
+  const currentTitleLooksRelated = detectedTitleOptions.some((option) => comicTitlesAreRelated(option.title, comicForm.title));
+  const currentTitleMatchesSource = titleMatchesSourceSlug(
+    comicForm.title,
+    comicSourceLinks.map((link) => link.url),
+  );
   const availableDetectedTitleOptions =
-    formMode === 'edit'
-      ? detectedTitleOptions.filter(
-          (option) =>
-            isUsefulDetectedTitle(option.title, option.sourceUrl) &&
-            !comicTitlesAreRelated(option.title, comicForm.title),
-        )
+    hasMeaningfulCurrentTitle && !currentTitleLooksRelated && !currentTitleMatchesSource
+      ? detectedTitleOptions.filter((option) => isUsefulDetectedTitle(option.title, option.sourceUrl))
       : [];
   const detectedTitleOptionsSignature = availableDetectedTitleOptions
     .map((option) => `${normalizeSourceUrl(option.sourceUrl)}::${normalizeComparableText(option.title)}`)
@@ -551,6 +553,10 @@ export default function App() {
             comicTaxonomyNamesForPanel={comicTaxonomyNamesForPanel}
             validComicRating={validComicRating}
             canRateComic={canRateComic}
+            handleComicFavoriteChange={handleComicFavoriteChange}
+            activeSources={activeSources}
+            activeProgresses={activeProgresses}
+            activeLabelLinks={activeLabelLinks}
             setQuery={setQuery}
             setSortBy={setSortBy}
             setSelectedReadingStatus={setSelectedReadingStatus}

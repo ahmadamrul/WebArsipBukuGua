@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { STORAGE_KEYS } from '../../lib/constants/storageKeys';
 import type { AdultContentMode, Locale } from '../../features/settings';
 import type { ReadingStatus } from '../../features/reading-progress';
@@ -25,6 +25,22 @@ export function useLibraryPreferences() {
   const [showAdultOnDashboard, setShowAdultOnDashboard] = useState(
     () => window.localStorage.getItem(STORAGE_KEYS.dashboardAdultVisibility) === 'true',
   );
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.locale, locale);
+  }, [locale]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.libraryView, viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.adultContentMode, adultContentMode);
+  }, [adultContentMode]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.dashboardAdultVisibility, String(showAdultOnDashboard));
+  }, [showAdultOnDashboard]);
 
   const activeGenreFilters = useMemo(() => (Array.isArray(selectedGenres) ? selectedGenres : []), [selectedGenres]);
   const activeCollectionFilters = useMemo(

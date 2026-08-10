@@ -32,7 +32,7 @@ type AppComicPanelProps = {
   requestConfirm: (title: string, message: string, confirmLabel?: string, cancelLabel?: string) => Promise<boolean>;
   deleteComic: (comicId: string) => Promise<void>;
   removeQueuedCoverSync: (comicId: string) => void;
-  syncNow: (force?: boolean) => Promise<void> | void;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
   setSelectedComicId: (value: string) => void;
   setActiveComicId: (value: string) => void;
 };

@@ -30,7 +30,7 @@ type AppSettingsPanelsProps = {
   setProfileUsernameInput: (value: string) => void;
   setNewPassword: (value: string) => void;
   setConfirmPassword: (value: string) => void;
-  syncNow: (force?: boolean) => Promise<void> | void;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
   handleLogout: () => Promise<void> | void;
   handleProfileSave: (event: React.FormEvent<HTMLFormElement>) => void;
 };

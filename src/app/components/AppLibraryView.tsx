@@ -1,6 +1,6 @@
 import { AdultCoverNotice, chapterNumberFromLabel, deleteComic, type Comic } from '../../features/comics';
 import { readingStatusLabel, READING_STATUSES, validReadingStatus, type ReadingProgress, type ReadingStatus } from '../../features/reading-progress';
-import type { LibraryLabel } from '../../features/labels';
+import type { ComicLabel, LibraryLabel } from '../../features/labels';
 import { AppLibraryPanel } from './AppLibraryPanel';
 import type { AppView } from '../routes';
 
@@ -26,9 +26,13 @@ type AppLibraryViewProps = {
   commitChapterDraft: (comic: Comic) => Promise<void> | void;
   handleReadingStatusChange: (comicId: string, readingStatus: ReadingStatus) => Promise<void> | void;
   handleComicRatingChange: (comicId: string, rating: number) => Promise<void> | void;
+  handleComicFavoriteChange: (comicId: string, favorite: boolean) => Promise<void> | void;
   handleEditComic: (comic: Comic) => void;
   ratingOptions: number[];
   labels: LibraryLabel[];
+  activeSources: Array<{ id: string; label: string | null; url: string }>;
+  activeProgresses: ReadingProgress[];
+  activeLabelLinks: ComicLabel[];
   collections: string[];
   genres: string[];
   tags: string[];
@@ -57,7 +61,7 @@ type AppLibraryViewProps = {
   openSourceEdit: (source: { id: string; label: string | null; url: string }) => void;
   toggleComicLabel: (labelId: string) => Promise<void> | void;
   requestConfirm: (title: string, message: string, confirmLabel?: string, cancelLabel?: string) => Promise<boolean>;
-  syncNow: (force?: boolean) => Promise<void> | void;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
 };
 
 export function AppLibraryView(props: AppLibraryViewProps) {
@@ -81,9 +85,13 @@ export function AppLibraryView(props: AppLibraryViewProps) {
     commitChapterDraft,
     handleReadingStatusChange,
     handleComicRatingChange,
+    handleComicFavoriteChange,
     handleEditComic,
     ratingOptions,
     labels,
+    activeSources,
+    activeProgresses,
+    activeLabelLinks,
     collections,
     genres,
     tags,
@@ -194,9 +202,9 @@ export function AppLibraryView(props: AppLibraryViewProps) {
           tr={tr}
           activeMenu={activeMenu}
           activeComic={activeComic}
-          activeSources={[]}
-          activeProgresses={[]}
-          activeLabelLinks={[]}
+          activeSources={activeSources}
+          activeProgresses={activeProgresses}
+          activeLabelLinks={activeLabelLinks}
           labels={labels}
           collections={collections}
           genres={genres}
@@ -216,6 +224,7 @@ export function AppLibraryView(props: AppLibraryViewProps) {
           comicTaxonomyNames={comicTaxonomyNamesForPanel}
           validComicRating={validComicRating}
           canRateComic={canRateComic}
+          handleComicFavoriteChange={handleComicFavoriteChange}
           setQuery={setQuery}
           setSortBy={setSortBy}
           setSelectedReadingStatus={setSelectedReadingStatus}

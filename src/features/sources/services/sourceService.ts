@@ -41,3 +41,9 @@ export async function updateComicSource(id: string, input: { label?: string; url
     .eq('user_id', user.id);
   if (error) throw new Error(formatSupabaseError(error));
 }
+
+export async function deleteComicSource(id: string) {
+  const user = await requireUser();
+  const { error } = await supabase!.from('comic_sources').delete().eq('id', id).eq('user_id', user.id);
+  if (error) throw new Error(formatSupabaseError(error));
+}

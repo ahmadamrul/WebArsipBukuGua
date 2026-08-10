@@ -23,7 +23,11 @@ export function sourceLabelFromUrl(value: string) {
   if (!value.trim()) return '';
   try {
     const parsed = new URL(value.startsWith('http') ? value : `https://${value}`);
-    return parsed.hostname.replace(/^www\./, '').split('.')[0] ?? '';
+    const hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
+    if (hostname.includes('shinigami.asia')) return 'Shinigami';
+    const firstLabel = hostname.split('.')[0] ?? '';
+    if (/^\d+$/.test(firstLabel) && hostname.includes('shinigami')) return 'Shinigami';
+    return firstLabel;
   } catch {
     return '';
   }
@@ -39,6 +43,9 @@ export function shouldReplaceAutoSourceLabel(label: string, sourceUrl: string, d
     'webtoon',
     'webtoons',
     'shinigami',
+    'lapakkomik',
+    'keikomik',
+    'ryukomik',
     'maid',
     'komikcast',
     'manganato',

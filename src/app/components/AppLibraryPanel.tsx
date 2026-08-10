@@ -35,6 +35,7 @@ type AppLibraryPanelProps = {
   comicTaxonomyNames: (comic: Comic, kind: 'genre' | 'collection' | 'tag') => string[];
   validComicRating: (rating: number | null | undefined) => number;
   canRateComic: (readingStatus: ReadingStatus | null | undefined) => boolean;
+  handleComicFavoriteChange: (comicId: string, favorite: boolean) => Promise<void> | void;
   setQuery: (value: string) => void;
   setSortBy: (value: AppLibraryPanelProps['sortBy']) => void;
   setSelectedReadingStatus: (value: 'all' | ReadingStatus) => void;
@@ -48,7 +49,7 @@ type AppLibraryPanelProps = {
   openSourceEdit: (source: { id: string; label: string | null; url: string }) => void;
   toggleComicLabel: (labelId: string) => Promise<void> | void;
   requestConfirm: (title: string, message: string, confirmLabel?: string, cancelLabel?: string) => Promise<boolean>;
-  syncNow: (force?: boolean) => Promise<void> | void;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
 };
 
 export function AppLibraryPanel(props: AppLibraryPanelProps) {
@@ -78,6 +79,7 @@ export function AppLibraryPanel(props: AppLibraryPanelProps) {
     comicTaxonomyNames,
     validComicRating,
     canRateComic,
+    handleComicFavoriteChange,
     setQuery,
     setSortBy,
     setSelectedReadingStatus,
@@ -245,6 +247,16 @@ export function AppLibraryPanel(props: AppLibraryPanelProps) {
         <section className="panel panel-glow detail-panel">
           <div className="detail-hero">
             <div className={shouldHideAdultCover(activeComic) ? 'detail-cover-full adult-cover-hidden' : 'detail-cover-full'} aria-label={tr('Cover komik', 'Comic cover')}>
+              {activeComic ? (
+                <button
+                  type="button"
+                  className={activeComic.favorite ? 'detail-favorite-button active' : 'detail-favorite-button'}
+                  onClick={() => void handleComicFavoriteChange(activeComic.id, !activeComic.favorite)}
+                  aria-label={activeComic.favorite ? tr('Hapus favorit', 'Remove favorite') : tr('Tandai favorit', 'Mark favorite')}
+                >
+                  ★
+                </button>
+              ) : null}
               <div className="detail-cover-placeholder" aria-hidden="true"><span>{activeComic?.title.trim().charAt(0).toUpperCase() || '?'}</span></div>
               {shouldHideAdultCover(activeComic) ? <AdultCoverNotice locale={locale} /> : activeComic?.cover_url ? <img src={activeComic.cover_url} alt={activeComic.title} onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : null}
             </div>
@@ -288,22 +300,32 @@ export function AppLibraryPanel(props: AppLibraryPanelProps) {
             )}
             {detailTab === 'source' && activeComic && (
               <div className="detail-stack">
-                {activeSources.map((source) => (
-                  <article className="source-card" key={source.id}>
-                    <div><strong>{source.label ?? tr('Sumber', 'Source')}</strong><a href={source.url} target="_blank" rel="noreferrer">{source.url}</a></div>
+                {activeSources.length > 0 ? activeSources.map((source) => (
+                  <article className="source-card source-card-compact" key={source.id}>
+                    <div>
+                      <strong>{source.label ?? tr('Sumber', 'Source')}</strong>
+                      <a href={source.url} target="_blank" rel="noreferrer">{source.url}</a>
+                    </div>
                     <button type="button" className="mini-action" onClick={() => openSourceEdit(source)}>{tr('Edit', 'Edit')}</button>
                   </article>
-                ))}
+                )) : (
+                  <p className="detail-empty-note">{tr('Belum ada sumber yang tersimpan.', 'No sources have been saved yet.')}</p>
+                )}
               </div>
             )}
             {detailTab === 'history' && activeComic && (
               <div className="detail-stack">
-                {activeProgresses.slice(0, 6).map((progress) => (
-                  <article className="history-card" key={progress.id}>
-                    <div><strong>{progress.chapter_label ?? tr('Chapter tidak dicatat', 'Chapter not recorded')}</strong><span>{formatShortDate(progress.updated_at, locale)}</span></div>
+                {activeProgresses.slice(0, 6).length > 0 ? activeProgresses.slice(0, 6).map((progress) => (
+                  <article className="history-card history-card-compact" key={progress.id}>
+                    <div>
+                      <strong>{progress.chapter_label ?? tr('Chapter tidak dicatat', 'Chapter not recorded')}</strong>
+                      <span>{formatShortDate(progress.updated_at, locale)}</span>
+                    </div>
                     <button type="button" className="mini-action danger" onClick={async () => { if (!(await requestConfirm(tr('Hapus Riwayat?', 'Delete History?'), tr('Riwayat baca ini akan dihapus.', 'This reading history entry will be deleted.')))) return; await deleteReadingProgress(progress.id); await syncNow(); }}>{tr('Hapus', 'Delete')}</button>
                   </article>
-                ))}
+                )) : (
+                  <p className="detail-empty-note">{tr('Belum ada riwayat baca.', 'No reading history yet.')}</p>
+                )}
               </div>
             )}
             {detailTab === 'label' && activeComic && (

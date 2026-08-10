@@ -196,12 +196,15 @@ export function createSessionActions(deps: SessionActionsDeps) {
     setMessageTone('success');
   };
 
-  const syncNow = async (processPendingCovers = false) => {
+  const syncNow = async (
+    processPendingCovers = false,
+    options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean },
+  ) => {
     if (!ready) {
       setShowLogin(true);
       setMessage('Wajib login untuk masuk.');
       setMessageTone('warning');
-      return;
+      return false;
     }
     setSyncState('sedang-sync');
     try {
@@ -231,14 +234,20 @@ export function createSessionActions(deps: SessionActionsDeps) {
       setSources(snapshot.sources);
       setProgresses(snapshot.progresses);
       setSyncState('berhasil');
-      setMessage('Sinkronisasi berhasil.');
-      setMessageTone('success');
+      if (!options?.suppressSuccessMessage) {
+        setMessage('Sinkronisasi berhasil.');
+        setMessageTone('success');
+      }
       setDebugError('');
+      return true;
     } catch (error) {
       setSyncState('gagal');
-      setMessage(`Sinkronisasi gagal: ${toErrorMessage(error)}`);
-      setMessageTone('error');
+      if (!options?.suppressErrorMessage) {
+        setMessage(`Sinkronisasi gagal: ${toErrorMessage(error)}`);
+        setMessageTone('error');
+      }
       setDebugError(toDebugMessage(error));
+      return false;
     }
   };
 

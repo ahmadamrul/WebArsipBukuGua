@@ -43,6 +43,7 @@ type AppModalsProps = {
     genres: string[];
     sourceSizeLabel: string | null;
     optimizedSizeLabel: string | null;
+    sourceResults: Array<{ url: string; title: string; coverFound: boolean; descriptionFound: boolean; genresFound: number }>;
   };
   comicPanelNotice: string;
   labels: LibraryLabel[];

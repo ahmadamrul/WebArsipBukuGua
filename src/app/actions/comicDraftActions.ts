@@ -28,18 +28,23 @@ export function createComicDraftActions(deps: ComicDraftActionsDeps) {
   } = deps;
 
   const updateComicSourceUrl = (link: ComicSourceLink, value: string) => {
-    const previousAutoLabel = sourceLabelFromUrl(link.url);
     const nextAutoLabel = sourceLabelFromUrl(value);
-    const sourceDomainChanged =
-      normalizeComparableText(previousAutoLabel) !== normalizeComparableText(nextAutoLabel);
-    const shouldClearAutoLabel =
-      sourceDomainChanged ||
-      (Boolean(previousAutoLabel) &&
-        normalizeComparableText(link.label) === normalizeComparableText(previousAutoLabel));
+    const normalizedLabel = normalizeComparableText(link.label);
+    const shouldAutoFillLabel =
+      !normalizedLabel ||
+      normalizedLabel === 'sumber' ||
+      normalizedLabel === 'sumberutama' ||
+      normalizedLabel === 'source' ||
+      normalizedLabel === 'sourceutama' ||
+      normalizedLabel === 'source1' ||
+      normalizedLabel === 'sumber1' ||
+      /^\d+$/.test(normalizedLabel);
     const shouldClearAutoTitle = titleMatchesSourceSlug(comicForm.title, [link.url]);
     setComicSourceLinks((current) =>
       current.map((item) =>
-        item.id === link.id ? { ...item, url: value, label: shouldClearAutoLabel ? '' : item.label } : item,
+        item.id === link.id
+          ? { ...item, url: value, label: shouldAutoFillLabel && nextAutoLabel ? nextAutoLabel : item.label }
+          : item,
       ),
     );
     if (shouldClearAutoTitle && formMode === 'create') {
