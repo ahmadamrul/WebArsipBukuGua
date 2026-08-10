@@ -971,7 +971,7 @@ input[type='file']::file-selector-button {
 .status-summary {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
 .status-summary-item {
@@ -979,7 +979,7 @@ input[type='file']::file-selector-button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
   text-align: center;
   transition:
@@ -1215,8 +1215,8 @@ input[type='file']::file-selector-button {
 }
 
 .activity-marker {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #72b3ff;
   box-shadow: 0 0 0 4px rgba(114, 179, 255, 0.14);
