@@ -11,6 +11,7 @@ import { ImportPreviewModal, type ImportPreviewData } from './ImportPreviewModal
 import { ImportReportModal } from './ImportReportModal';
 import { CollectionCreationModal, type CollectionCreationRequest } from './CollectionCreationModal';
 import { CoverReplaceModal } from './CoverReplaceModal';
+import { URLCheckerPanel, type URLCheckResult } from './URLCheckerPanel';
 import { addLabel, updateComic } from '../../lib/libraryService';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
@@ -30,6 +31,7 @@ type AppSettingsPanelsProps = {
   adultContentMode: AdultContentMode;
   showAdultOnDashboard: boolean;
   labels: Array<{ id: string; name: string; kind: string }>;
+  allComics: any[];
   openLabelForm: (kind?: string) => void;
   openLabelEdit: (label: { id: string; name: string; kind: string }) => void;
   handleDeleteLabel: (label: { id: string; name: string; kind: string }) => void;
@@ -61,6 +63,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     adultContentMode,
     showAdultOnDashboard,
     labels,
+    allComics,
     openLabelForm,
     openLabelEdit,
     handleDeleteLabel,
@@ -171,6 +174,41 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
       setCurrentDeadLink(null);
       setDeadLinkQueue([]);
     }
+  };
+
+  const handleCheckUrls = async (): Promise<URLCheckResult[]> => {
+    const results: URLCheckResult[] = [];
+
+    for (const comic of allComics) {
+      if (!comic.cover_url) {
+        continue;
+      }
+
+      try {
+        const response = await fetch(comic.cover_url, { method: 'HEAD' });
+        results.push({
+          comicId: comic.id,
+          comicTitle: comic.title,
+          currentUrl: comic.cover_url,
+          isAlive: response.ok,
+          error: !response.ok ? `HTTP ${response.status}` : undefined,
+        });
+      } catch (err) {
+        results.push({
+          comicId: comic.id,
+          comicTitle: comic.title,
+          currentUrl: comic.cover_url,
+          isAlive: false,
+          error: toErrorMessage(err),
+        });
+      }
+    }
+
+    return results;
+  };
+
+  const handleReplaceUrl = async (comicId: string, newUrl: string) => {
+    await updateComic(comicId, { coverUrl: newUrl });
   };
 
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -448,6 +486,13 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               </button>
             </div>
           </section>
+          <URLCheckerPanel
+            comics={allComics}
+            isChecking={false}
+            onCheck={handleCheckUrls}
+            onReplace={handleReplaceUrl}
+            tr={tr}
+          />
           <section className="panel compact-panel label-manager">
             <div className="panel-head">
               <div>

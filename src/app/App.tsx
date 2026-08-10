@@ -646,6 +646,7 @@ export default function App() {
           adultContentMode={adultContentMode}
           showAdultOnDashboard={showAdultOnDashboard}
           labels={labels}
+          allComics={comics}
           openLabelForm={openLabelForm}
           openLabelEdit={openLabelEdit}
           handleDeleteLabel={handleDeleteLabel}
