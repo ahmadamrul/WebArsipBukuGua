@@ -31,7 +31,7 @@ export interface ImportedKotatsuComic {
   coverUrl: string | null;
   author: string;
   genre: string;
-  readingStatus: 'wantToRead' | 'reading' | 'finished' | 'paused';
+  readingStatus: 'wantToRead' | 'reading' | 'completed' | 'dropped';
   rating: number | null;
   nsfw: boolean;
   // Reading progress
@@ -44,16 +44,16 @@ export interface ImportedKotatsuComic {
   categoryName?: string;
 }
 
-function mapKotatsuState(kotatsuState: string): 'wantToRead' | 'reading' | 'finished' | 'paused' {
+function mapKotatsuState(kotatsuState: string): 'wantToRead' | 'reading' | 'completed' | 'dropped' {
   switch (kotatsuState.toUpperCase()) {
     case 'READING':
       return 'reading';
     case 'FINISHED':
-      return 'finished';
+      return 'completed';
     case 'PAUSED':
-      return 'paused';
+      return 'dropped';
     case 'DROPPED':
-      return 'paused';
+      return 'dropped';
     default:
       return 'wantToRead';
   }
