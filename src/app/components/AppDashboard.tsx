@@ -58,19 +58,6 @@ export function AppDashboard(props: AppDashboardProps) {
     setActiveMenu,
   } = props;
 
-  // Compute dashboard features from allComics
-  const statusBreakdown = {
-    inginDibaca: allComics.filter(c => c.reading_status === 'Ingin Dibaca').length,
-    sedangDibaca: allComics.filter(c => c.reading_status === 'Sedang Dibaca').length,
-    sudahDibaca: allComics.filter(c => c.reading_status === 'Sudah Dibaca').length,
-  };
-
-  const quickStats = {
-    totalChapters: allComics.reduce((sum, c) => sum + (c.chapter || 0), 0),
-    averageRating: allComics.length > 0
-      ? (allComics.reduce((sum, c) => sum + (c.rating || 0), 0) / allComics.length).toFixed(1)
-      : '0',
-  };
 
   return (
     <section className="dashboard-shell">
@@ -89,18 +76,11 @@ export function AppDashboard(props: AppDashboardProps) {
             </button>
           </div>
         </div>
-        <div className="dashboard-visual">
-          {dashboardBars.map((bar) => (
-            <div className="dashboard-bar" key={bar.label}>
-              <div className="dashboard-bar-head">
-                <span>{bar.label}</span>
-                <strong>{bar.value}</strong>
-              </div>
-              <div className="dashboard-bar-track">
-                <div className="dashboard-bar-fill" style={{ width: `${Math.min(100, 20 + bar.value * 12)}%`, background: bar.accent }} />
-              </div>
-            </div>
-          ))}
+        <div className="dashboard-stats-simple">
+          <div className="dashboard-stat-simple">
+            <span>{tr('Total Komik', 'Total Comics')}</span>
+            <strong>{allComics.length}</strong>
+          </div>
         </div>
       </section>
       <section className="dashboard-feed-grid">
@@ -163,79 +143,6 @@ export function AppDashboard(props: AppDashboardProps) {
             )}
           </div>
         </article>
-        <article className="panel dashboard-feed-panel continue-reading-panel">
-          <div className="dashboard-section-head">
-            <div>
-              <p className="eyebrow">{tr('Lanjutan', 'Continue')}</p>
-              <h3>{tr('Sedang Dibaca', 'In Progress')}</h3>
-            </div>
-          </div>
-          <div className="dashboard-comic-strip">
-            {recentComics
-              .filter((comic) => comic.reading_status === 'Sedang Dibaca')
-              .slice(0, 5).length === 0 ? (
-              <p className="dashboard-empty">{tr('Belum ada komik yang sedang dibaca.', 'No comics in progress.')}</p>
-            ) : (
-              recentComics
-                .filter((comic) => comic.reading_status === 'Sedang Dibaca')
-                .slice(0, 5)
-                .map((comic) => (
-                  <button type="button" className="dashboard-comic-card" key={comic.id} onClick={() => openComicPage(comic.id)}>
-                    <span className={shouldHideAdultCover(comic) ? 'dashboard-comic-cover adult-cover-hidden' : 'dashboard-comic-cover'}>
-                      <b>{comic.title.trim().charAt(0).toUpperCase() || '?'}</b>
-                      {shouldHideAdultCover(comic) ? (
-                        <AdultCoverNotice locale={locale} />
-                      ) : comic.cover_url ? (
-                        <img src={comic.cover_url} alt="" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
-                      ) : null}
-                    </span>
-                    <span className="dashboard-comic-copy">
-                      <strong>{comic.title}</strong>
-                      <small>Ch. {comic.chapter || 0}</small>
-                      <time>{formatShortDate(comic.updated_at ?? comic.created_at, locale)}</time>
-                    </span>
-                  </button>
-                ))
-            )}
-          </div>
-        </article>
-      </section>
-      <section className="dashboard-features-grid">
-        <article className="panel dashboard-feature-card status-card">
-          <div className="feature-header">
-            <h4>{tr('Status Komik', 'Comic Status')}</h4>
-          </div>
-          <div className="status-breakdown">
-            <div className="status-item">
-              <span className="status-label">{tr('Ingin Dibaca', 'Want to Read')}</span>
-              <strong className="status-count tone-info">{statusBreakdown.inginDibaca}</strong>
-            </div>
-            <div className="status-item">
-              <span className="status-label">{tr('Sedang Dibaca', 'Reading')}</span>
-              <strong className="status-count tone-warning">{statusBreakdown.sedangDibaca}</strong>
-            </div>
-            <div className="status-item">
-              <span className="status-label">{tr('Sudah Dibaca', 'Finished')}</span>
-              <strong className="status-count tone-success">{statusBreakdown.sudahDibaca}</strong>
-            </div>
-          </div>
-        </article>
-        <article className="panel dashboard-feature-card stats-card">
-          <div className="feature-header">
-            <h4>{tr('Statistik Cepat', 'Quick Stats')}</h4>
-          </div>
-          <div className="quick-stats">
-            <div className="stat-row">
-              <span>{tr('Total Chapter', 'Total Chapters')}</span>
-              <strong>{quickStats.totalChapters}</strong>
-            </div>
-            <div className="stat-row">
-              <span>{tr('Rating Rata-rata', 'Average Rating')}</span>
-              <strong>⭐ {quickStats.averageRating}</strong>
-            </div>
-          </div>
-        </article>
-      </section>
       <section className={`dashboard-sync-strip tone-${messageTone}`}>
         <div>
           <span>{tr('Status cloud', 'Cloud status')}</span>
