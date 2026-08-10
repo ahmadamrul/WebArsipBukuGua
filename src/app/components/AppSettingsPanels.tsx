@@ -127,7 +127,16 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
 
   const handleExportJson = async () => {
     try {
-      await exportLibraryJson();
+      const jsonString = await exportLibraryJson();
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `arsip-buku-gua-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error(tr('Gagal mengekspor JSON:', 'Failed to export JSON:'), error);
     }
@@ -135,7 +144,15 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
 
   const handleExportBundle = async () => {
     try {
-      await exportLibraryBundle();
+      const blob = await exportLibraryBundle();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `arsip-buku-gua-bundle-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error(tr('Gagal mengekspor Bundle:', 'Failed to export Bundle:'), error);
     }
