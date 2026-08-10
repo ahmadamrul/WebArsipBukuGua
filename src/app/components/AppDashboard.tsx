@@ -126,19 +126,19 @@ export function AppDashboard(props: AppDashboardProps) {
             <div className="status-summary">
               <div className="status-summary-item want">
                 <span>{tr('Ingin dibaca', 'Want to read')}</span>
-                <strong>{allComics.filter(c => c.reading_status === 'Ingin Dibaca').length}</strong>
+                <strong>{allComics.filter(c => c.reading_status === 'wantToRead').length}</strong>
               </div>
               <div className="status-summary-item reading">
                 <span>{tr('Sedang dibaca', 'Reading')}</span>
-                <strong>{allComics.filter(c => c.reading_status === 'Sedang Dibaca').length}</strong>
+                <strong>{allComics.filter(c => c.reading_status === 'reading').length}</strong>
               </div>
               <div className="status-summary-item complete">
                 <span>{tr('Tamat', 'Completed')}</span>
-                <strong>{allComics.filter(c => c.reading_status === 'Sudah Dibaca').length}</strong>
+                <strong>{allComics.filter(c => c.reading_status === 'completed').length}</strong>
               </div>
               <div className="status-summary-item dropped">
                 <span>{tr('Dihentikan', 'Dropped')}</span>
-                <strong>{allComics.filter(c => c.reading_status === 'Dihentikan').length}</strong>
+                <strong>{allComics.filter(c => c.reading_status === 'dropped').length}</strong>
               </div>
             </div>
           </article>
