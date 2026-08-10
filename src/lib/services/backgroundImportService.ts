@@ -13,12 +13,26 @@ export interface ImportProgress {
   error?: string;
 }
 
+export interface DeadLinkRequest {
+  comicTitle: string;
+  failedUrl: string;
+  action?: 'ask' | 'skip' | 'retry';
+}
+
+export interface CollectionRequest {
+  kotatsuName: string;
+  comicCount: number;
+  action?: 'create' | 'skip';
+}
+
 export interface ImportReport {
   total: number;
   successful: number;
   skipped: number;
   failed: number;
   failedComics: Array<{ title: string; reason: string }>;
+  deadLinks: DeadLinkRequest[];
+  newCollections: CollectionRequest[];
   duration: number;
 }
 
@@ -85,6 +99,8 @@ export async function startBackgroundImport(comics: ImportedKotatsuComic[]) {
 async function importComicsBackground(comics: ImportedKotatsuComic[]) {
   const startTime = Date.now();
   const failedComics: Array<{ title: string; reason: string }> = [];
+  const deadLinks: DeadLinkRequest[] = [];
+  const newCollections: Map<string, number> = new Map(); // categoryName -> comicCount
 
   try {
     for (let i = 0; i < comics.length; i++) {
@@ -95,18 +111,27 @@ async function importComicsBackground(comics: ImportedKotatsuComic[]) {
       try {
         let { title, sourceUrl, sourceName, coverUrl, genre, author, readingStatus, currentChapter, currentPage, progressPercent, categoryName } = comic;
 
-        // Auto-detect metadata if missing
+        // Track new collections
+        if (categoryName) {
+          newCollections.set(categoryName, (newCollections.get(categoryName) ?? 0) + 1);
+        }
+
+        // Auto-detect metadata if missing (skip if we have both)
         if ((!coverUrl || !genre) && sourceUrl) {
           try {
-            const detected = await detectMetadata(sourceUrl);
-            if (detected) {
-              if (!coverUrl && detected.coverUrl) coverUrl = detected.coverUrl;
-              if (!genre && detected.genres && Array.isArray(detected.genres)) {
-                genre = detected.genres.join(', ');
+            // Only detect if we're missing critical data
+            if (!coverUrl || !genre) {
+              const detected = await detectMetadata(sourceUrl);
+              if (detected) {
+                if (!coverUrl && detected.coverUrl) coverUrl = detected.coverUrl;
+                if (!genre && detected.genres && Array.isArray(detected.genres)) {
+                  genre = detected.genres.join(', ');
+                }
               }
             }
           } catch (err) {
             console.warn(`Failed to detect metadata for ${title}:`, err);
+            // Continue without metadata - don't fail the entire import
           }
         }
 
@@ -163,6 +188,11 @@ async function importComicsBackground(comics: ImportedKotatsuComic[]) {
       skipped: currentProgress.skipped,
       failed: currentProgress.failed,
       failedComics,
+      deadLinks,
+      newCollections: Array.from(newCollections.entries()).map(([name, count]) => ({
+        kotatsuName: name,
+        comicCount: count,
+      })),
       duration,
     };
 

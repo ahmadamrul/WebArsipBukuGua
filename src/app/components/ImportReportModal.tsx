@@ -4,6 +4,8 @@ export interface ImportReport {
   skipped: number;
   failed: number;
   failedComics: Array<{ title: string; reason: string }>;
+  deadLinks?: Array<{ comicTitle: string; failedUrl: string }>;
+  newCollections?: Array<{ kotatsuName: string; comicCount: number }>;
   duration: number;
 }
 
@@ -58,6 +60,21 @@ export function ImportReportModal({ report, isOpen, onClose, tr }: ImportReportM
           <div style={styles.duration}>
             ⏱️ {tr('Durasi: ', 'Duration: ')}{(report.duration / 1000).toFixed(1)}s
           </div>
+
+          {/* New Collections */}
+          {report.newCollections && report.newCollections.length > 0 && (
+            <div style={styles.section}>
+              <h3 style={styles.sectionTitle}>📁 {tr('Koleksi baru', 'New collections')}</h3>
+              <div style={styles.failedList}>
+                {report.newCollections.map((item, i) => (
+                  <div key={i} style={styles.failedItem}>
+                    <div style={styles.failedTitle}>{item.kotatsuName}</div>
+                    <small style={styles.failedReason}>{item.comicCount} komik</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Failed Items */}
           {report.failed > 0 && (
