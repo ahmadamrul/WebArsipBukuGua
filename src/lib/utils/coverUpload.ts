@@ -62,7 +62,14 @@ export async function uploadCoverToStorage(
     const { data: proxyData, error: invokeError } = await supabase.functions.invoke('cover-proxy', {
       body: { coverUrl },
     });
-    if (invokeError) throw invokeError;
+    if (invokeError) {
+      const context = (invokeError as { context?: Response }).context;
+      if (context) {
+        const bodyText = await context.clone().text().catch(() => null);
+        console.error('cover-proxy error response:', context.status, bodyText);
+      }
+      throw invokeError;
+    }
     if (!proxyData) throw new Error('Cover proxy returned no data');
 
     const blob = proxyData instanceof Blob ? proxyData : new Blob([proxyData]);
