@@ -158,7 +158,7 @@ export function AppLibraryView(props: AppLibraryViewProps) {
                   ) : (
                     <CoverImage
                       comic={comic}
-                      alt={`Cover ${comic.title}`}
+                      alt=""
                       loading="lazy"
                     />
                   )}
