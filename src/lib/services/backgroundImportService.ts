@@ -75,7 +75,7 @@ async function importComicsBackground(comics: ImportedKotatsuComic[]) {
       notifyProgress();
 
       try {
-        let { title, sourceUrl, sourceName, coverUrl, genre, author, readingStatus } = comic;
+        let { title, sourceUrl, sourceName, coverUrl, genre, author, readingStatus, currentChapter, currentPage, progressPercent, categoryName } = comic;
 
         // Auto-detect metadata if missing
         if ((!coverUrl || !genre) && sourceUrl) {
@@ -92,6 +92,23 @@ async function importComicsBackground(comics: ImportedKotatsuComic[]) {
           }
         }
 
+        // Build history string with reading progress
+        let historyStr = '';
+        if (author) historyStr += `Author: ${author}`;
+        if (currentChapter) {
+          if (historyStr) historyStr += ' | ';
+          historyStr += `Chapter: ${currentChapter}`;
+        }
+        if (currentPage !== undefined) {
+          if (historyStr) historyStr += ', ';
+          historyStr += `Page: ${currentPage}`;
+        }
+        if (progressPercent !== undefined) {
+          if (historyStr) historyStr += ' (';
+          historyStr += `${Math.round(progressPercent * 100)}%`;
+          if (progressPercent !== undefined) historyStr += ')';
+        }
+
         const type = (readingStatus || 'wantToRead') as any;
         await addComic({
           title,
@@ -99,8 +116,8 @@ async function importComicsBackground(comics: ImportedKotatsuComic[]) {
           sourceName,
           coverUrl: coverUrl || undefined,
           genre,
-          collection: '',
-          history: author ? `Author: ${author}` : '',
+          collection: categoryName || '',
+          history: historyStr,
           readingStatus: type,
           coverStoragePath: undefined,
         });
