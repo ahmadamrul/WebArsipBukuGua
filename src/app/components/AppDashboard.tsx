@@ -143,6 +143,7 @@ export function AppDashboard(props: AppDashboardProps) {
             )}
           </div>
         </article>
+      </section>
       <section className={`dashboard-sync-strip tone-${messageTone}`}>
         <div>
           <span>{tr('Status cloud', 'Cloud status')}</span>
