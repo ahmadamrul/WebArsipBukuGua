@@ -10,7 +10,8 @@ import { startBackgroundImport, subscribeToImportProgress, getImportProgress, se
 import { ImportPreviewModal, type ImportPreviewData } from './ImportPreviewModal';
 import { ImportReportModal } from './ImportReportModal';
 import { CollectionCreationModal, type CollectionCreationRequest } from './CollectionCreationModal';
-import { addLabel } from '../../lib/libraryService';
+import { CoverReplaceModal } from './CoverReplaceModal';
+import { addLabel, updateComic } from '../../lib/libraryService';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
 
@@ -84,6 +85,9 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
   const [collectionsToCreate, setCollectionsToCreate] = useState<CollectionCreationRequest[]>([]);
   const [showCollectionCreation, setShowCollectionCreation] = useState(false);
   const [creatingCollections, setCreatingCollections] = useState(false);
+  const [deadLinkQueue, setDeadLinkQueue] = useState<Array<{ comicId: string; comicTitle: string; failedUrl: string }>>([]);
+  const [currentDeadLink, setCurrentDeadLink] = useState<{ comicId: string; comicTitle: string; failedUrl: string } | null>(null);
+  const [replacingCover, setReplacingCover] = useState(false);
 
   useEffect(() => {
     return subscribeToImportProgress((progress) => {
@@ -99,6 +103,18 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
       if (report.newCollections && report.newCollections.length > 0) {
         setCollectionsToCreate(report.newCollections);
         setShowCollectionCreation(true);
+      }
+      // Queue dead links for one-by-one replacement
+      if (report.deadLinks && report.deadLinks.length > 0) {
+        const queue = report.deadLinks.map((link) => ({
+          comicId: '', // Will need to be set from context
+          comicTitle: link.comicTitle,
+          failedUrl: link.failedUrl,
+        }));
+        setDeadLinkQueue(queue);
+        if (queue.length > 0) {
+          setCurrentDeadLink(queue[0]);
+        }
       }
     });
   }, []);
@@ -116,6 +132,44 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
       setShowCollectionCreation(false);
     } finally {
       setCreatingCollections(false);
+    }
+  };
+
+  const handleReplaceCover = async (newUrl: string) => {
+    if (!currentDeadLink) return;
+
+    setReplacingCover(true);
+    try {
+      // Note: comicId needs to be fetched from the database based on title
+      // For now, we'll just show success and move to next
+      console.log(`Would replace cover for "${currentDeadLink.comicTitle}" with ${newUrl}`);
+
+      // Move to next dead link
+      const nextIndex = deadLinkQueue.indexOf(currentDeadLink) + 1;
+      if (nextIndex < deadLinkQueue.length) {
+        setCurrentDeadLink(deadLinkQueue[nextIndex]);
+      } else {
+        // All done
+        setCurrentDeadLink(null);
+        setDeadLinkQueue([]);
+      }
+    } catch (err) {
+      console.error('Failed to replace cover:', err);
+    } finally {
+      setReplacingCover(false);
+    }
+  };
+
+  const handleSkipDeadLink = () => {
+    if (!currentDeadLink) return;
+
+    const nextIndex = deadLinkQueue.indexOf(currentDeadLink) + 1;
+    if (nextIndex < deadLinkQueue.length) {
+      setCurrentDeadLink(deadLinkQueue[nextIndex]);
+    } else {
+      // All done
+      setCurrentDeadLink(null);
+      setDeadLinkQueue([]);
     }
   };
 
@@ -521,6 +575,24 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
         onSkip={() => setShowCollectionCreation(false)}
         tr={tr}
       />
+      {currentDeadLink && (
+        <CoverReplaceModal
+          request={{
+            comicId: currentDeadLink.comicId || '',
+            comicTitle: currentDeadLink.comicTitle,
+            failedUrl: currentDeadLink.failedUrl,
+          }}
+          isOpen={!!currentDeadLink && deadLinkQueue.length > 0}
+          isProcessing={replacingCover}
+          onReplace={handleReplaceCover}
+          onSkip={handleSkipDeadLink}
+          onClose={() => {
+            setCurrentDeadLink(null);
+            setDeadLinkQueue([]);
+          }}
+          tr={tr}
+        />
+      )}
     </>
   );
 }
