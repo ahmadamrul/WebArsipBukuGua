@@ -910,10 +910,10 @@ input[type='file']::file-selector-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
+  padding: 6px 8px;
   background: linear-gradient(135deg, rgba(139, 184, 255, 0.12), rgba(216, 236, 255, 0.08));
-  border: 1px solid rgba(120, 184, 255, 0.18);
-  border-radius: 10px;
+  border: 1px solid rgba(120, 184, 255, 0.16);
+  border-radius: 8px;
   transition:
     transform 200ms ease,
     box-shadow 200ms ease,
@@ -922,23 +922,23 @@ input[type='file']::file-selector-button {
 
 .dashboard-stat-simple:hover {
   transform: translateY(-1px);
-  border-color: rgba(120, 184, 255, 0.32);
-  box-shadow: 0 2px 8px rgba(120, 184, 255, 0.12);
+  border-color: rgba(120, 184, 255, 0.28);
+  box-shadow: 0 2px 6px rgba(120, 184, 255, 0.1);
 }
 
 .dashboard-stat-simple span {
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   font-weight: 600;
-  color: rgba(23, 48, 74, 0.68);
+  color: rgba(23, 48, 74, 0.65);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 
 .dashboard-stat-simple strong {
-  font-size: 1.35rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #0d47a1;
-  margin-left: 8px;
+  margin-left: 6px;
 }
 
 .dashboard-feed-grid {
