@@ -75,6 +75,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
 
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
+    const inputEl = event.currentTarget;
     if (!file) return;
 
     setImportingFile(true);
@@ -101,8 +102,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
             console.error(`Failed to import ${comic.title}:`, err);
           }
         }
-        const message = tr(`${successCount} komik berhasil diimpor dari Kotatsu.`, `${successCount} comics imported from Kotatsu.`);
-        console.log(message);
+        console.log(tr(`${successCount} komik berhasil diimpor dari Kotatsu.`, `${successCount} comics imported from Kotatsu.`));
       } else if (file.name.endsWith('.json')) {
         const text = await file.text();
         await importLibraryJson(text);
@@ -119,7 +119,9 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
       console.error(tr('Gagal mengimpor file:', 'Failed to import file:'), message);
     } finally {
       setImportingFile(false);
-      event.currentTarget.value = '';
+      if (inputEl) {
+        inputEl.value = '';
+      }
     }
   };
 
