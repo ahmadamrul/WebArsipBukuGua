@@ -80,22 +80,23 @@ export async function parseKotatsuBackup(file: File): Promise<ImportedKotatsuCom
   }
 
   return mangas
-    .filter((item) => item.manga && item.manga.title)
+    .filter((item) => item.manga && item.manga.title && item.manga.public_url)
     .map((item) => {
       const manga = item.manga;
       const coverUrl = manga.large_cover_url || manga.cover_url;
-      const genres = manga.tags.map((tag) => tag.title).join(', ');
+      const tags = Array.isArray(manga.tags) ? manga.tags : [];
+      const genres = tags.map((tag) => tag?.title || '').filter(Boolean).join(', ');
 
       return {
-        title: manga.title.trim(),
-        sourceUrl: manga.public_url,
-        sourceName: manga.source || 'Kotatsu',
-        coverUrl: coverUrl || null,
-        author: manga.author || '',
+        title: String(manga.title || '').trim(),
+        sourceUrl: String(manga.public_url || ''),
+        sourceName: String(manga.source || 'Kotatsu'),
+        coverUrl: coverUrl ? String(coverUrl) : null,
+        author: String(manga.author || ''),
         genre: genres,
-        readingStatus: mapKotatsuState(manga.state),
-        rating: mapRating(manga.rating),
-        nsfw: manga.nsfw || manga.content_rating === 'NSFW',
+        readingStatus: mapKotatsuState(String(manga.state || '')),
+        rating: mapRating(typeof manga.rating === 'number' ? manga.rating : 0),
+        nsfw: manga.nsfw === true || manga.content_rating === 'NSFW',
       };
     });
 }
