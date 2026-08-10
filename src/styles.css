@@ -253,8 +253,8 @@
 .eyebrow {
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  font-size: 0.6rem;
   color: rgba(24, 38, 54, 0.54);
 }
 
@@ -694,10 +694,10 @@ input[type='file']::file-selector-button {
 }
 
 .dashboard-copy h2 {
-  margin-top: 4px;
-  font-size: clamp(1.15rem, 1.6vw, 1.5rem);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  margin-top: 2px;
+  font-size: clamp(0.95rem, 1.4vw, 1.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   max-width: 18ch;
 }
 
@@ -788,9 +788,9 @@ input[type='file']::file-selector-button {
 
 .dashboard-copy .hero-copy {
   max-width: 60ch;
-  margin-top: 8px;
+  margin-top: 4px;
   color: rgba(23, 48, 74, 0.72);
-  font-size: 0.86rem;
+  font-size: 0.75rem;
 }
 
 .compact {
@@ -988,17 +988,17 @@ input[type='file']::file-selector-button {
 }
 
 .status-summary-item span {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 600;
   color: rgba(23, 48, 74, 0.62);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 6px;
-  line-height: 1.2;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+  line-height: 1.1;
 }
 
 .status-summary-item strong {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 700;
 }
 
@@ -1057,7 +1057,9 @@ input[type='file']::file-selector-button {
 }
 
 .dashboard-section-head h3 {
-  margin-top: 3px;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 0.95rem;
 }
 
 .dashboard-comic-strip {
