@@ -957,6 +957,76 @@ input[type='file']::file-selector-button {
     radial-gradient(circle at 100% 0, rgba(119, 181, 255, 0.18), transparent 32%), rgba(255, 255, 255, 0.94);
 }
 
+.status-summary-panel {
+  background:
+    radial-gradient(circle at 100% 0, rgba(255, 193, 7, 0.15), transparent 35%), rgba(255, 255, 255, 0.94);
+}
+
+.status-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.status-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  transition:
+    background 200ms ease,
+    transform 200ms ease;
+}
+
+.status-summary-item span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(23, 48, 74, 0.62);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.status-summary-item strong {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.status-summary-item.want {
+  background: rgba(3, 155, 229, 0.08);
+  border: 1px solid rgba(3, 155, 229, 0.16);
+}
+
+.status-summary-item.want strong {
+  color: #0066cc;
+}
+
+.status-summary-item.reading {
+  background: rgba(255, 152, 0, 0.08);
+  border: 1px solid rgba(255, 152, 0, 0.16);
+}
+
+.status-summary-item.reading strong {
+  color: #ff6d00;
+}
+
+.status-summary-item.complete {
+  background: rgba(76, 175, 80, 0.08);
+  border: 1px solid rgba(76, 175, 80, 0.16);
+}
+
+.status-summary-item.complete strong {
+  color: #388e3c;
+}
+
+.status-summary-item:hover {
+  transform: translateY(-2px);
+  background: rgba(120, 184, 255, 0.12);
+}
+
 .activity-panel {
   background:
     radial-gradient(circle at 100% 0, rgba(85, 213, 186, 0.2), transparent 34%), rgba(255, 255, 255, 0.94);
