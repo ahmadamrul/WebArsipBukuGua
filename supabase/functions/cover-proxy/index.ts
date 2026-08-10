@@ -1,22 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
+      headers: CORS_HEADERS,
     });
   }
 
   if (req.method !== "GET" && req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
-      headers: { "Access-Control-Allow-Origin": "*" },
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 
@@ -34,7 +37,7 @@ serve(async (req) => {
     if (!coverUrl) {
       return new Response(JSON.stringify({ error: "Missing coverUrl" }), {
         status: 400,
-        headers: { "Access-Control-Allow-Origin": "*" },
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
 
@@ -50,7 +53,7 @@ serve(async (req) => {
         JSON.stringify({ error: `Failed to fetch image: ${response.statusText}` }),
         {
           status: response.status,
-          headers: { "Access-Control-Allow-Origin": "*" },
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
         }
       );
     }
@@ -61,15 +64,15 @@ serve(async (req) => {
     return new Response(buffer, {
       status: 200,
       headers: {
+        ...CORS_HEADERS,
         "Content-Type": contentType,
-        "Access-Control-Allow-Origin": "*",
         "Cache-Control": "public, max-age=3600",
       },
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { "Access-Control-Allow-Origin": "*" },
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 });
