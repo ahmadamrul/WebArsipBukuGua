@@ -152,14 +152,31 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
                             <small style={styles.error}>{result.error || 'URL tidak dapat diakses'}</small>
                           </div>
                         </label>
-                        <input
-                          type="url"
-                          placeholder={tr('URL gambar baru...', 'New cover URL...')}
-                          value={replacements.get(result.comicId) || ''}
-                          onChange={(e) => handleUpdateUrl(result.comicId, e.target.value)}
-                          disabled={replacing}
-                          style={styles.urlInput}
-                        />
+                        <div style={styles.urlSection}>
+                          <small style={styles.oldUrlLabel}>
+                            {tr('URL yang gagal:', 'Failed URL:')}
+                          </small>
+                          <code
+                            style={styles.oldUrl}
+                            onClick={() => {
+                              navigator.clipboard.writeText(result.currentUrl);
+                            }}
+                            title={tr('Klik untuk copy', 'Click to copy')}
+                          >
+                            {result.currentUrl}
+                          </code>
+                          <small style={styles.newUrlLabel}>
+                            {tr('URL baru:', 'New URL:')}
+                          </small>
+                          <input
+                            type="url"
+                            placeholder={tr('https://contoh.com/gambar.jpg', 'https://example.com/image.jpg')}
+                            value={replacements.get(result.comicId) || ''}
+                            onChange={(e) => handleUpdateUrl(result.comicId, e.target.value)}
+                            disabled={replacing}
+                            style={styles.urlInput}
+                          />
+                        </div>
                       </div>
                     ))}
                 </div>
@@ -273,10 +290,37 @@ const styles = {
     color: '#d32f2f',
     fontSize: '12px',
   },
+  urlSection: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '6px',
+  },
+  oldUrlLabel: {
+    color: '#999',
+    fontSize: '11px',
+    fontWeight: '500',
+  },
+  oldUrl: {
+    display: 'block',
+    padding: '8px 12px',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '4px',
+    fontSize: '11px',
+    wordBreak: 'break-all' as const,
+    cursor: 'pointer',
+    border: '1px solid #ddd',
+    color: '#d32f2f',
+  },
+  newUrlLabel: {
+    color: '#666',
+    fontSize: '11px',
+    fontWeight: '500',
+    marginTop: '4px',
+  },
   urlInput: {
     width: '100%',
     padding: '8px 12px',
-    border: '1px solid #ddd',
+    border: '1px solid #2196f3',
     borderRadius: '4px',
     fontSize: '12px',
     fontFamily: 'monospace',
