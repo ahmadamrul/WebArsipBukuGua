@@ -10,7 +10,6 @@ import {
   type ComicSourceLink,
 } from '../../features/sources';
 import { toDebugMessage, toErrorMessage } from '../../lib/utils/errors';
-import { uploadCoverToStorage } from '../../lib/utils/coverUpload';
 
 type SetState<T> = (value: T | ((current: T) => T)) => void;
 export type ComicFormActionsDeps = {
@@ -187,14 +186,8 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
           return;
         }
 
-        const createdComicId = await addComic({ ...payload, coverUrl: undefined, coverStoragePath: undefined });
+        const createdComicId = await addComic({ ...payload, coverStoragePath: undefined });
         if (!createdComicId) throw new Error(tr('Komik gagal dibuat.', 'Comic could not be created.'));
-        if (payload.coverUrl) {
-          const storageCoverUrl = await uploadCoverToStorage(createdComicId, payload.coverUrl);
-          if (storageCoverUrl) {
-            await updateComic(createdComicId, { coverUrl: storageCoverUrl });
-          }
-        }
         for (const sourceLink of sourceLinks) {
           await addComicSource({
             comicId: createdComicId,
@@ -208,7 +201,6 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
         setSelectedComicId(createdComicId);
         setActiveComicId(createdComicId);
       } else if (formMode === 'edit' && selectedComicId) {
-        const previousComic = comics.find((comic) => comic.id === selectedComicId) ?? null;
         await updateComic(selectedComicId, { ...payload, coverUrl: payload.coverUrl || undefined });
         const persistedSources = sources.filter((source) => source.comic_id === selectedComicId);
         const persistedSourceIds = new Set(persistedSources.map((source) => source.id));
@@ -230,12 +222,6 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
         for (const source of persistedSources) {
           if (!submittedSourceIds.has(source.id)) {
             await deleteComicSource(source.id);
-          }
-        }
-        if (payload.coverUrl) {
-          const storageCoverUrl = await uploadCoverToStorage(selectedComicId, payload.coverUrl);
-          if (storageCoverUrl) {
-            await updateComic(selectedComicId, { coverUrl: storageCoverUrl });
           }
         }
         const currentLabelIds = new Set(comicLabels.filter((link) => link.comic_id === selectedComicId).map((link) => link.label_id));
