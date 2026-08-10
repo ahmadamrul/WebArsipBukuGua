@@ -41,10 +41,17 @@ serve(async (req) => {
       });
     }
 
+    // Many sites block hotlinking unless the request looks like it came from a
+    // browser tab on their own site - send a matching Referer/Origin.
+    const sourceOrigin = new URL(coverUrl).origin;
+
     // Fetch the image from the URL
     const response = await fetch(coverUrl, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Referer": sourceOrigin + "/",
+        "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
       },
     });
 
@@ -59,6 +66,18 @@ serve(async (req) => {
     }
 
     const contentType = response.headers.get("content-type") || "image/jpeg";
+    if (!contentType.startsWith("image/")) {
+      return new Response(
+        JSON.stringify({
+          error: `Source did not return an image (got ${contentType}) - likely blocked by hotlink protection`,
+        }),
+        {
+          status: 502,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const buffer = await response.arrayBuffer();
 
     return new Response(buffer, {
