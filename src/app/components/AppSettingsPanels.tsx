@@ -14,6 +14,7 @@ import { CollectionCreationModal, type CollectionCreationRequest } from './Colle
 import { CoverReplaceModal } from './CoverReplaceModal';
 import { URLCheckerPanel, type URLCheckResult } from './URLCheckerPanel';
 import { addLabel } from '../../lib/libraryService';
+import { getPrimaryCoverUrl } from '../../lib/utils/cover';
 
 type TFunction = typeof import('../../features/settings/services/localization').localeLabels.id;
 
@@ -181,7 +182,12 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     const results: URLCheckResult[] = [];
 
     for (const comic of allComics) {
-      if (!comic.cover_url) {
+      // Check the effective primary cover — cover_urls[0] if alternatives were
+      // added, otherwise the legacy cover_url — not just the legacy field alone.
+      // Otherwise a comic that was already fixed via an alternative URL keeps
+      // showing up as dead forever, since cover_url itself never changes.
+      const primaryCoverUrl = getPrimaryCoverUrl(comic);
+      if (!primaryCoverUrl) {
         continue;
       }
 
@@ -203,15 +209,15 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
           resolve(false);
         };
 
-        img.src = comic.cover_url;
+        img.src = primaryCoverUrl;
       });
 
       results.push({
         comicId: comic.id,
         comicTitle: comic.title,
         sourceName: comic.source_name || 'Unknown',
-        currentUrl: comic.cover_url,
-        coverUrl: imageLoaded ? comic.cover_url : undefined,
+        currentUrl: primaryCoverUrl,
+        coverUrl: imageLoaded ? primaryCoverUrl : undefined,
         genre: comic.genre,
         isAlive: imageLoaded,
         error: !imageLoaded ? tr('Gambar tidak dapat dimuat', 'Image failed to load') : undefined,
