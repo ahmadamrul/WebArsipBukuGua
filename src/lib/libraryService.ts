@@ -1555,6 +1555,89 @@ function labelTable(kind: string) {
   return kind === 'genre' ? 'library_genres' : kind === 'tag' ? 'library_tags' : 'library_collections';
 }
 
+// Cover URL management for multiple URL support
+export async function addAlternativeCoverUrl(comicId: string, url: string) {
+  const user = await requireUser();
+  const normalizedUrl = url.trim();
+
+  // Get current URLs
+  const { data: comic, error: fetchError } = await supabase!
+    .from('comics')
+    .select('cover_urls, cover_url')
+    .eq('id', comicId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (fetchError) throw new Error(formatSupabaseError(fetchError));
+
+  // Build URL array
+  const urls = Array.isArray(comic?.cover_urls) ? comic.cover_urls : [];
+  if (!urls.includes(normalizedUrl)) {
+    urls.unshift(normalizedUrl); // Add as primary
+  }
+
+  // Update comic
+  const { error } = await supabase!
+    .from('comics')
+    .update({
+      cover_urls: urls,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', comicId)
+    .eq('user_id', user.id);
+
+  if (error) throw new Error(formatSupabaseError(error));
+}
+
+export async function removeAlternativeCoverUrl(comicId: string, url: string) {
+  const user = await requireUser();
+
+  const { data: comic, error: fetchError } = await supabase!
+    .from('comics')
+    .select('cover_urls')
+    .eq('id', comicId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (fetchError) throw new Error(formatSupabaseError(fetchError));
+
+  const urls = Array.isArray(comic?.cover_urls) ? comic.cover_urls : [];
+  const filtered = urls.filter((u: string) => u !== url);
+
+  const { error } = await supabase!
+    .from('comics')
+    .update({
+      cover_urls: filtered.length > 0 ? filtered : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', comicId)
+    .eq('user_id', user.id);
+
+  if (error) throw new Error(formatSupabaseError(error));
+}
+
+export async function getAllCoverUrls(comicId: string): Promise<string[]> {
+  const user = await requireUser();
+
+  const { data: comic, error } = await supabase!
+    .from('comics')
+    .select('cover_urls, cover_url')
+    .eq('id', comicId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (error) throw new Error(formatSupabaseError(error));
+
+  const urls: string[] = [];
+  if (Array.isArray(comic?.cover_urls)) {
+    urls.push(...comic.cover_urls);
+  } else if (comic?.cover_url) {
+    urls.push(comic.cover_url);
+  }
+
+  return urls;
+}
+
 export async function updateProgress(comicId: string, pageIndex: number, chapterLabel?: string) {
   const user = await requireUser();
   const progress = {
