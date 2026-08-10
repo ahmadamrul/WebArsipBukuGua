@@ -506,6 +506,7 @@ export default function App() {
             stats={stats}
             recentComics={recentComics}
             dashboardActivities={dashboardActivities}
+            allComics={comics}
             shouldHideAdultCover={shouldHideAdultCover}
             openComicPage={openComicPage}
             handleAddComic={handleAddComic}

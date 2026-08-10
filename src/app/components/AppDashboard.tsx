@@ -30,6 +30,7 @@ type AppDashboardProps = {
   stats: DashboardStat[];
   recentComics: Comic[];
   dashboardActivities: DashboardActivity[];
+  allComics: Comic[];
   shouldHideAdultCover: (comic: Comic | null | undefined) => boolean;
   openComicPage: (comicId: string) => void;
   handleAddComic: () => void;
@@ -50,11 +51,44 @@ export function AppDashboard(props: AppDashboardProps) {
     stats,
     recentComics,
     dashboardActivities,
+    allComics,
     shouldHideAdultCover,
     openComicPage,
     handleAddComic,
     setActiveMenu,
   } = props;
+
+  // Compute dashboard features from allComics
+  const statusBreakdown = {
+    inginDibaca: allComics.filter(c => c.reading_status === 'Ingin Dibaca').length,
+    sedangDibaca: allComics.filter(c => c.reading_status === 'Sedang Dibaca').length,
+    sudahDibaca: allComics.filter(c => c.reading_status === 'Sudah Dibaca').length,
+  };
+
+  const topRatedComics = allComics
+    .filter(c => c.rating && c.rating > 0)
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 5);
+
+  const favoriteComics = allComics.filter(c => c.favorite).slice(0, 5);
+
+  const genreMap = new Map<string, number>();
+  allComics.forEach(comic => {
+    // Count genres - would need genre data from comic object
+    // For now, we'll add placeholder
+  });
+
+  const mostReadComics = allComics
+    .filter(c => c.chapter && c.chapter > 0)
+    .sort((a, b) => (b.chapter || 0) - (a.chapter || 0))
+    .slice(0, 5);
+
+  const quickStats = {
+    totalChapters: allComics.reduce((sum, c) => sum + (c.chapter || 0), 0),
+    averageRating: allComics.length > 0
+      ? (allComics.reduce((sum, c) => sum + (c.rating || 0), 0) / allComics.length).toFixed(1)
+      : '0',
+  };
 
   return (
     <section className="dashboard-shell">
@@ -142,6 +176,96 @@ export function AppDashboard(props: AppDashboardProps) {
                     <small>{activity.label} · {activity.detail}</small>
                   </span>
                   <time>{formatShortDate(activity.timestamp, locale)}</time>
+                </button>
+              ))
+            )}
+          </div>
+        </article>
+      </section>
+      <section className="dashboard-features-grid">
+        <article className="panel dashboard-feature-card status-card">
+          <div className="feature-header">
+            <h4>{tr('Status Komik', 'Comic Status')}</h4>
+          </div>
+          <div className="status-breakdown">
+            <div className="status-item">
+              <span className="status-label">{tr('Ingin Dibaca', 'Want to Read')}</span>
+              <strong className="status-count tone-info">{statusBreakdown.inginDibaca}</strong>
+            </div>
+            <div className="status-item">
+              <span className="status-label">{tr('Sedang Dibaca', 'Reading')}</span>
+              <strong className="status-count tone-warning">{statusBreakdown.sedangDibaca}</strong>
+            </div>
+            <div className="status-item">
+              <span className="status-label">{tr('Sudah Dibaca', 'Finished')}</span>
+              <strong className="status-count tone-success">{statusBreakdown.sudahDibaca}</strong>
+            </div>
+          </div>
+        </article>
+        <article className="panel dashboard-feature-card stats-card">
+          <div className="feature-header">
+            <h4>{tr('Statistik Cepat', 'Quick Stats')}</h4>
+          </div>
+          <div className="quick-stats">
+            <div className="stat-row">
+              <span>{tr('Total Chapter', 'Total Chapters')}</span>
+              <strong>{quickStats.totalChapters}</strong>
+            </div>
+            <div className="stat-row">
+              <span>{tr('Rating Rata-rata', 'Average Rating')}</span>
+              <strong>⭐ {quickStats.averageRating}</strong>
+            </div>
+          </div>
+        </article>
+        <article className="panel dashboard-feature-card favorites-card">
+          <div className="feature-header">
+            <h4>❤️ {tr('Favorit', 'Favorites')}</h4>
+            <span className="feature-count">{favoriteComics.length}</span>
+          </div>
+          <div className="feature-list">
+            {favoriteComics.length === 0 ? (
+              <p className="feature-empty">{tr('Belum ada favorit', 'No favorites yet')}</p>
+            ) : (
+              favoriteComics.map((comic) => (
+                <button type="button" className="feature-item" key={comic.id} onClick={() => openComicPage(comic.id)}>
+                  <span className="item-title">{comic.title}</span>
+                  {comic.rating ? <span className="item-rating">⭐ {comic.rating}</span> : null}
+                </button>
+              ))
+            )}
+          </div>
+        </article>
+        <article className="panel dashboard-feature-card top-rated-card">
+          <div className="feature-header">
+            <h4>⭐ {tr('Top Rating', 'Top Rated')}</h4>
+            <span className="feature-count">{topRatedComics.length}</span>
+          </div>
+          <div className="feature-list">
+            {topRatedComics.length === 0 ? (
+              <p className="feature-empty">{tr('Belum ada rating', 'No ratings yet')}</p>
+            ) : (
+              topRatedComics.map((comic) => (
+                <button type="button" className="feature-item" key={comic.id} onClick={() => openComicPage(comic.id)}>
+                  <span className="item-title">{comic.title}</span>
+                  <span className="item-rating">⭐ {comic.rating}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </article>
+        <article className="panel dashboard-feature-card most-read-card">
+          <div className="feature-header">
+            <h4>📖 {tr('Paling Dibaca', 'Most Read')}</h4>
+            <span className="feature-count">{mostReadComics.length}</span>
+          </div>
+          <div className="feature-list">
+            {mostReadComics.length === 0 ? (
+              <p className="feature-empty">{tr('Belum ada chapter', 'No chapters yet')}</p>
+            ) : (
+              mostReadComics.map((comic) => (
+                <button type="button" className="feature-item" key={comic.id} onClick={() => openComicPage(comic.id)}>
+                  <span className="item-title">{comic.title}</span>
+                  <span className="item-chapter">{comic.chapter} {tr('ch', 'ch')}</span>
                 </button>
               ))
             )}
