@@ -118,26 +118,27 @@ export function AppDashboard(props: AppDashboardProps) {
             )}
           </div>
         </article>
-        <article className="panel dashboard-feed-panel status-summary-panel">
-          <div className="dashboard-section-head">
-            <h3>{tr('Status Komik', 'Comic Status')}</h3>
-          </div>
-          <div className="status-summary">
-            <div className="status-summary-item want">
-              <span>{tr('Ingin Dibaca', 'Want to Read')}</span>
-              <strong>{allComics.filter(c => c.reading_status === 'Ingin Dibaca').length}</strong>
+        <div className="dashboard-side-column">
+          <article className="panel dashboard-feed-panel status-summary-panel">
+            <div className="dashboard-section-head">
+              <h3>{tr('Status Komik', 'Comic Status')}</h3>
             </div>
-            <div className="status-summary-item reading">
-              <span>{tr('Sedang Dibaca', 'Reading')}</span>
-              <strong>{allComics.filter(c => c.reading_status === 'Sedang Dibaca').length}</strong>
+            <div className="status-summary">
+              <div className="status-summary-item want">
+                <span>{tr('Ingin Dibaca', 'Want to Read')}</span>
+                <strong>{allComics.filter(c => c.reading_status === 'Ingin Dibaca').length}</strong>
+              </div>
+              <div className="status-summary-item reading">
+                <span>{tr('Sedang Dibaca', 'Reading')}</span>
+                <strong>{allComics.filter(c => c.reading_status === 'Sedang Dibaca').length}</strong>
+              </div>
+              <div className="status-summary-item complete">
+                <span>{tr('Sudah Dibaca', 'Complete')}</span>
+                <strong>{allComics.filter(c => c.reading_status === 'Sudah Dibaca').length}</strong>
+              </div>
             </div>
-            <div className="status-summary-item complete">
-              <span>{tr('Sudah Dibaca', 'Complete')}</span>
-              <strong>{allComics.filter(c => c.reading_status === 'Sudah Dibaca').length}</strong>
-            </div>
-          </div>
-        </article>
-        <article className="panel dashboard-feed-panel activity-panel">
+          </article>
+          <article className="panel dashboard-feed-panel activity-panel">
           <div className="dashboard-section-head">
             <div>
               <p className="eyebrow">{tr('Aktivitas', 'Activity')}</p>
@@ -162,6 +163,7 @@ export function AppDashboard(props: AppDashboardProps) {
             )}
           </div>
         </article>
+        </div>
       </section>
       <section className={`dashboard-sync-strip tone-${messageTone}`}>
         <div>
