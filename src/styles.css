@@ -1294,10 +1294,14 @@ input[type='file']::file-selector-button {
 .library-filter-panel {
   min-width: 0;
   align-self: start;
-  padding: 10px;
-  gap: 8px;
+  padding: 14px;
+  gap: 12px;
   max-height: 50vh;
   overflow-y: auto;
+  background: linear-gradient(180deg, #fafbfc 0%, #f5f8fb 100%);
+  border-radius: 12px;
+  border: 1px solid #e8ecf1;
+  box-shadow: 0 2px 8px rgba(23, 48, 74, 0.05);
 }
 
 .library-detail-stack {
@@ -1314,7 +1318,15 @@ input[type='file']::file-selector-button {
 .library-filter-panel .filters-title {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.library-filter-panel .filters-title h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #17304a;
+  margin: 0;
 }
 
 .library-filter-panel .filters-title .eyebrow {
@@ -1323,6 +1335,13 @@ input[type='file']::file-selector-button {
 
 .library-filter-panel .filters-title .badge {
   justify-self: end;
+  background: linear-gradient(135deg, #c4e5ff, #b8f5e8);
+  color: #1a4d2e;
+  border: none;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
 }
 
 .library-filter-panel .filter-toolbar {
@@ -1332,20 +1351,48 @@ input[type='file']::file-selector-button {
 }
 
 .library-filter-panel .filters-search {
-  gap: 7px;
+  gap: 8px;
 }
 
 .library-filter-panel .search,
 .library-filter-panel .sort-select {
-  padding: 7px 9px;
-  min-height: 34px;
-  font-size: 0.78rem;
+  padding: 9px 12px;
+  min-height: 40px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  border: 1.5px solid #e0e8f0;
+  background: #fafbfc;
+  color: #17304a;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
+}
+
+.library-filter-panel .search:focus,
+.library-filter-panel .sort-select:focus {
+  outline: none;
+  border-color: #7dd3c0;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(120, 210, 190, 0.15);
 }
 
 .library-filter-panel .filter-toolbar button {
   flex: 1 1 auto;
-  padding: 7px 8px;
-  font-size: 0.72rem;
+  padding: 9px 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #e3f2fd, #f0f7ff);
+  color: #1565c0;
+  border: 1.5px solid #bbdefb;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease;
+}
+
+.library-filter-panel .filter-toolbar button:hover {
+  background: linear-gradient(135deg, #d3e9fc, #e0f0ff);
+  border-color: #90caf9;
 }
 
 .library-filter-panel .sort-select {
@@ -1358,16 +1405,45 @@ input[type='file']::file-selector-button {
 }
 
 .library-filter-panel .filter-group {
-  gap: 5px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 .library-filter-panel .filter-label {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #17304a;
+  display: block;
+  margin-bottom: 2px;
+  text-transform: capitalize;
 }
 
 .library-filter-panel .chip {
-  padding: 5px 7px;
-  font-size: 0.7rem;
+  padding: 8px 12px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background: #f0f4f9;
+  color: #2a5a8a;
+  border: 1.5px solid #e0e8f0;
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.library-filter-panel .chip:hover {
+  background: #e8f0f8;
+  border-color: #d0dce8;
+}
+
+.library-filter-panel .chip.active {
+  background: linear-gradient(135deg, #c4e5ff, #b8f5e8);
+  color: #1a4d2e;
+  border-color: #7dd3c0;
+  box-shadow: 0 2px 6px rgba(120, 210, 190, 0.2);
+  font-weight: 700;
 }
 
 .library-list-panel {

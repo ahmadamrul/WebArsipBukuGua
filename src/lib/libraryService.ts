@@ -1057,16 +1057,7 @@ function detectDomainSpecificGenres(hostname: string, html: string, document: Do
     ...collectMetaGenreCandidates(html, document),
     ...collectMarkdownGenreCandidates(html),
     ...collectContentBlockGenreCandidates(document),
-    ...collectRyukomikTitleGenreCandidates(document),
     ...collectGenericGenreLinkCandidates(document, html),
-  ]);
-}
-
-function collectRyukomikTitleGenreCandidates(document: Document) {
-  return filterMeaningfulGenres([
-    ...[...document.querySelectorAll('.rk-shell a[href^="/genre/"], .rk-shell a[href*="/genres/"], .rk-shell a[href*="/genre/"]')].map(
-      (node) => node.textContent ?? '',
-    ),
   ]);
 }
 

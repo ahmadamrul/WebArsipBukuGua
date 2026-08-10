@@ -162,9 +162,10 @@ export function useComicCoverCheck({
     const shouldRefreshTitle = !comicForm.title.trim();
     const shouldRefreshSourceName = !comicForm.sourceName.trim() || comicForm.sourceName === coverCheckState.sourceName;
     const shouldRefreshCover = !comicForm.coverUrl.trim() || comicForm.coverUrl === coverCheckState.coverUrl;
+    // Set loading immediately for instant UX feedback
+    setCoverCheckState((current) => ({ ...current, loading: true }));
     const timer = window.setTimeout(async () => {
       if (cancelled) return;
-      setCoverCheckState((current) => ({ ...current, loading: true }));
       try {
         const results: Awaited<ReturnType<typeof detectMetadata>>[] = [];
         const titleOptions: Array<{ title: string; sourceName: string; sourceUrl: string }> = [];
@@ -262,7 +263,7 @@ export function useComicCoverCheck({
           sourceResults: [],
         });
       }
-    }, 350);
+    }, 0);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
