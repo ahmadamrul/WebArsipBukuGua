@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { detectMetadata } from '../../lib/libraryService';
 
 export interface URLCheckResult {
@@ -41,7 +41,7 @@ export interface URLCheckerPanelProps {
   tr: (id: string, en: string) => string;
 }
 
-export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: URLCheckerPanelProps) {
+export function URLCheckerPanel({ comics, onCheck, onReplace, tr }: URLCheckerPanelProps) {
   const [results, setResults] = useState<URLCheckResult[]>([]);
   const [checking, setChecking] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -78,15 +78,6 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
     setSelectedIds(newSet);
   };
 
-  const handleUpdateUrl = (comicId: string, newUrl: string) => {
-    const newReplacements = new Map(replacements);
-    if (newUrl.trim()) {
-      newReplacements.set(comicId, newUrl.trim());
-    } else {
-      newReplacements.delete(comicId);
-    }
-    setReplacements(newReplacements);
-  };
 
   const handleSourceNameChange = (comicId: string, name: string) => {
     const newSourceNames = new Map(sourceNames);
@@ -225,7 +216,6 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
   };
 
   const deadCount = results.filter((r) => !r.isAlive).length;
-  const selectedCount = selectedIds.size;
   const replaceableCount = Array.from(replacements.values()).filter((url) => url.trim()).length;
 
   return (

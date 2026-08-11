@@ -48,8 +48,6 @@ export function AppDashboard(props: AppDashboardProps) {
     syncState,
     sessionEmail,
     debugError,
-    dashboardBars,
-    stats,
     recentComics,
     dashboardActivities,
     allComics,

@@ -70,7 +70,7 @@ export function buildDashboardBars(args: {
   dashboardProgresses: ReadingProgress[];
   tr: (indonesian: string, english: string) => string;
 }) {
-  const { dashboardComics, labels, dashboardProgresses, tr } = args;
+  const { dashboardComics, dashboardProgresses, tr } = args;
   return [
     { label: tr('Komik', 'Comics'), value: dashboardComics.length, accent: 'linear-gradient(180deg, #8bb8ff, #d8ecff)' },
     { label: tr('Riwayat baca', 'Reading history'), value: dashboardProgresses.length, accent: 'linear-gradient(180deg, #aacb7d, #eef7d8)' },
