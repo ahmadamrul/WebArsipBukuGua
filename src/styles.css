@@ -2002,14 +2002,26 @@ input[type='file']::file-selector-button {
   gap: 6px;
 }
 
+.adult-content-secondary-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: 12px;
+}
+
 .cover-manager-entry {
   width: 100%;
   min-width: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(var(--paper-rgb), 0.98), rgba(var(--paper-soft-rgb), 0.92));
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.05);
   text-align: left;
   color: var(--ink);
   cursor: pointer;
@@ -2082,6 +2094,7 @@ input[type='file']::file-selector-button {
 }
 
 .adult-content-mode-grid {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
@@ -4829,6 +4842,10 @@ input[type='number'] {
   }
 
   .adult-content-mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .adult-content-secondary-grid {
     grid-template-columns: 1fr;
   }
 

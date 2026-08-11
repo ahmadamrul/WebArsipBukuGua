@@ -436,37 +436,14 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
           </section>
           <section className="panel compact-panel adult-content-settings">
             <div className="adult-content-settings-copy">
-              <p className="eyebrow">{tr('Privasi konten', 'Content privacy')}</p>
-              <h3>{tr('Tampilan konten dewasa', 'Adult content display')}</h3>
+              <p className="eyebrow">{tr('Preferensi', 'Preferences')}</p>
+              <h3>{tr('Konten & cover', 'Content & covers')}</h3>
               <p className="muted">
                 {tr(
                   'Komik dikenali dari genre dan tag seperti Adult, Hentai, Sex, Explicit, NSFW, atau Nudity. Pilihan ini tersimpan di perangkat.',
                   'Comics are detected from genres and tags such as Adult, Hentai, Sex, Explicit, NSFW, or Nudity. This choice is saved on this device.',
                 )}
               </p>
-            </div>
-            <div className="adult-dashboard-visibility-row">
-              <div className="adult-dashboard-visibility-copy">
-                <p className="eyebrow">{tr('Visibilitas dashboard', 'Dashboard visibility')}</p>
-                <h4>{tr('Tampilkan komik adult di dashboard', 'Show adult comics on the dashboard')}</h4>
-                <p className="muted">
-                  {showAdultOnDashboard
-                    ? tr('Komik adult tetap muncul di dashboard.', 'Adult comics remain visible on the dashboard.')
-                    : tr('Komik adult disembunyikan dari dashboard.', 'Adult comics are hidden from the dashboard.')}
-                </p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={showAdultOnDashboard}
-                className={showAdultOnDashboard ? 'dashboard-adult-toggle active' : 'dashboard-adult-toggle'}
-                onClick={() => setShowAdultOnDashboard((current) => !current)}
-              >
-                <span className="dashboard-toggle-track" aria-hidden="true">
-                  <i />
-                </span>
-                <span>{showAdultOnDashboard ? tr('On', 'On') : tr('Off', 'Off')}</span>
-              </button>
             </div>
             <div className="adult-content-mode-grid" role="radiogroup" aria-label={tr('Tampilan konten dewasa', 'Adult content display')}>
               {(
@@ -490,6 +467,40 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
                   </span>
                 </button>
               ))}
+            </div>
+            <div className="adult-content-secondary-grid">
+              <div className="adult-dashboard-visibility-row">
+                <div className="adult-dashboard-visibility-copy">
+                  <p className="eyebrow">{tr('Visibilitas dashboard', 'Dashboard visibility')}</p>
+                  <h4>{tr('Tampilkan komik adult di dashboard', 'Show adult comics on the dashboard')}</h4>
+                  <p className="muted">
+                    {showAdultOnDashboard
+                      ? tr('Komik adult tetap muncul di dashboard.', 'Adult comics remain visible on the dashboard.')
+                      : tr('Komik adult disembunyikan dari dashboard.', 'Adult comics are hidden from the dashboard.')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showAdultOnDashboard}
+                  className={showAdultOnDashboard ? 'dashboard-adult-toggle active' : 'dashboard-adult-toggle'}
+                  onClick={() => setShowAdultOnDashboard((current) => !current)}
+                >
+                  <span className="dashboard-toggle-track" aria-hidden="true">
+                    <i />
+                  </span>
+                  <span>{showAdultOnDashboard ? tr('On', 'On') : tr('Off', 'Off')}</span>
+                </button>
+              </div>
+              <button type="button" className="cover-manager-entry" onClick={() => setActiveMenu('cover-manager')}>
+                <div className="settings-card-icon" aria-hidden="true">🖼️</div>
+                <div className="settings-card-copy">
+                  <p className="eyebrow">{tr('Cover', 'Covers')}</p>
+                  <h3>{tr('Kelola Cover Komik', 'Manage Comic Covers')}</h3>
+                  <p className="muted">{tr('Cek link mati, cache cover lama, dan perbaiki manual.', 'Check dead links, cache old covers, and fix manually.')}</p>
+                </div>
+                <span className="cover-manager-entry-arrow" aria-hidden="true">→</span>
+              </button>
             </div>
           </section>
           <section className="panel compact-panel import-manager">
@@ -554,15 +565,6 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               </button>
             </div>
           </section>
-          <button type="button" className="panel compact-panel cover-manager-entry" onClick={() => setActiveMenu('cover-manager')}>
-            <div className="settings-card-icon" aria-hidden="true">🖼️</div>
-            <div className="settings-card-copy">
-              <p className="eyebrow">{tr('Cover', 'Covers')}</p>
-              <h3>{tr('Kelola Cover Komik', 'Manage Comic Covers')}</h3>
-              <p className="muted">{tr('Cek link mati, cache cover lama, dan perbaiki manual.', 'Check dead links, cache old covers, and fix manually.')}</p>
-            </div>
-            <span className="cover-manager-entry-arrow" aria-hidden="true">→</span>
-          </button>
           <section className="panel compact-panel label-manager">
             <div className="panel-head">
               <div>
