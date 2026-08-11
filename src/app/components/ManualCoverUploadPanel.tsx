@@ -99,6 +99,15 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
             <div className="upload-card-content">
               <h4>{comic.title}</h4>
               <small>{comic.source_name || tr('Sumber', 'Source')}</small>
+              <a
+                className="secondary"
+                href={getAllCoverUrls(comic)[0] || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ marginTop: '8px', display: 'block', textAlign: 'center', padding: '6px 8px', fontSize: '0.8rem' }}
+              >
+                {tr('Buka gambar penuh', 'Open full image')}
+              </a>
               <input
                 type="file"
                 accept="image/*"
@@ -118,7 +127,7 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
                 className="primary"
                 disabled={uploading === comic.id}
                 onClick={() => void handleUploadImage(comic, fileInputRefs.current[comic.id])}
-                style={{ marginTop: '8px', width: '100%' }}
+                style={{ width: '100%' }}
               >
                 {uploading === comic.id ? tr('Uploading...', 'Uploading...') : tr('Upload', 'Upload')}
               </button>
