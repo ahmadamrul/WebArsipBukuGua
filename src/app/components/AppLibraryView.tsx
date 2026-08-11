@@ -223,6 +223,7 @@ export function AppLibraryView(props: AppLibraryViewProps) {
                     <AdultCoverNotice locale={locale} />
                   ) : (
                     <CoverImage
+                      key={comic.id}
                       comic={comic}
                       alt=""
                       loading="lazy"

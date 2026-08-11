@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getAllCoverUrls } from '../../lib/utils/cover';
 
 interface CoverImageProps {
@@ -21,8 +21,16 @@ export function CoverImage({
   onError,
 }: CoverImageProps) {
   const [currentUrlIndex, setCurrentUrlIndex] = useState(0);
-  const [urls] = useState(() => getAllCoverUrls(comic));
+  const [urls, setUrls] = useState(() => getAllCoverUrls(comic));
   const [allFailed, setAllFailed] = useState(false);
+
+  // Re-compute URLs whenever comic prop changes (e.g. after edit form updates)
+  useEffect(() => {
+    const newUrls = getAllCoverUrls(comic);
+    setUrls(newUrls);
+    setCurrentUrlIndex(0);
+    setAllFailed(false);
+  }, [comic.id, comic.cover_url, comic.cover_urls]);
 
   const currentUrl = urls[currentUrlIndex] || null;
 

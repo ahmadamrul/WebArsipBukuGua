@@ -38,10 +38,11 @@ export interface URLCheckerPanelProps {
   isChecking: boolean;
   onCheck: () => Promise<URLCheckResult[]>;
   onReplace: (params: { comicId: string; sourceUrl: string; coverUrl: string; sourceName?: string }) => Promise<void>;
+  syncNow: (force?: boolean, options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean }) => Promise<boolean> | boolean;
   tr: (id: string, en: string) => string;
 }
 
-export function URLCheckerPanel({ comics, onCheck, onReplace, tr }: URLCheckerPanelProps) {
+export function URLCheckerPanel({ comics, onCheck, onReplace, syncNow, tr }: URLCheckerPanelProps) {
   const [results, setResults] = useState<URLCheckResult[]>([]);
   const [checking, setChecking] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -206,6 +207,9 @@ export function URLCheckerPanel({ comics, onCheck, onReplace, tr }: URLCheckerPa
       document.body.appendChild(toast);
 
       setTimeout(() => toast.remove(), 3000);
+
+      // Refresh state from database
+      await syncNow(false, { suppressSuccessMessage: true, suppressErrorMessage: true });
 
       // Refresh check
       await handleCheck();

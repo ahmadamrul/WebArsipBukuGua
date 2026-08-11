@@ -687,6 +687,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
             isChecking={false}
             onCheck={handleCheckUrls}
             onReplace={handleReplaceUrl}
+            syncNow={syncNow}
             tr={tr}
           />
           <CoverBackfillPanel

@@ -104,7 +104,7 @@ export function AppDashboard(props: AppDashboardProps) {
                     {shouldHideAdultCover(comic) ? (
                       <AdultCoverNotice locale={locale} />
                     ) : (
-                      <CoverImage comic={comic} alt="" loading="lazy" />
+                      <CoverImage key={comic.id} comic={comic} alt="" loading="lazy" />
                     )}
                   </span>
                   <span className="dashboard-comic-copy">

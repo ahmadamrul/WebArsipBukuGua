@@ -106,7 +106,7 @@ export function AppComicPanel(props: AppComicPanelProps) {
       <section className="panel comic-page-hero">
         <div className={shouldHideAdultCover(activeComic) ? 'comic-page-cover adult-cover-hidden' : 'comic-page-cover'}>
           <span>{activeComic.title.trim().charAt(0).toUpperCase() || '?'}</span>
-          {shouldHideAdultCover(activeComic) ? <AdultCoverNotice locale={locale} /> : <CoverImage comic={activeComic} alt="" />}
+          {shouldHideAdultCover(activeComic) ? <AdultCoverNotice locale={locale} /> : <CoverImage key={activeComic.id} comic={activeComic} alt="" />}
         </div>
         <div className="comic-page-intro">
           <p className="eyebrow">{tr('Detail komik', 'Comic details')}</p>
