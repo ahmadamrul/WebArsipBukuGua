@@ -134,6 +134,7 @@ export function useLibraryViewData({
   const dashboardBars = buildDashboardBars({ dashboardComics, labels, dashboardProgresses, tr });
   const recentComics = buildRecentComics(dashboardComics);
   const dashboardActivities = buildDashboardActivities({ dashboardComics, dashboardProgresses, locale, tr, readingStatusLabel });
+  const historyActivities = buildDashboardActivities({ dashboardComics, dashboardProgresses, locale, tr, readingStatusLabel, limit: Infinity });
   const comicTaxonomyNamesForPanel = (comic: Comic, kind: 'genre' | 'collection' | 'tag') => comicTaxonomyNames(comic, kind, labels, comicLabels);
   const comicTaxonomySummaryForList = (comic: Comic) => comicTaxonomySummary(comic, labels, comicLabels, tr);
   return {
@@ -152,6 +153,7 @@ export function useLibraryViewData({
     dashboardBars,
     recentComics,
     dashboardActivities,
+    historyActivities,
     comicTaxonomyNamesForPanel,
     comicTaxonomySummaryForList,
   };

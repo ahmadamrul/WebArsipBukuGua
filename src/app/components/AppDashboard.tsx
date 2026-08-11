@@ -7,7 +7,7 @@ import type { AppView } from '../routes';
 
 type DashboardBar = { label: string; value: number; accent: string };
 type DashboardStat = { label: string; value: string | number; tone: string };
-type DashboardActivity = {
+export type DashboardActivity = {
   id: string;
   type: string;
   label: string;

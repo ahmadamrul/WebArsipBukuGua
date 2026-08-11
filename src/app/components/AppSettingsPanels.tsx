@@ -376,11 +376,6 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               <div className="settings-card-copy">
                 <p className="eyebrow">{t.language}</p>
                 <h3>{locale === 'id' ? 'Bahasa aplikasi' : 'App language'}</h3>
-                <p className="muted">
-                  {locale === 'id'
-                    ? 'Pilih bahasa tampilan untuk antarmuka aplikasi.'
-                    : 'Choose the display language for the app interface.'}
-                </p>
               </div>
               <div className="language-toggle" role="group" aria-label={tr('Pilihan bahasa', 'Language selector')}>
                 <button
@@ -403,12 +398,6 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               <div className="settings-card-copy">
                 <p className="eyebrow">{tr('Tampilan', 'Appearance')}</p>
                 <h3>{tr('Mode gelap', 'Dark mode')}</h3>
-                <p className="muted">
-                  {tr(
-                    'Pilih tema terang atau gelap untuk aplikasi.',
-                    'Choose a light or dark theme for the app.',
-                  )}
-                </p>
               </div>
               <div className="language-toggle" role="group" aria-label={tr('Pilihan tema', 'Theme selector')}>
                 <button
@@ -431,7 +420,6 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               <div className="settings-card-copy">
                 <p className="eyebrow">{tr('Sinkronisasi', 'Synchronization')}</p>
                 <h3>{syncLabel[syncState]}</h3>
-                <p className="muted">{tr('Notifikasi singkat akan muncul di atas.', 'Short notifications will appear above.')}</p>
               </div>
               <div className="inline-actions settings-card-actions">
                 <button type="button" className="primary" onClick={() => void syncNow(true)}>

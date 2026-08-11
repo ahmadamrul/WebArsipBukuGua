@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthScreen } from '../features/auth';
 import {
   deleteComic,
@@ -27,6 +28,7 @@ import { normalizeComparableText } from '../lib/utils/text';
 import { AppSidebar } from '../components/layout';
 import { NotificationToast } from '../components/common';
 import { AppDashboard } from './components/AppDashboard';
+import { AppHistoryView } from './components/AppHistoryView';
 import { AppLibraryView } from './components/AppLibraryView';
 import { AppComicPanel } from './components/AppComicPanel';
 import { AppModals } from './components/AppModals';
@@ -74,6 +76,15 @@ const emptySourceEditForm: SourceEditFormState = {
   comicId: '',
   label: '',
   url: '',
+};
+
+const menuToPath: Record<AppView, string> = {
+  dashboard: '/',
+  history: '/riwayat',
+  library: '/koleksi',
+  comic: '/koleksi/komik',
+  settings: '/pengaturan',
+  profile: '/pengaturan/profil',
 };
 
 export default function App() {
@@ -181,6 +192,10 @@ export default function App() {
   const [openPanel, setOpenPanel] = useState<'comic' | 'source' | 'label' | null>(null);
   const [detailTab, setDetailTab] = useState<'info' | 'source' | 'history' | 'label'>('info');
   const [activeMenu, setActiveMenu] = useState<AppView>('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isSyncingFromRouterRef = useRef(false);
+  const isInitialRouteSyncRef = useRef(true);
   const t = localeLabels[locale];
   const tr = (indonesian: string, english: string) => (locale === 'id' ? indonesian : english);
   const toast = (
@@ -193,6 +208,38 @@ export default function App() {
     formMode,
     setComicFormGenreIds,
   });
+
+  useEffect(() => {
+    if (isSyncingFromRouterRef.current) {
+      isSyncingFromRouterRef.current = false;
+      return;
+    }
+    const path = activeMenu === 'comic' && activeComicId ? `${menuToPath.comic}/${activeComicId}` : menuToPath[activeMenu];
+    if (path === location.pathname) return;
+    if (isInitialRouteSyncRef.current) {
+      isInitialRouteSyncRef.current = false;
+      navigate(path, { replace: true, state: { menu: activeMenu, comicId: activeComicId } });
+      return;
+    }
+    navigate(path, { state: { menu: activeMenu, comicId: activeComicId } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMenu, activeComicId]);
+
+  useEffect(() => {
+    isInitialRouteSyncRef.current = false;
+    const state = location.state as { menu?: AppView; comicId?: string } | null;
+    if (!state?.menu) return;
+    if (state.menu !== activeMenu) {
+      isSyncingFromRouterRef.current = true;
+      setActiveMenu(state.menu);
+    }
+    if (state.menu === 'comic' && state.comicId && state.comicId !== activeComicId) {
+      isSyncingFromRouterRef.current = true;
+      setActiveComicId(state.comicId);
+      setSelectedComicId(state.comicId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location]);
 
   useEffect(() => {
     if (!ready) return;
@@ -230,6 +277,7 @@ export default function App() {
     dashboardBars,
     recentComics,
     dashboardActivities,
+    historyActivities,
     comicTaxonomyNamesForPanel,
     comicTaxonomySummaryForList,
   } = useLibraryViewData({
@@ -611,26 +659,12 @@ export default function App() {
           />
         )}
         {activeMenu === 'history' && (
-          <section className="history-coming-soon panel">
-            <div className="history-coming-visual" aria-hidden="true">
-              <span className="history-clock-hand" />
-              <span className="history-clock-dot" />
-            </div>
-            <div className="history-coming-copy">
-              <p className="eyebrow">{tr('Riwayat', 'History')}</p>
-              <span className="history-coming-badge">{tr('Segera hadir', 'Coming soon')}</span>
-              <h2>{tr('Riwayat sedang disiapkan', 'History is being prepared')}</h2>
-              <p>
-                {tr(
-                  'Bagian ini belum digunakan sampai alur dan informasi riwayat selesai ditentukan.',
-                  'This section will remain unavailable until the history flow and information are finalized.',
-                )}
-              </p>
-              <button type="button" className="secondary" onClick={() => setActiveMenu('dashboard')}>
-                {tr('Kembali ke dashboard', 'Back to dashboard')}
-              </button>
-            </div>
-          </section>
+          <AppHistoryView
+            locale={locale}
+            tr={tr}
+            historyActivities={historyActivities}
+            openComicPage={openComicPage}
+          />
         )}
 
         <AppSettingsPanels

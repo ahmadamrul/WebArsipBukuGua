@@ -93,9 +93,10 @@ export function buildDashboardActivities(args: {
   locale: 'id' | 'en';
   tr: (indonesian: string, english: string) => string;
   readingStatusLabel: (status: ReadingStatus, locale: 'id' | 'en') => string;
+  limit?: number;
 }) {
-  const { dashboardComics, dashboardProgresses, locale, tr, readingStatusLabel } = args;
-  return [
+  const { dashboardComics, dashboardProgresses, locale, tr, readingStatusLabel, limit = 7 } = args;
+  const activities = [
     ...dashboardComics.map((comic) => ({
       id: `comic-${comic.id}`,
       comic,
@@ -117,6 +118,6 @@ export function buildDashboardActivities(args: {
     }),
   ]
     .filter((activity) => activity.comic)
-    .sort((left, right) => new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime())
-    .slice(0, 7);
+    .sort((left, right) => new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime());
+  return activities.slice(0, limit);
 }

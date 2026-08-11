@@ -241,11 +241,11 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
         <div style={styles.buttonGroup}>
           <button
             type="button"
+            className="url-check-button"
             onClick={handleCheck}
             disabled={checking || comics.length === 0}
-            style={styles.btnCheck}
           >
-            {checking ? tr('Memeriksa...', 'Checking...') : tr('Periksa Semua URL', 'Check All URLs')}
+            {checking ? tr('Memeriksa...', 'Checking...') : `🔍 ${tr('Periksa Semua URL', 'Check All URLs')}`}
           </button>
         </div>
 
@@ -413,23 +413,12 @@ export function URLCheckerPanel({ comics, isChecking, onCheck, onReplace, tr }: 
 
 const styles = {
   content: {
-    padding: '20px',
+    padding: 0,
   },
   buttonGroup: {
     display: 'flex',
     gap: '12px',
-    marginBottom: '20px',
-  },
-  btnCheck: {
-    flex: 1,
-    padding: '10px 16px',
-    border: 'none',
-    borderRadius: '6px',
-    backgroundColor: '#2196f3',
-    color: 'white',
-    cursor: 'pointer',
-    fontWeight: '500',
-    fontSize: '14px',
+    marginBottom: '4px',
   },
   stats: {
     display: 'grid',

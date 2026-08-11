@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AdultCoverNotice, chapterNumberFromLabel, deleteComic, type Comic } from '../../features/comics';
 import { readingStatusLabel, READING_STATUSES, validReadingStatus, type ReadingProgress, type ReadingStatus } from '../../features/reading-progress';
 import type { ComicLabel, LibraryLabel } from '../../features/labels';
@@ -124,6 +125,37 @@ export function AppLibraryView(props: AppLibraryViewProps) {
     syncNow,
   } = props;
 
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelected = (comicId: string) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(comicId)) next.delete(comicId);
+      else next.add(comicId);
+      return next;
+    });
+  };
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    const confirmed = await requestConfirm(
+      tr('Hapus Komik?', 'Delete Comics?'),
+      tr(`${selectedIds.size} komik akan dihapus.`, `${selectedIds.size} comics will be deleted.`),
+    );
+    if (!confirmed) return;
+    for (const comicId of selectedIds) {
+      await deleteComic(comicId);
+    }
+    await syncNow();
+    exitSelectMode();
+  };
+
   return (
     <section className="library-shell">
       <section className="library-layout">
@@ -133,24 +165,58 @@ export function AppLibraryView(props: AppLibraryViewProps) {
               <p className="eyebrow">{tr('Koleksi', 'Collection')}</p>
               <h3>{tr('Daftar komik', 'Comic list')}</h3>
             </div>
-            <div className="view-switcher" aria-label={tr('Mode tampilan', 'View mode')}>
-              <button type="button" className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')}>
-                {tr('Daftar', 'List')}
-              </button>
-              <button type="button" className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')}>
-                Grid
-              </button>
+            <div className="inline-actions">
+              {selectMode ? (
+                <>
+                  <button
+                    type="button"
+                    className="mini-action danger"
+                    disabled={selectedIds.size === 0}
+                    onClick={() => void handleBulkDelete()}
+                  >
+                    {tr(`Hapus (${selectedIds.size})`, `Delete (${selectedIds.size})`)}
+                  </button>
+                  <button type="button" className="mini-action" onClick={exitSelectMode}>
+                    {tr('Batal', 'Cancel')}
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="mini-action" onClick={() => setSelectMode(true)}>
+                  {tr('Pilih', 'Select')}
+                </button>
+              )}
+              <div className="view-switcher" aria-label={tr('Mode tampilan', 'View mode')}>
+                <button type="button" className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')}>
+                  {tr('Daftar', 'List')}
+                </button>
+                <button type="button" className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')}>
+                  Grid
+                </button>
+              </div>
             </div>
           </div>
           <div className={`comic-list ${viewMode === 'grid' ? 'grid-view' : 'list-view'}`}>
             {sortedComics.map((comic) => (
               <article
-                className={comic.id === activeComic?.id ? 'comic-card active' : 'comic-card'}
+                className={[
+                  comic.id === activeComic?.id ? 'comic-card active' : 'comic-card',
+                  selectMode && selectedIds.has(comic.id) ? 'selected' : '',
+                ].filter(Boolean).join(' ')}
                 key={comic.id}
-                onClick={() => handleLibraryComicClick(comic.id)}
-                onDoubleClick={() => openComicPage(comic.id)}
+                onClick={() => (selectMode ? toggleSelected(comic.id) : handleLibraryComicClick(comic.id))}
+                onDoubleClick={() => { if (!selectMode) openComicPage(comic.id); }}
               >
                 <div className={shouldHideAdultCover(comic) ? 'comic-cover adult-cover-hidden' : 'comic-cover'} aria-label={`Cover ${comic.title}`}>
+                  {selectMode ? (
+                    <label className="comic-select-checkbox" onClick={(event) => event.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(comic.id)}
+                        onChange={() => toggleSelected(comic.id)}
+                        aria-label={tr(`Pilih ${comic.title}`, `Select ${comic.title}`)}
+                      />
+                    </label>
+                  ) : null}
                   <span>{comic.title.trim().charAt(0).toUpperCase() || '?'}</span>
                   {comic.favorite ? <span className="comic-favorite-badge" aria-label={tr('Favorit', 'Favorite')}>★</span> : null}
                   {shouldHideAdultCover(comic) ? (

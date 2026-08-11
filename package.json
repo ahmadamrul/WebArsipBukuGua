@@ -19,10 +19,12 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
+    "dependencies": "^0.0.1",
     "fast-xml-parser": "^5.10.1",
     "jszip": "^3.10.1",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
