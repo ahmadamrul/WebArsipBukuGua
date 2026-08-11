@@ -1483,6 +1483,7 @@ export async function updateComic(id: string, input: Partial<ComicInput>) {
     ...(input.sourceUrl !== undefined ? { source_url: input.sourceUrl || null } : {}),
     ...(input.sourceName !== undefined ? { source_name: input.sourceName || null } : {}),
     ...(input.coverUrl !== undefined ? { cover_url: input.coverUrl || null } : {}),
+    ...(input.coverUrls !== undefined ? { cover_urls: input.coverUrls || null } : {}),
     ...(input.coverStoragePath !== undefined ? { cover_storage_path: input.coverStoragePath || null } : {}),
     ...(input.favorite !== undefined ? { favorite: input.favorite } : {}),
     ...(input.genre !== undefined ? { genre: input.genre || null } : {}),

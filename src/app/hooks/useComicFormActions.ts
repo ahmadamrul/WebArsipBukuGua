@@ -278,7 +278,12 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
           }
         }
 
-        await updateComic(selectedComicId, { ...payload, coverUrl: payload.coverUrl || undefined });
+        // If user changed cover URL, clear cover_urls array so fallback URL is used
+        const updates: any = { ...payload, coverUrl: payload.coverUrl || undefined };
+        if (payload.coverUrl && formMode === 'edit') {
+          updates.coverUrls = null;
+        }
+        await updateComic(selectedComicId, updates);
         for (const sourceLink of sourceLinks) {
           if (persistedSourceIds.has(sourceLink.id)) {
             await updateComicSource(sourceLink.id, {
