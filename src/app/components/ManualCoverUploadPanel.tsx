@@ -77,9 +77,15 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
       <div className="panel-head">
         <div>
           <p className="eyebrow">📤 {tr('Upload Manual', 'Manual Upload')}</p>
-          <h3>{tr('Upload Cover ke Supabase', 'Upload Covers to Supabase')}</h3>
+          <h3>{tr(`Upload Cover ke Supabase (${eligibleComics.length})`, `Upload Covers to Supabase (${eligibleComics.length})`)}</h3>
         </div>
       </div>
+      <p className="muted">
+        {tr(
+          'Komik di bawah ini belum di-cache ke Supabase. Klik "Buka Gambar" untuk preview, lalu klik "Upload" untuk save ke Supabase Storage.',
+          'Comics below are not yet cached to Supabase. Click "Open Image" to preview, then click "Upload" to save to Supabase Storage.',
+        )}
+      </p>
       <div className="manual-upload-grid">
         {eligibleComics.map((comic) => (
           <div key={comic.id} className="manual-upload-card">
@@ -93,17 +99,6 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
             <div className="upload-card-content">
               <h4>{comic.title}</h4>
               <small>{comic.source_name || tr('Sumber', 'Source')}</small>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => {
-                  const imageUrl = getAllCoverUrls(comic)[0];
-                  if (imageUrl) window.open(imageUrl, '_blank');
-                }}
-                style={{ marginTop: '8px', width: '100%', fontSize: '0.8rem', padding: '6px 8px' }}
-              >
-                {tr('Buka Gambar', 'Open Image')}
-              </button>
               <input
                 type="file"
                 accept="image/*"
@@ -123,7 +118,7 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
                 className="primary"
                 disabled={uploading === comic.id}
                 onClick={() => void handleUploadImage(comic, fileInputRefs.current[comic.id])}
-                style={{ width: '100%' }}
+                style={{ marginTop: '8px', width: '100%' }}
               >
                 {uploading === comic.id ? tr('Uploading...', 'Uploading...') : tr('Upload', 'Upload')}
               </button>
