@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { replaceComicCover, updateComic, type Comic } from '../../features/comics';
-import { hasUsableCoverUrl } from '../../lib/utils/cover';
+import { updateComic, type Comic } from '../../features/comics';
+import { hasUsableCoverUrl, getAllCoverUrls } from '../../lib/utils/cover';
 
 type ManualCoverUploadPanelProps = {
   comics: Comic[];
@@ -10,18 +10,25 @@ type ManualCoverUploadPanelProps = {
 
 export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualCoverUploadPanelProps) {
   const [uploading, setUploading] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const eligibleComics = comics.filter(
     (comic) => !comic.cover_storage_path && hasUsableCoverUrl(comic.cover_url),
   );
 
-  const handleFileUpload = async (comic: Comic, file: File) => {
-    if (!file) return;
+  const handleUploadImage = async (comic: Comic) => {
+    const urls = getAllCoverUrls(comic);
+    if (urls.length === 0) return;
+
     setUploading(comic.id);
     try {
+      const imageUrl = urls[0];
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+
+      const blob = await response.blob();
       const { uploadComicCoverFromFile } = await import('../../features/comics');
-      const cachedCover = await uploadComicCoverFromFile(comic.id, file, comic.title);
+      const cachedCover = await uploadComicCoverFromFile(comic.id, blob, comic.title);
+
       await updateComic(comic.id, {
         coverUrl: cachedCover.coverUrl,
         coverUrls: null,
@@ -48,57 +55,29 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
           <h3>{tr('Upload Cover ke Supabase', 'Upload Covers to Supabase')}</h3>
         </div>
       </div>
-      <p className="muted">
-        {tr(
-          'Pilih komik untuk upload cover ke Supabase Storage. Klik preview untuk lihat gambar full size.',
-          'Select comics to upload covers to Supabase Storage. Click preview to see full image.',
-        )}
-      </p>
-      <div className="manual-upload-list">
+      <div className="manual-upload-grid">
         {eligibleComics.map((comic) => (
-          <div key={comic.id} className="manual-upload-item">
-            <div className="upload-item-header">
-              <div>
-                <h4>{comic.title}</h4>
-                <small>{comic.source_name || tr('Sumber tidak diketahui', 'Unknown source')}</small>
-              </div>
-              <label className="secondary" style={{ cursor: 'pointer', margin: 0 }}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  disabled={uploading === comic.id}
-                  onChange={(e) => {
-                    const file = e.currentTarget.files?.[0];
-                    if (file) {
-                      void handleFileUpload(comic, file);
-                    }
-                  }}
-                />
-                {uploading === comic.id ? tr('Uploading...', 'Uploading...') : tr('Pilih & Upload', 'Choose & Upload')}
-              </label>
+          <div key={comic.id} className="manual-upload-card">
+            <div className="upload-card-image">
+              <img
+                src={getAllCoverUrls(comic)[0] || ''}
+                alt={comic.title}
+                loading="lazy"
+              />
             </div>
-            {expandedId === comic.id && (
-              <div className="upload-item-preview">
-                <img src={comic.cover_url || ''} alt={comic.title} />
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => setExpandedId(null)}
-                >
-                  {tr('Tutup', 'Close')}
-                </button>
-              </div>
-            )}
-            {expandedId !== comic.id && (
+            <div className="upload-card-content">
+              <h4>{comic.title}</h4>
+              <small>{comic.source_name || tr('Sumber', 'Source')}</small>
               <button
                 type="button"
-                className="ghost"
-                onClick={() => setExpandedId(comic.id)}
+                className="primary"
+                disabled={uploading === comic.id}
+                onClick={() => void handleUploadImage(comic)}
+                style={{ marginTop: '8px', width: '100%' }}
               >
-                {tr('Preview Gambar', 'Preview Image')}
+                {uploading === comic.id ? tr('Uploading...', 'Uploading...') : tr('Upload', 'Upload')}
               </button>
-            )}
+            </div>
           </div>
         ))}
       </div>
