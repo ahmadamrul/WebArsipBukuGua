@@ -1,4 +1,5 @@
-import { addComic, updateComic, type Comic, type ComicFormState } from '../../features/comics';
+import { addComic, updateComic, replaceComicCover, queueCoverSync, type Comic, type ComicFormState } from '../../features/comics';
+import { hasUsableCoverUrl } from '../../lib/utils/cover';
 import { addComicLabel, removeComicLabel, type ComicLabel, type LibraryLabel } from '../../features/labels';
 import { validReadingStatus } from '../../features/reading-progress';
 import {
@@ -221,6 +222,18 @@ export function createComicFormActions(deps: ComicFormActionsDeps) {
 
         const createdComicId = await addComic({ ...payload, coverStoragePath: undefined });
         if (!createdComicId) throw new Error(tr('Komik gagal dibuat.', 'Comic could not be created.'));
+        if (hasUsableCoverUrl(payload.coverUrl)) {
+          try {
+            const cachedCover = await replaceComicCover(createdComicId, payload.coverUrl, payload.title);
+            await updateComic(createdComicId, {
+              coverUrl: cachedCover.coverUrl,
+              coverStoragePath: cachedCover.coverStoragePath,
+            });
+          } catch (error) {
+            console.warn('Failed to cache comic cover, will retry on next sync:', error);
+            queueCoverSync({ comicId: createdComicId, coverUrl: payload.coverUrl, previousStoragePath: '', comicTitle: payload.title });
+          }
+        }
         for (const sourceLink of sourceLinks) {
           await addComicSource({
             comicId: createdComicId,

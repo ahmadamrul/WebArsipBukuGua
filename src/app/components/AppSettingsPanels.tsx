@@ -13,6 +13,8 @@ import { ImportReportModal } from './ImportReportModal';
 import { CollectionCreationModal, type CollectionCreationRequest } from './CollectionCreationModal';
 import { CoverReplaceModal } from './CoverReplaceModal';
 import { URLCheckerPanel, type URLCheckResult } from './URLCheckerPanel';
+import { CoverBackfillPanel } from './CoverBackfillPanel';
+import { ManualCoverFixPanel } from './ManualCoverFixPanel';
 import { addLabel } from '../../lib/libraryService';
 import { getPrimaryCoverUrl } from '../../lib/utils/cover';
 
@@ -97,6 +99,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
   const [deadLinkQueue, setDeadLinkQueue] = useState<Array<{ comicId: string; comicTitle: string; failedUrl: string }>>([]);
   const [currentDeadLink, setCurrentDeadLink] = useState<{ comicId: string; comicTitle: string; failedUrl: string } | null>(null);
   const [replacingCover, setReplacingCover] = useState(false);
+  const [coverFixRefreshKey, setCoverFixRefreshKey] = useState(0);
 
   useEffect(() => {
     return subscribeToImportProgress((progress) => {
@@ -551,13 +554,15 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               </button>
             </div>
           </section>
-          <URLCheckerPanel
-            comics={allComics}
-            isChecking={false}
-            onCheck={handleCheckUrls}
-            onReplace={handleReplaceUrl}
-            tr={tr}
-          />
+          <button type="button" className="panel compact-panel cover-manager-entry" onClick={() => setActiveMenu('cover-manager')}>
+            <div className="settings-card-icon" aria-hidden="true">🖼️</div>
+            <div className="settings-card-copy">
+              <p className="eyebrow">{tr('Cover', 'Covers')}</p>
+              <h3>{tr('Kelola Cover Komik', 'Manage Comic Covers')}</h3>
+              <p className="muted">{tr('Cek link mati, cache cover lama, dan perbaiki manual.', 'Check dead links, cache old covers, and fix manually.')}</p>
+            </div>
+            <span className="cover-manager-entry-arrow" aria-hidden="true">→</span>
+          </button>
           <section className="panel compact-panel label-manager">
             <div className="panel-head">
               <div>
@@ -662,6 +667,39 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               </div>
             </form>
           </section>
+        </section>
+      )}
+      {activeMenu === 'cover-manager' && (
+        <section className="stack">
+          <section className="profile-page-header">
+            <div>
+              <p className="eyebrow">{tr('Cover', 'Covers')}</p>
+              <h2>{tr('Kelola Cover Komik', 'Manage Comic Covers')}</h2>
+            </div>
+            <button type="button" className="secondary" onClick={() => setActiveMenu('settings')}>
+              {t.backToSettings}
+            </button>
+          </section>
+          <URLCheckerPanel
+            comics={allComics}
+            isChecking={false}
+            onCheck={handleCheckUrls}
+            onReplace={handleReplaceUrl}
+            tr={tr}
+          />
+          <CoverBackfillPanel
+            comics={allComics}
+            tr={tr}
+            onDone={() => {
+              void syncNow(false, { suppressSuccessMessage: true });
+              setCoverFixRefreshKey((current) => current + 1);
+            }}
+          />
+          <ManualCoverFixPanel
+            key={coverFixRefreshKey}
+            tr={tr}
+            onDone={() => void syncNow(false, { suppressSuccessMessage: true })}
+          />
         </section>
       )}
       <ImportPreviewModal

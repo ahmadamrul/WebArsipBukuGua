@@ -17,6 +17,7 @@ import {
   requiresLegacyProgressFields,
   resolveUrl,
   scoreCoverCandidate,
+  slugifyCoverTitle,
 } from './libraryServiceHelpers';
 import { normalizeComparableText } from './utils/text';
 import { normalizeSourceUrl } from '../features/sources';
@@ -76,10 +77,32 @@ async function fetchHtmlWithFallback(url: string) {
   throw lastError ?? new Error('Gagal mengambil halaman.');
 }
 
+const COVER_FETCH_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 async function fetchCoverSourceBlob(url: string) {
   const fetchFromEdgeProxy = async () => {
     if (!supabaseConfigured || !supabase) return null;
-    const { data, error } = await supabase.functions.invoke('cover-proxy', { body: { url } });
+    const { data, error } = await withTimeout(
+      supabase.functions.invoke('cover-proxy', { body: { url } }),
+      COVER_FETCH_TIMEOUT_MS,
+      'Edge Function cover-proxy',
+    );
     if (error) throw error;
     if (data instanceof Blob && data.size > 0) return data;
     if (data instanceof ArrayBuffer && data.byteLength > 0) return new Blob([data]);
@@ -102,11 +125,19 @@ async function fetchCoverSourceBlob(url: string) {
   let lastError: unknown = null;
   for (const candidate of attempts) {
     try {
-      const response = await fetch(candidate, {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-store',
-      });
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), COVER_FETCH_TIMEOUT_MS);
+      let response: Response;
+      try {
+        response = await fetch(candidate, {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+      } finally {
+        window.clearTimeout(timer);
+      }
       if (!response.ok) {
         lastError = new Error(`Gagal mengambil gambar cover: ${response.status}`);
         continue;
@@ -127,13 +158,13 @@ async function fetchCoverSourceBlob(url: string) {
   throw lastError ?? new Error('Gagal mengambil gambar cover.');
 }
 
-async function uploadComicCoverFromUrl(userId: string, comicId: string, coverUrl: string) {
+async function uploadCoverBlobToStorage(userId: string, comicId: string, sourceBlob: Blob, comicTitle?: string) {
   if (!supabaseConfigured || !supabase) throw new Error('Akun cloud belum dikonfigurasi.');
-  const sourceBlob = await fetchCoverSourceBlob(coverUrl);
   const sourceSizeLabel = formatBytes(sourceBlob.size);
   const optimized = await optimizeCoverBlob(sourceBlob);
   const extension = guessCoverExtension(optimized.mimeType);
-  const filePath = `${userId}/${comicId}/cover-${Date.now()}.${extension}`;
+  const titleSlug = slugifyCoverTitle(comicTitle ?? '');
+  const filePath = `${userId}/${comicId}/${titleSlug}-cover-${Date.now()}.${extension}`;
   const { error } = await supabase.storage.from(COVER_BUCKET).upload(filePath, optimized.blob, {
     upsert: true,
     contentType: optimized.mimeType,
@@ -149,9 +180,19 @@ async function uploadComicCoverFromUrl(userId: string, comicId: string, coverUrl
   };
 }
 
-export async function replaceComicCover(comicId: string, coverUrl: string) {
+async function uploadComicCoverFromUrl(userId: string, comicId: string, coverUrl: string, comicTitle?: string) {
+  const sourceBlob = await fetchCoverSourceBlob(coverUrl);
+  return uploadCoverBlobToStorage(userId, comicId, sourceBlob, comicTitle);
+}
+
+export async function replaceComicCover(comicId: string, coverUrl: string, comicTitle?: string) {
   const user = await requireUser();
-  return await uploadComicCoverFromUrl(user.id, comicId, coverUrl);
+  return await uploadComicCoverFromUrl(user.id, comicId, coverUrl, comicTitle);
+}
+
+export async function uploadComicCoverFromFile(comicId: string, file: File | Blob, comicTitle?: string) {
+  const user = await requireUser();
+  return await uploadCoverBlobToStorage(user.id, comicId, file, comicTitle);
 }
 
 export async function deleteStoredComicCover(coverStoragePath: string | null | undefined) {

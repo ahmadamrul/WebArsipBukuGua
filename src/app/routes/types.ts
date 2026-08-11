@@ -1,1 +1,1 @@
-export type AppView = 'dashboard' | 'history' | 'library' | 'comic' | 'settings' | 'profile';
+export type AppView = 'dashboard' | 'history' | 'library' | 'comic' | 'settings' | 'profile' | 'cover-manager';

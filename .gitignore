@@ -28,6 +28,9 @@ tmp
 temp
 *.tmp
 
+# Supabase CLI local metadata
+supabase/.temp
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -4,4 +4,5 @@ export {
   deleteStoredComicCover,
   replaceComicCover,
   updateComic,
+  uploadComicCoverFromFile,
 } from '../../lib/libraryService';

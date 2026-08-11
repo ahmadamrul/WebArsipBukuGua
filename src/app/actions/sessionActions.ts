@@ -218,7 +218,7 @@ export function createSessionActions(deps: SessionActionsDeps) {
         const remainingCovers: PendingCoverSync[] = [];
         for (const pendingCover of pendingCovers) {
           try {
-            const uploadedCover = await replaceComicCover(pendingCover.comicId, pendingCover.coverUrl);
+            const uploadedCover = await replaceComicCover(pendingCover.comicId, pendingCover.coverUrl, pendingCover.comicTitle);
             await updateComic(pendingCover.comicId, {
               coverUrl: uploadedCover.coverUrl,
               coverStoragePath: uploadedCover.coverStoragePath,

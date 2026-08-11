@@ -7,6 +7,17 @@ const COVER_MAX_DIMENSION = 1024;
 const COVER_MIN_DIMENSION = 320;
 const COVER_TARGET_BYTES = 180 * 1024;
 
+export function slugifyCoverTitle(title: string) {
+  const slug = title
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+  return slug || 'komik';
+}
+
 export function getWebDeviceId() {
   try {
     const existing = window.localStorage.getItem(STORAGE_KEYS.webDeviceId);

@@ -85,6 +85,7 @@ const menuToPath: Record<AppView, string> = {
   comic: '/koleksi/komik',
   settings: '/pengaturan',
   profile: '/pengaturan/profil',
+  'cover-manager': '/pengaturan/cover',
 };
 
 export default function App() {

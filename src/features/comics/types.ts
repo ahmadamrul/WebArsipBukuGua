@@ -19,4 +19,5 @@ export type PendingCoverSync = {
   comicId: string;
   coverUrl: string;
   previousStoragePath: string;
+  comicTitle?: string;
 };
