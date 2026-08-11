@@ -16,11 +16,12 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
     (comic) => !comic.cover_storage_path && hasUsableCoverUrl(comic.cover_url),
   );
 
-  const handleUpload = async (comic: Comic) => {
-    if (!comic.cover_url) return;
+  const handleFileUpload = async (comic: Comic, file: File) => {
+    if (!file) return;
     setUploading(comic.id);
     try {
-      const cachedCover = await replaceComicCover(comic.id, comic.cover_url, comic.title);
+      const { uploadComicCoverFromFile } = await import('../../features/comics');
+      const cachedCover = await uploadComicCoverFromFile(comic.id, file, comic.title);
       await updateComic(comic.id, {
         coverUrl: cachedCover.coverUrl,
         coverUrls: null,
@@ -61,14 +62,21 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
                 <h4>{comic.title}</h4>
                 <small>{comic.source_name || tr('Sumber tidak diketahui', 'Unknown source')}</small>
               </div>
-              <button
-                type="button"
-                className="secondary"
-                disabled={uploading === comic.id}
-                onClick={() => handleUpload(comic)}
-              >
-                {uploading === comic.id ? tr('Uploading...', 'Uploading...') : tr('Upload', 'Upload')}
-              </button>
+              <label className="secondary" style={{ cursor: 'pointer', margin: 0 }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  disabled={uploading === comic.id}
+                  onChange={(e) => {
+                    const file = e.currentTarget.files?.[0];
+                    if (file) {
+                      void handleFileUpload(comic, file);
+                    }
+                  }}
+                />
+                {uploading === comic.id ? tr('Uploading...', 'Uploading...') : tr('Pilih & Upload', 'Choose & Upload')}
+              </label>
             </div>
             {expandedId === comic.id && (
               <div className="upload-item-preview">
