@@ -14,6 +14,7 @@ import { CollectionCreationModal, type CollectionCreationRequest } from './Colle
 import { CoverReplaceModal } from './CoverReplaceModal';
 import { URLCheckerPanel, type URLCheckResult } from './URLCheckerPanel';
 import { CoverBackfillPanel } from './CoverBackfillPanel';
+import { ManualCoverUploadPanel } from './ManualCoverUploadPanel';
 import { ManualCoverFixPanel } from './ManualCoverFixPanel';
 import { addLabel } from '../../lib/libraryService';
 import { getPrimaryCoverUrl } from '../../lib/utils/cover';
@@ -694,6 +695,14 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
             comics={allComics}
             tr={tr}
             onDone={() => {
+              void syncNow(false, { suppressSuccessMessage: true });
+              setCoverFixRefreshKey((current) => current + 1);
+            }}
+          />
+          <ManualCoverUploadPanel
+            comics={allComics}
+            tr={tr}
+            onUploadComplete={() => {
               void syncNow(false, { suppressSuccessMessage: true });
               setCoverFixRefreshKey((current) => current + 1);
             }}
