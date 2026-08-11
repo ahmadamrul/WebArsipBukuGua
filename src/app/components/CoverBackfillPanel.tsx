@@ -24,6 +24,7 @@ export function CoverBackfillPanel({ comics, tr, onDone }: CoverBackfillPanelPro
       const cachedCover = await replaceComicCover(comic.id, comic.cover_url!, comic.title);
       await updateComic(comic.id, {
         coverUrl: cachedCover.coverUrl,
+        coverUrls: null, // Clear array so new Supabase URL is used
         coverStoragePath: cachedCover.coverStoragePath,
       });
       return true;
