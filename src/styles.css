@@ -48,10 +48,10 @@
   width: min(368px, 100%);
   padding: 24px;
   border-radius: 26px;
-  border: 1px solid rgba(22, 38, 58, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 250, 255, 0.95));
+  border: 1px solid rgba(var(--shadow-rgb), 0.08);
+  background: linear-gradient(180deg, rgba(var(--paper-rgb), 0.96), rgba(var(--paper-soft-rgb), 0.95));
   backdrop-filter: blur(18px);
-  box-shadow: 0 24px 64px rgba(18, 31, 46, 0.11);
+  box-shadow: 0 24px 64px rgba(var(--shadow-rgb), 0.11);
   display: grid;
   gap: 14px;
 }
@@ -64,11 +64,11 @@
   display: grid;
   place-items: center;
   font-weight: 800;
-  color: #16304f;
+  color: var(--ink);
   background:
-    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), transparent 42%),
+    radial-gradient(circle at 30% 30%, rgba(var(--paper-rgb), 0.8), transparent 42%),
     linear-gradient(135deg, #214de0 0%, #18b087 100%);
-  box-shadow: 0 14px 30px rgba(33, 77, 224, 0.18);
+  box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.18);
 }
 
 .auth-mark {
@@ -78,7 +78,7 @@
   display: block;
   object-fit: cover;
   background: linear-gradient(135deg, #214de0 0%, #1aa47e 100%);
-  box-shadow: 0 12px 26px rgba(33, 77, 224, 0.16);
+  box-shadow: 0 12px 26px rgba(var(--accent-rgb), 0.16);
 }
 
 .auth-card-top {
@@ -98,7 +98,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.68rem;
-  color: rgba(24, 38, 54, 0.56);
+  color: rgba(var(--ink-rgb), 0.56);
 }
 
 .auth-note,
@@ -114,7 +114,7 @@
 .source-card a,
 .detail-meta span,
 .account-row span {
-  color: rgba(24, 38, 54, 0.72);
+  color: rgba(var(--ink-rgb), 0.72);
 }
 
 .auth-banner,
@@ -123,9 +123,9 @@
   gap: 4px;
   padding: 11px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(24, 38, 54, 0.08);
-  background: rgba(245, 248, 252, 0.96);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--paper-soft-rgb), 0.96);
+  box-shadow: inset 0 1px 0 rgba(var(--paper-rgb), 0.6);
 }
 
 .auth-banner strong,
@@ -165,8 +165,8 @@
 
 .auth-banner.tone-info,
 .message-banner.tone-info {
-  border-color: rgba(33, 77, 224, 0.16);
-  background: linear-gradient(180deg, rgba(236, 243, 255, 0.98), rgba(247, 250, 255, 0.98));
+  border-color: rgba(var(--accent-rgb), 0.16);
+  background: linear-gradient(180deg, rgba(var(--paper-soft-rgb), 0.98), rgba(var(--paper-soft-rgb), 0.98));
   color: #214de0;
 }
 
@@ -180,9 +180,9 @@
   max-width: min(620px, calc(100vw - 24px));
   padding: 12px 14px;
   border-radius: 16px;
-  border: 1px solid rgba(23, 48, 74, 0.1);
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 20px 50px rgba(18, 31, 46, 0.16);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  background: rgba(var(--paper-rgb), 0.96);
+  box-shadow: 0 20px 50px rgba(var(--shadow-rgb), 0.16);
   display: grid;
   gap: 4px;
   animation: toast-drop 180ms ease-out;
@@ -217,7 +217,7 @@
 }
 
 .toast-notification.tone-info {
-  border-color: rgba(33, 77, 224, 0.18);
+  border-color: rgba(var(--accent-rgb), 0.18);
   color: #214de0;
 }
 
@@ -237,8 +237,8 @@
   gap: 4px;
   padding: 11px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(24, 38, 54, 0.08);
-  background: rgba(245, 248, 252, 0.96);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--paper-soft-rgb), 0.96);
 }
 
 .panel-notice strong {
@@ -264,7 +264,7 @@
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 0.6rem;
-  color: rgba(24, 38, 54, 0.54);
+  color: rgba(var(--ink-rgb), 0.54);
 }
 
 .auth-form {
@@ -277,8 +277,8 @@
   gap: 8px;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(24, 38, 54, 0.08);
-  background: rgba(245, 248, 252, 0.96);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--paper-soft-rgb), 0.96);
 }
 
 .password-requirements.compact {
@@ -323,12 +323,12 @@
 
 .password-requirements-head strong {
   font-size: 0.82rem;
-  color: #182636;
+  color: var(--ink);
 }
 
 .password-requirements-head span {
   font-size: 0.76rem;
-  color: rgba(24, 38, 54, 0.6);
+  color: rgba(var(--ink-rgb), 0.6);
 }
 
 .password-requirements-list {
@@ -342,9 +342,9 @@
   gap: 8px;
   padding: 6px 8px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.78);
-  color: rgba(24, 38, 54, 0.72);
-  border: 1px solid rgba(24, 38, 54, 0.05);
+  background: rgba(var(--paper-rgb), 0.78);
+  color: rgba(var(--ink-rgb), 0.72);
+  border: 1px solid rgba(var(--ink-rgb), 0.05);
   font-size: 0.8rem;
 }
 
@@ -358,7 +358,7 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(24, 38, 54, 0.22);
+  background: rgba(var(--ink-rgb), 0.22);
   flex: 0 0 auto;
 }
 
@@ -372,8 +372,8 @@
   gap: 6px;
   padding: 4px;
   border-radius: 14px;
-  background: rgba(241, 246, 251, 0.96);
-  border: 1px solid rgba(24, 38, 54, 0.06);
+  background: rgba(var(--paper-soft-rgb), 0.96);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .auth-tab {
@@ -381,15 +381,15 @@
   border-radius: 11px;
   padding: 9px 12px;
   background: transparent;
-  color: rgba(24, 38, 54, 0.74);
+  color: rgba(var(--ink-rgb), 0.74);
   font-weight: 700;
   font-size: 0.85rem;
 }
 
 .auth-tab.active {
-  background: #ffffff;
+  background: var(--paper);
   color: #214de0;
-  box-shadow: 0 8px 16px rgba(18, 31, 46, 0.07);
+  box-shadow: 0 8px 16px rgba(var(--shadow-rgb), 0.07);
 }
 
 .auth-submit {
@@ -419,13 +419,13 @@
 select,
 input[type='file']::file-selector-button {
   width: 100%;
-  border: 1px solid rgba(24, 38, 54, 0.1);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
   border-radius: 12px;
-  background: #fcfeff;
-  color: #182636;
+  background: var(--input-bg);
+  color: var(--ink);
   padding: 11px 13px;
   outline: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 rgba(var(--paper-rgb), 0.95);
 }
 
 .auth-form input:focus,
@@ -433,8 +433,8 @@ input[type='file']::file-selector-button {
 .modal input:focus,
 .modal select:focus,
 select:focus {
-  border-color: rgba(33, 77, 224, 0.52);
-  box-shadow: 0 0 0 3px rgba(33, 77, 224, 0.12);
+  border-color: rgba(var(--accent-rgb), 0.52);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
 }
 
 input[type='file']::file-selector-button {
@@ -456,8 +456,8 @@ input[type='file']::file-selector-button {
   align-self: start;
   min-height: 100vh;
   padding: 12px;
-  border-right: 1px solid rgba(23, 48, 74, 0.08);
-  background: rgba(255, 255, 255, 0.72);
+  border-right: 1px solid rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--paper-rgb), 0.72);
   backdrop-filter: blur(18px);
   display: flex;
   flex-direction: column;
@@ -484,7 +484,7 @@ input[type='file']::file-selector-button {
 
 .brand-profile-button:hover,
 .brand-profile-button:focus-visible {
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(var(--paper-rgb), 0.78);
   outline: none;
 }
 
@@ -498,7 +498,7 @@ input[type='file']::file-selector-button {
 .brand-email {
   display: block;
   margin-top: 2px;
-  color: rgba(23, 48, 74, 0.56);
+  color: rgba(var(--ink-rgb), 0.56);
   font-size: 0.7rem;
   line-height: 1.25;
   word-break: break-word;
@@ -513,31 +513,31 @@ input[type='file']::file-selector-button {
   text-decoration: none;
   padding: 8px 10px;
   border-radius: 10px;
-  color: rgba(23, 48, 74, 0.74);
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  color: rgba(var(--ink-rgb), 0.74);
+  background: rgba(var(--paper-rgb), 0.8);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
   font-size: 0.84rem;
 }
 
 .menu-item.active,
 .menu-item:hover {
-  color: #17304a;
+  color: var(--ink);
   border-color: rgba(120, 184, 255, 0.28);
-  background: #fff;
+  background: var(--paper);
 }
 
 .sidebar-card,
 .panel,
 .modal {
-  border: 1px solid rgba(23, 48, 74, 0.08);
-  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--paper-rgb), 0.86);
   border-radius: 18px;
-  box-shadow: 0 10px 26px rgba(28, 55, 88, 0.06);
+  box-shadow: 0 10px 26px rgba(var(--shadow-rgb), 0.06);
 }
 
 .card-accent {
   background:
-    radial-gradient(circle at top right, rgba(120, 184, 255, 0.1), transparent 28%), rgba(255, 255, 255, 0.86);
+    radial-gradient(circle at top right, rgba(120, 184, 255, 0.1), transparent 28%), rgba(var(--paper-rgb), 0.86);
 }
 
 .sidebar-card {
@@ -585,8 +585,8 @@ input[type='file']::file-selector-button {
   padding: 6px 8px;
   border-radius: 999px;
   background: #f4f8fc;
-  color: rgba(23, 48, 74, 0.82);
-  border-color: rgba(23, 48, 74, 0.06);
+  color: rgba(var(--ink-rgb), 0.82);
+  border-color: rgba(var(--ink-rgb), 0.06);
   font-size: 0.78rem;
 }
 
@@ -595,7 +595,7 @@ input[type='file']::file-selector-button {
 .detail-tab.active,
 .label-pill.active {
   background: linear-gradient(135deg, #dcecff, #d6faf3);
-  color: #17304a;
+  color: var(--ink);
 }
 
 .pill,
@@ -628,8 +628,8 @@ input[type='file']::file-selector-button {
 }
 
 .secondary {
-  color: #1f2d3a;
-  background: rgba(255, 255, 255, 0.95);
+  color: var(--ink);
+  background: rgba(var(--paper-rgb), 0.95);
   border-color: rgba(31, 45, 58, 0.08);
 }
 
@@ -691,7 +691,7 @@ input[type='file']::file-selector-button {
   background:
     radial-gradient(circle at 90% 8%, rgba(255, 196, 91, 0.3), transparent 22%),
     radial-gradient(circle at 72% 110%, rgba(73, 203, 176, 0.22), transparent 34%),
-    linear-gradient(120deg, rgba(229, 241, 255, 0.98), rgba(250, 255, 252, 0.96));
+    linear-gradient(120deg, rgba(var(--paper-soft-rgb), 0.98), rgba(var(--paper-soft-rgb), 0.96));
   border: 1px solid rgba(62, 118, 179, 0.12);
 }
 
@@ -759,8 +759,8 @@ input[type='file']::file-selector-button {
   height: 13px;
   display: block;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(23, 48, 74, 0.2);
+  background: var(--paper);
+  box-shadow: 0 1px 4px rgba(var(--ink-rgb), 0.2);
   transition: transform 160ms ease;
 }
 
@@ -779,9 +779,9 @@ input[type='file']::file-selector-button {
   gap: 14px;
   padding: 18px 20px;
   border-radius: 22px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 255, 0.92));
-  border: 1px solid rgba(23, 48, 74, 0.08);
-  box-shadow: 0 8px 20px rgba(28, 55, 88, 0.05);
+  background: linear-gradient(145deg, rgba(var(--paper-rgb), 0.98), rgba(var(--paper-soft-rgb), 0.92));
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.05);
 }
 
 .adult-dashboard-visibility-copy {
@@ -798,7 +798,7 @@ input[type='file']::file-selector-button {
 .dashboard-copy .hero-copy {
   max-width: 60ch;
   margin-top: 2px;
-  color: rgba(23, 48, 74, 0.72);
+  color: rgba(var(--ink-rgb), 0.72);
   font-size: 0.65rem;
 }
 
@@ -822,9 +822,9 @@ input[type='file']::file-selector-button {
   min-height: 104px;
   padding: 16px;
   border-radius: 16px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(244, 249, 255, 0.9));
-  border: 1px solid rgba(23, 48, 74, 0.08);
-  box-shadow: 0 8px 20px rgba(28, 55, 88, 0.05);
+  background: linear-gradient(145deg, rgba(var(--paper-rgb), 0.98), rgba(var(--paper-soft-rgb), 0.9));
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.05);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -879,8 +879,8 @@ input[type='file']::file-selector-button {
   gap: 8px;
   padding: 12px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  background: rgba(var(--paper-rgb), 0.88);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .dashboard-bar-head {
@@ -888,18 +888,18 @@ input[type='file']::file-selector-button {
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  color: rgba(23, 48, 74, 0.72);
+  color: rgba(var(--ink-rgb), 0.72);
 }
 
 .dashboard-bar-head strong {
   font-size: 0.95rem;
-  color: #17304a;
+  color: var(--ink);
 }
 
 .dashboard-bar-track {
   height: 8px;
   border-radius: 999px;
-  background: rgba(23, 48, 74, 0.08);
+  background: rgba(var(--ink-rgb), 0.08);
   overflow: hidden;
 }
 
@@ -938,7 +938,7 @@ input[type='file']::file-selector-button {
 .dashboard-stat-simple span {
   font-size: 0.55rem;
   font-weight: 600;
-  color: rgba(23, 48, 74, 0.65);
+  color: rgba(var(--ink-rgb), 0.65);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -969,12 +969,12 @@ input[type='file']::file-selector-button {
 
 .recent-comics-panel {
   background:
-    radial-gradient(circle at 100% 0, rgba(119, 181, 255, 0.18), transparent 32%), rgba(255, 255, 255, 0.94);
+    radial-gradient(circle at 100% 0, rgba(119, 181, 255, 0.18), transparent 32%), rgba(var(--paper-rgb), 0.94);
 }
 
 .status-summary-panel {
   background:
-    radial-gradient(circle at 100% 0, rgba(255, 193, 7, 0.15), transparent 35%), rgba(255, 255, 255, 0.94);
+    radial-gradient(circle at 100% 0, rgba(255, 193, 7, 0.15), transparent 35%), rgba(var(--paper-rgb), 0.94);
 }
 
 .status-summary {
@@ -999,7 +999,7 @@ input[type='file']::file-selector-button {
 .status-summary-item span {
   font-size: 0.55rem;
   font-weight: 600;
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   text-transform: uppercase;
   letter-spacing: 0.03em;
   margin-bottom: 4px;
@@ -1054,7 +1054,7 @@ input[type='file']::file-selector-button {
 
 .activity-panel {
   background:
-    radial-gradient(circle at 100% 0, rgba(85, 213, 186, 0.2), transparent 34%), rgba(255, 255, 255, 0.94);
+    radial-gradient(circle at 100% 0, rgba(85, 213, 186, 0.2), transparent 34%), rgba(var(--paper-rgb), 0.94);
 }
 
 .dashboard-section-head {
@@ -1081,7 +1081,7 @@ input[type='file']::file-selector-button {
 .dashboard-recent-footer {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(23, 48, 74, 0.08);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.08);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
@@ -1090,8 +1090,8 @@ input[type='file']::file-selector-button {
 .dashboard-recent-note {
   padding: 10px 12px;
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(246, 249, 255, 0.95), rgba(240, 245, 255, 0.92));
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  background: linear-gradient(180deg, rgba(var(--paper-soft-rgb), 0.95), rgba(var(--paper-soft-rgb), 0.92));
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
   display: grid;
   gap: 4px;
   min-width: 0;
@@ -1101,7 +1101,7 @@ input[type='file']::file-selector-button {
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(23, 48, 74, 0.56);
+  color: rgba(var(--ink-rgb), 0.56);
 }
 
 .dashboard-recent-note strong {
@@ -1117,10 +1117,10 @@ input[type='file']::file-selector-button {
   min-height: 100%;
   padding: 0;
   overflow: hidden;
-  color: #17304a;
+  color: var(--ink);
   text-align: left;
-  background: rgba(248, 251, 255, 0.96);
-  border: 1px solid rgba(23, 48, 74, 0.08);
+  background: rgba(var(--paper-soft-rgb), 0.96);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
   border-radius: 14px;
   transition:
     transform 160ms ease,
@@ -1172,7 +1172,7 @@ input[type='file']::file-selector-button {
 .dashboard-comic-copy small,
 .dashboard-comic-copy time {
   overflow: hidden;
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   font-size: 0.6rem;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1190,10 +1190,10 @@ input[type='file']::file-selector-button {
   gap: 7px;
   width: 100%;
   padding: 7px 8px;
-  color: #17304a;
+  color: var(--ink);
   text-align: left;
-  background: rgba(247, 250, 255, 0.92);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  background: rgba(var(--paper-soft-rgb), 0.92);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
   border-radius: 11px;
 }
 
@@ -1212,7 +1212,7 @@ input[type='file']::file-selector-button {
 
 .dashboard-activity-item small,
 .dashboard-activity-item time {
-  color: rgba(23, 48, 74, 0.6);
+  color: rgba(var(--ink-rgb), 0.6);
   font-size: 0.58rem;
 }
 
@@ -1268,7 +1268,7 @@ input[type='file']::file-selector-button {
 .feature-header h4 {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #17304a;
+  color: var(--ink);
   margin: 0;
 }
 
@@ -1292,13 +1292,13 @@ input[type='file']::file-selector-button {
   align-items: center;
   justify-content: space-between;
   padding: 8px;
-  background: rgba(244, 249, 255, 0.8);
+  background: rgba(var(--paper-soft-rgb), 0.8);
   border-radius: 8px;
 }
 
 .status-label {
   font-size: 0.78rem;
-  color: rgba(23, 48, 74, 0.68);
+  color: rgba(var(--ink-rgb), 0.68);
   font-weight: 600;
 }
 
@@ -1335,18 +1335,18 @@ input[type='file']::file-selector-button {
   align-items: center;
   justify-content: space-between;
   padding: 8px;
-  background: rgba(244, 249, 255, 0.8);
+  background: rgba(var(--paper-soft-rgb), 0.8);
   border-radius: 8px;
   font-size: 0.78rem;
 }
 
 .stat-row span {
-  color: rgba(23, 48, 74, 0.68);
+  color: rgba(var(--ink-rgb), 0.68);
   font-weight: 600;
 }
 
 .stat-row strong {
-  color: #17304a;
+  color: var(--ink);
   font-weight: 700;
   font-size: 0.9rem;
 }
@@ -1359,7 +1359,7 @@ input[type='file']::file-selector-button {
 
 .feature-empty {
   padding: 12px 8px;
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   font-size: 0.75rem;
   text-align: center;
   margin: 0;
@@ -1371,8 +1371,8 @@ input[type='file']::file-selector-button {
   justify-content: space-between;
   gap: 8px;
   padding: 8px 10px;
-  background: rgba(244, 249, 255, 0.8);
-  border: 1px solid rgba(23, 48, 74, 0.08);
+  background: rgba(var(--paper-soft-rgb), 0.8);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
   border-radius: 8px;
   color: inherit;
   cursor: pointer;
@@ -1391,7 +1391,7 @@ input[type='file']::file-selector-button {
   min-width: 0;
   font-size: 0.76rem;
   font-weight: 600;
-  color: #17304a;
+  color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1417,7 +1417,7 @@ input[type='file']::file-selector-button {
   gap: 14px;
   padding: 13px 16px;
   background: linear-gradient(90deg, #edf6ff, #f7fbff);
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
   border-radius: 15px;
 }
 
@@ -1427,7 +1427,7 @@ input[type='file']::file-selector-button {
 }
 
 .dashboard-sync-strip > div > span {
-  color: rgba(23, 48, 74, 0.56);
+  color: rgba(var(--ink-rgb), 0.56);
   font-size: 0.66rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1435,7 +1435,7 @@ input[type='file']::file-selector-button {
 
 .dashboard-sync-strip p {
   margin: 0;
-  color: rgba(23, 48, 74, 0.66);
+  color: rgba(var(--ink-rgb), 0.66);
   font-size: 0.74rem;
 }
 
@@ -1455,9 +1455,9 @@ input[type='file']::file-selector-button {
   grid-column: 1 / -1;
   margin: 0;
   padding: 20px;
-  color: rgba(23, 48, 74, 0.6);
+  color: rgba(var(--ink-rgb), 0.6);
   text-align: center;
-  background: rgba(245, 249, 254, 0.8);
+  background: rgba(var(--paper-soft-rgb), 0.8);
   border-radius: 12px;
 }
 
@@ -1473,7 +1473,7 @@ input[type='file']::file-selector-button {
   background:
     radial-gradient(circle at 18% 22%, rgba(103, 217, 192, 0.25), transparent 24%),
     radial-gradient(circle at 82% 78%, rgba(255, 196, 91, 0.24), transparent 26%),
-    linear-gradient(135deg, rgba(236, 245, 255, 0.98), rgba(253, 255, 250, 0.98));
+    linear-gradient(135deg, rgba(var(--paper-soft-rgb), 0.98), rgba(var(--paper-soft-rgb), 0.98));
 }
 
 .history-coming-visual {
@@ -1557,7 +1557,7 @@ input[type='file']::file-selector-button {
 .history-coming-copy > p:not(.eyebrow) {
   max-width: 54ch;
   margin: 0 0 8px;
-  color: rgba(23, 48, 74, 0.68);
+  color: rgba(var(--ink-rgb), 0.68);
   line-height: 1.65;
 }
 
@@ -1606,7 +1606,7 @@ input[type='file']::file-selector-button {
   background: linear-gradient(180deg, #fafbfc 0%, #f5f8fb 100%);
   border-radius: 12px;
   border: 1px solid #e8ecf1;
-  box-shadow: 0 2px 8px rgba(23, 48, 74, 0.05);
+  box-shadow: 0 2px 8px rgba(var(--ink-rgb), 0.05);
 }
 
 .library-detail-stack {
@@ -1630,7 +1630,7 @@ input[type='file']::file-selector-button {
 .library-filter-panel .filters-title h3 {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #17304a;
+  color: var(--ink);
   margin: 0;
 }
 
@@ -1667,7 +1667,7 @@ input[type='file']::file-selector-button {
   border-radius: 8px;
   border: 1.5px solid #e0e8f0;
   background: #fafbfc;
-  color: #17304a;
+  color: var(--ink);
   transition:
     border-color 200ms ease,
     background 200ms ease;
@@ -1677,7 +1677,7 @@ input[type='file']::file-selector-button {
 .library-filter-panel .sort-select:focus {
   outline: none;
   border-color: #7dd3c0;
-  background: #fff;
+  background: var(--paper);
   box-shadow: 0 2px 8px rgba(120, 210, 190, 0.15);
 }
 
@@ -1717,7 +1717,7 @@ input[type='file']::file-selector-button {
 .library-filter-panel .filter-label {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #17304a;
+  color: var(--ink);
   display: block;
   margin-bottom: 2px;
   text-transform: capitalize;
@@ -1881,13 +1881,13 @@ input[type='file']::file-selector-button {
 
 .filter-label {
   font-size: 0.9rem;
-  color: rgba(23, 48, 74, 0.74);
+  color: rgba(var(--ink-rgb), 0.74);
 }
 
 .search {
   padding: 9px 10px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(var(--paper-rgb), 0.88);
   font-size: 0.84rem;
   width: 100%;
 }
@@ -1900,9 +1900,9 @@ input[type='file']::file-selector-button {
 
 .chip {
   padding: 7px 9px;
-  color: rgba(23, 48, 74, 0.84);
-  background: rgba(255, 255, 255, 0.84);
-  border-color: rgba(23, 48, 74, 0.06);
+  color: rgba(var(--ink-rgb), 0.84);
+  background: rgba(var(--paper-rgb), 0.84);
+  border-color: rgba(var(--ink-rgb), 0.06);
   font-size: 0.78rem;
 }
 
@@ -1923,7 +1923,7 @@ input[type='file']::file-selector-button {
 
 .settings-account-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
 }
 
@@ -1996,7 +1996,7 @@ input[type='file']::file-selector-button {
   align-items: center;
   gap: 16px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(255, 196, 91, 0.15), transparent 34%), rgba(255, 255, 255, 0.9);
+    radial-gradient(circle at 100% 0%, rgba(255, 196, 91, 0.15), transparent 34%), rgba(var(--paper-rgb), 0.9);
 }
 
 .adult-content-settings-copy {
@@ -2024,16 +2024,16 @@ input[type='file']::file-selector-button {
   align-items: start;
   gap: 9px;
   text-align: left;
-  color: #17304a;
-  background: rgba(247, 250, 255, 0.9);
-  border: 1px solid rgba(23, 48, 74, 0.09);
+  color: var(--ink);
+  background: rgba(var(--paper-soft-rgb), 0.9);
+  border: 1px solid rgba(var(--ink-rgb), 0.09);
   border-radius: 12px;
 }
 
 .adult-content-option:hover,
 .adult-content-option.active {
   border-color: rgba(46, 102, 230, 0.34);
-  background: linear-gradient(145deg, rgba(232, 242, 255, 0.96), rgba(231, 250, 245, 0.96));
+  background: linear-gradient(145deg, rgba(var(--paper-soft-rgb), 0.96), rgba(var(--paper-soft-rgb), 0.96));
 }
 
 .adult-content-option > span:last-child {
@@ -2043,7 +2043,7 @@ input[type='file']::file-selector-button {
 }
 
 .adult-content-option small {
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   font-size: 0.7rem;
   line-height: 1.35;
 }
@@ -2052,7 +2052,7 @@ input[type='file']::file-selector-button {
   width: 15px;
   height: 15px;
   margin-top: 2px;
-  border: 2px solid rgba(23, 48, 74, 0.24);
+  border: 2px solid rgba(var(--ink-rgb), 0.24);
   border-radius: 50%;
   box-shadow: inset 0 0 0 3px #fff;
 }
@@ -2109,8 +2109,8 @@ input[type='file']::file-selector-button {
   gap: 4px;
   padding: 3px;
   border-radius: 999px;
-  border: 1px solid rgba(23, 48, 74, 0.08);
-  background: rgba(247, 250, 255, 0.92);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--paper-soft-rgb), 0.92);
 }
 
 .language-toggle-button {
@@ -2118,7 +2118,7 @@ input[type='file']::file-selector-button {
   border-radius: 999px;
   padding: 7px 11px;
   background: transparent;
-  color: rgba(23, 48, 74, 0.72);
+  color: rgba(var(--ink-rgb), 0.72);
   font-weight: 600;
   cursor: pointer;
   font-size: 0.8rem;
@@ -2155,9 +2155,9 @@ input[type='file']::file-selector-button {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid rgba(23, 48, 74, 0.08);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(var(--paper-rgb), 0.72);
 }
 
 .profile-page-header h2 {
@@ -2174,7 +2174,7 @@ input[type='file']::file-selector-button {
   gap: 12px;
   margin-bottom: 14px;
   padding: 2px 0 14px;
-  border-bottom: 1px solid rgba(23, 48, 74, 0.07);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.07);
 }
 
 .profile-page-avatar {
@@ -2192,7 +2192,7 @@ input[type='file']::file-selector-button {
   font-size: 1rem;
 }
 .profile-page-identity span {
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   font-size: 0.84rem;
 }
 
@@ -2201,8 +2201,8 @@ input[type='file']::file-selector-button {
   gap: 12px;
   padding: 12px;
   border-radius: 14px;
-  background: rgba(247, 250, 255, 0.88);
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  background: rgba(var(--paper-soft-rgb), 0.88);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
 }
 
 .password-section-head {
@@ -2220,7 +2220,7 @@ input[type='file']::file-selector-button {
   font-size: 1rem;
 }
 .password-section-head span {
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   font-size: 0.8rem;
 }
 
@@ -2251,17 +2251,17 @@ input[type='file']::file-selector-button {
 .profile-form label {
   display: grid;
   gap: 7px;
-  color: #17304a;
+  color: var(--ink);
   font-size: 0.84rem;
 }
 
 .profile-form input {
   width: 100%;
   padding: 11px 12px;
-  border: 1px solid rgba(23, 48, 74, 0.1);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
   border-radius: 11px;
-  color: #17304a;
-  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  background: rgba(var(--paper-rgb), 0.92);
   outline: none;
 }
 
@@ -2271,12 +2271,12 @@ input[type='file']::file-selector-button {
 }
 
 .profile-form input[readonly] {
-  color: rgba(23, 48, 74, 0.62);
-  background: rgba(240, 245, 250, 0.9);
+  color: rgba(var(--ink-rgb), 0.62);
+  background: rgba(var(--paper-soft-rgb), 0.9);
 }
 
 .profile-form small {
-  color: rgba(23, 48, 74, 0.58);
+  color: rgba(var(--ink-rgb), 0.58);
 }
 
 .profile-password-grid {
@@ -2284,7 +2284,7 @@ input[type='file']::file-selector-button {
   grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
   gap: 14px;
   padding-top: 12px;
-  border-top: 1px solid rgba(23, 48, 74, 0.07);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.07);
 }
 
 .profile-password-fields {
@@ -2327,8 +2327,8 @@ input[type='file']::file-selector-button {
   align-items: center;
   padding: 3px;
   border-radius: 11px;
-  background: rgba(232, 239, 247, 0.9);
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  background: rgba(var(--paper-soft-rgb), 0.9);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
 }
 
 .view-switcher button {
@@ -2336,14 +2336,14 @@ input[type='file']::file-selector-button {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: rgba(23, 48, 74, 0.68);
+  color: rgba(var(--ink-rgb), 0.68);
   font-size: 0.76rem;
 }
 
 .view-switcher button.active {
-  background: #fff;
-  color: #17304a;
-  box-shadow: 0 3px 10px rgba(28, 55, 88, 0.08);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 3px 10px rgba(var(--shadow-rgb), 0.08);
 }
 
 .comic-card {
@@ -2353,8 +2353,8 @@ input[type='file']::file-selector-button {
   gap: 14px;
   padding: 10px;
   border-radius: 12px;
-  background: rgba(247, 250, 255, 0.96);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  background: rgba(var(--paper-soft-rgb), 0.96);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -2370,7 +2370,7 @@ input[type='file']::file-selector-button {
   align-items: start;
   border-radius: 0;
   border: none;
-  border-bottom: 1px solid rgba(23, 48, 74, 0.06);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.06);
   background: transparent;
 }
 
@@ -2429,7 +2429,7 @@ input[type='file']::file-selector-button {
   font-size: 1.25rem;
   font-weight: 900;
   line-height: 1;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 0 rgba(var(--paper-rgb), 0.7);
 }
 
 .comic-info {
@@ -2473,7 +2473,7 @@ input[type='file']::file-selector-button {
 .comic-card:hover,
 .comic-card.active {
   transform: translateY(-2px);
-  background: #fff;
+  background: var(--paper);
   border: 1px solid rgba(120, 184, 255, 0.22);
 }
 
@@ -2482,7 +2482,7 @@ input[type='file']::file-selector-button {
   transform: none;
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(23, 48, 74, 0.12);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.12);
 }
 
 .comic-card h4 {
@@ -2524,7 +2524,7 @@ input[type='file']::file-selector-button {
 }
 
 .comic-rating-label {
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -2564,9 +2564,9 @@ input[type='file']::file-selector-button {
   place-items: center;
   padding: 0;
   border-radius: 8px;
-  border: 1px solid rgba(23, 48, 74, 0.08);
-  background: rgba(244, 249, 255, 0.94);
-  color: rgba(23, 48, 74, 0.26);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--paper-soft-rgb), 0.94);
+  color: rgba(var(--ink-rgb), 0.26);
   box-shadow: none;
 }
 
@@ -2580,7 +2580,7 @@ input[type='file']::file-selector-button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: rgba(23, 48, 74, 0.72);
+  color: rgba(var(--ink-rgb), 0.72);
   font-size: 0.7rem;
   font-weight: 600;
 }
@@ -2640,8 +2640,8 @@ input[type='file']::file-selector-button {
   color: #5d4300;
   font-weight: 700;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.84),
-    0 1px 2px rgba(23, 48, 74, 0.04);
+    inset 0 1px 0 rgba(var(--paper-rgb), 0.84),
+    0 1px 2px rgba(var(--ink-rgb), 0.04);
   appearance: none;
   background-image:
     linear-gradient(45deg, transparent 50%, #9f7600 50%),
@@ -2681,9 +2681,9 @@ input[type='file']::file-selector-button {
   align-items: stretch;
   margin-top: 8px;
   overflow: hidden;
-  border: 1px solid rgba(23, 48, 74, 0.1);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
   border-radius: 10px;
-  background: rgba(244, 249, 255, 0.92);
+  background: rgba(var(--paper-soft-rgb), 0.92);
 }
 
 .chapter-stepper button {
@@ -2691,20 +2691,20 @@ input[type='file']::file-selector-button {
   padding: 0;
   border: 0;
   border-radius: 0;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(var(--paper-rgb), 0.88);
   color: #2457d6;
   font-size: 1rem;
   font-weight: 800;
 }
 
 .chapter-stepper button:first-child {
-  border-right: 1px solid rgba(23, 48, 74, 0.08);
+  border-right: 1px solid rgba(var(--ink-rgb), 0.08);
 }
 .chapter-stepper button:last-child {
-  border-left: 1px solid rgba(23, 48, 74, 0.08);
+  border-left: 1px solid rgba(var(--ink-rgb), 0.08);
 }
 .chapter-stepper button:disabled {
-  color: rgba(23, 48, 74, 0.28);
+  color: rgba(var(--ink-rgb), 0.28);
   cursor: not-allowed;
 }
 
@@ -2714,14 +2714,14 @@ input[type='file']::file-selector-button {
   justify-content: center;
   gap: 5px;
   padding: 0 5px;
-  color: #17304a;
+  color: var(--ink);
   font-size: 0.82rem;
   font-weight: 800;
   white-space: nowrap;
 }
 
 .chapter-stepper span small {
-  color: rgba(23, 48, 74, 0.58);
+  color: rgba(var(--ink-rgb), 0.58);
   font-size: 0.66rem;
   font-weight: 600;
 }
@@ -2731,18 +2731,18 @@ input[type='file']::file-selector-button {
   min-width: 0;
   height: 26px;
   padding: 2px 3px;
-  color: #17304a;
+  color: var(--ink);
   font: inherit;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(var(--paper-rgb), 0.78);
   border: 1px solid transparent;
   border-radius: 6px;
 }
 
 .chapter-stepper .chapter-value input:hover,
 .chapter-stepper .chapter-value input:focus {
-  background: #fff;
+  background: var(--paper);
   border-color: rgba(46, 102, 230, 0.34);
   outline: none;
   box-shadow: 0 0 0 3px rgba(46, 102, 230, 0.1);
@@ -2768,8 +2768,8 @@ input[type='file']::file-selector-button {
   border-radius: 9px;
   font-size: 0.76rem;
   font-weight: 700;
-  color: #17304a;
-  background-color: rgba(235, 247, 255, 0.96);
+  color: var(--ink);
+  background-color: rgba(var(--paper-soft-rgb), 0.96);
 }
 
 .list-view .reading-status-select {
@@ -2828,7 +2828,7 @@ input[type='file']::file-selector-button {
   max-height: 280px;
   aspect-ratio: 3 / 4;
   border: 0;
-  border-bottom: 1px solid rgba(23, 48, 74, 0.06);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.06);
   border-radius: 0;
   font-size: 2.25rem;
 }
@@ -2896,9 +2896,9 @@ input[type='file']::file-selector-button {
 .mini-action {
   padding: 6px 8px;
   border-radius: 9px;
-  color: #17304a;
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(23, 48, 74, 0.08);
+  color: var(--ink);
+  background: rgba(var(--paper-rgb), 0.92);
+  border-color: rgba(var(--ink-rgb), 0.08);
   font-size: 0.76rem;
 }
 
@@ -2909,7 +2909,7 @@ input[type='file']::file-selector-button {
 
 .panel-glow {
   background:
-    radial-gradient(circle at top right, rgba(120, 184, 255, 0.1), transparent 28%), rgba(255, 255, 255, 0.86);
+    radial-gradient(circle at top right, rgba(120, 184, 255, 0.1), transparent 28%), rgba(var(--paper-rgb), 0.86);
 }
 
 .detail-panel {
@@ -2958,9 +2958,9 @@ input[type='file']::file-selector-button {
   padding: 0;
   border-radius: 12px;
   border: 1px solid rgba(211, 160, 36, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(var(--paper-rgb), 0.9);
   color: rgba(159, 118, 0, 0.42);
-  box-shadow: 0 8px 20px rgba(28, 55, 88, 0.08);
+  box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.08);
   font-size: 1rem;
   font-weight: 900;
 }
@@ -2979,7 +2979,7 @@ input[type='file']::file-selector-button {
   border: 1px solid rgba(205, 68, 68, 0.18);
   background: linear-gradient(180deg, rgba(255, 240, 240, 0.98), rgba(255, 226, 226, 0.96));
   color: #a03737;
-  box-shadow: 0 8px 20px rgba(28, 55, 88, 0.08);
+  box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.08);
   font-weight: 800;
 }
 
@@ -3001,7 +3001,7 @@ input[type='file']::file-selector-button {
   overflow: hidden;
   background:
     radial-gradient(circle at 92% 5%, rgba(255, 196, 91, 0.22), transparent 28%),
-    radial-gradient(circle at 72% 110%, rgba(73, 203, 176, 0.2), transparent 36%), rgba(255, 255, 255, 0.94);
+    radial-gradient(circle at 72% 110%, rgba(73, 203, 176, 0.2), transparent 36%), rgba(var(--paper-rgb), 0.94);
 }
 
 .comic-page-cover {
@@ -3011,12 +3011,12 @@ input[type='file']::file-selector-button {
   width: 100%;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  color: rgba(23, 48, 74, 0.5);
+  color: rgba(var(--ink-rgb), 0.5);
   font-size: 3rem;
   font-weight: 900;
   background: linear-gradient(145deg, #dff4ff, #d8f7ef);
   border-radius: 16px;
-  box-shadow: 0 18px 40px rgba(28, 55, 88, 0.14);
+  box-shadow: 0 18px 40px rgba(var(--shadow-rgb), 0.14);
 }
 
 .comic-page-favorite-badge {
@@ -3032,7 +3032,7 @@ input[type='file']::file-selector-button {
   border: 1px solid rgba(217, 154, 0, 0.2);
   background: linear-gradient(180deg, rgba(255, 247, 213, 0.98), rgba(255, 239, 173, 0.98));
   color: #d99a00;
-  box-shadow: 0 8px 20px rgba(28, 55, 88, 0.12);
+  box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.12);
   font-size: 1rem;
   font-weight: 900;
 }
@@ -3070,11 +3070,11 @@ input[type='file']::file-selector-button {
 
 .comic-page-badges span {
   padding: 6px 9px;
-  color: rgba(23, 48, 74, 0.72);
+  color: rgba(var(--ink-rgb), 0.72);
   font-size: 0.72rem;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.76);
-  border: 1px solid rgba(23, 48, 74, 0.08);
+  background: rgba(var(--paper-rgb), 0.76);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
   border-radius: 999px;
 }
 
@@ -3087,7 +3087,7 @@ input[type='file']::file-selector-button {
 .comic-page-description {
   max-width: 68ch;
   margin: 3px 0;
-  color: rgba(23, 48, 74, 0.68);
+  color: rgba(var(--ink-rgb), 0.68);
   line-height: 1.65;
 }
 
@@ -3098,7 +3098,7 @@ input[type='file']::file-selector-button {
 }
 
 .comic-page-primary-source > span {
-  color: rgba(23, 48, 74, 0.52);
+  color: rgba(var(--ink-rgb), 0.52);
   font-size: 0.68rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -3124,7 +3124,7 @@ input[type='file']::file-selector-button {
   min-height: 118px;
   padding: 14px;
   overflow: hidden;
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
   border-radius: 15px;
 }
 
@@ -3145,7 +3145,7 @@ input[type='file']::file-selector-button {
 }
 
 .comic-page-stat > span {
-  color: rgba(23, 48, 74, 0.58);
+  color: rgba(var(--ink-rgb), 0.58);
   font-size: 0.7rem;
   font-weight: 700;
 }
@@ -3213,17 +3213,17 @@ input[type='file']::file-selector-button {
   align-items: start;
   gap: 10px;
   padding: 10px 0;
-  border-top: 1px solid rgba(23, 48, 74, 0.06);
+  border-top: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .comic-page-label-row > span {
-  color: rgba(23, 48, 74, 0.58);
+  color: rgba(var(--ink-rgb), 0.58);
   font-size: 0.72rem;
   font-weight: 700;
 }
 
 .comic-page-label-row small {
-  color: rgba(23, 48, 74, 0.5);
+  color: rgba(var(--ink-rgb), 0.5);
 }
 
 .comic-page-source-list {
@@ -3236,16 +3236,16 @@ input[type='file']::file-selector-button {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 3px 10px;
   padding: 11px;
-  color: #17304a;
+  color: var(--ink);
   text-decoration: none;
-  background: rgba(246, 250, 255, 0.9);
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  background: rgba(var(--paper-soft-rgb), 0.9);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
   border-radius: 11px;
 }
 
 .comic-page-source-list a:hover {
   border-color: rgba(46, 102, 230, 0.25);
-  background: #fff;
+  background: var(--paper);
 }
 
 .comic-page-source-list a span {
@@ -3255,7 +3255,7 @@ input[type='file']::file-selector-button {
 .comic-page-source-list a small {
   grid-column: 1;
   overflow: hidden;
-  color: rgba(23, 48, 74, 0.56);
+  color: rgba(var(--ink-rgb), 0.56);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3282,8 +3282,8 @@ input[type='file']::file-selector-button {
   background:
     radial-gradient(circle at top right, rgba(120, 184, 255, 0.22), transparent 28%),
     radial-gradient(circle at bottom left, rgba(138, 232, 214, 0.18), transparent 30%),
-    rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+    rgba(var(--paper-rgb), 0.9);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .detail-cover-full {
@@ -3292,7 +3292,7 @@ input[type='file']::file-selector-button {
   overflow: hidden;
   border-radius: 14px;
   background: linear-gradient(145deg, #dff4ff, #d8f7ef);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .detail-favorite-button {
@@ -3305,9 +3305,9 @@ input[type='file']::file-selector-button {
   padding: 0;
   border-radius: 50%;
   border: 1px solid rgba(211, 160, 36, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(var(--paper-rgb), 0.9);
   color: rgba(159, 118, 0, 0.42);
-  box-shadow: 0 8px 20px rgba(28, 55, 88, 0.12);
+  box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.12);
   font-size: 1rem;
   font-weight: 900;
 }
@@ -3326,9 +3326,9 @@ input[type='file']::file-selector-button {
   margin: 0;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(247, 250, 255, 0.92);
-  border: 1px dashed rgba(23, 48, 74, 0.1);
-  color: rgba(23, 48, 74, 0.68);
+  background: rgba(var(--paper-soft-rgb), 0.92);
+  border: 1px dashed rgba(var(--ink-rgb), 0.1);
+  color: rgba(var(--ink-rgb), 0.68);
   font-size: 0.86rem;
 }
 
@@ -3346,7 +3346,7 @@ input[type='file']::file-selector-button {
   inset: 0;
   display: grid;
   place-items: center;
-  color: rgba(23, 48, 74, 0.52);
+  color: rgba(var(--ink-rgb), 0.52);
   font-size: 1.4rem;
   font-weight: 800;
 }
@@ -3403,17 +3403,17 @@ input[type='file']::file-selector-button {
   align-items: center;
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: rgba(23, 48, 74, 0.76);
+  background: rgba(var(--paper-rgb), 0.92);
+  color: rgba(var(--ink-rgb), 0.76);
   font-size: 0.7rem;
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .detail-meta {
   padding: 12px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  background: rgba(var(--paper-rgb), 0.88);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
   display: grid;
   align-content: start;
   gap: 10px;
@@ -3421,7 +3421,7 @@ input[type='file']::file-selector-button {
 
 .detail-meta strong,
 .detail-meta a {
-  color: #17304a;
+  color: var(--ink);
   text-decoration: none;
   word-break: break-word;
 }
@@ -3436,9 +3436,9 @@ input[type='file']::file-selector-button {
 .detail-tab {
   padding: 7px 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.84);
-  color: rgba(23, 48, 74, 0.82);
-  border-color: rgba(23, 48, 74, 0.06);
+  background: rgba(var(--paper-rgb), 0.84);
+  color: rgba(var(--ink-rgb), 0.82);
+  border-color: rgba(var(--ink-rgb), 0.06);
   font-size: 0.78rem;
 }
 
@@ -3481,7 +3481,7 @@ input[type='file']::file-selector-button {
 }
 
 .detail-label-group > span {
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -3500,7 +3500,7 @@ input[type='file']::file-selector-button {
 }
 
 .detail-rating-panel > span {
-  color: rgba(23, 48, 74, 0.58);
+  color: rgba(var(--ink-rgb), 0.58);
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -3524,8 +3524,8 @@ input[type='file']::file-selector-button {
 .label-card {
   padding: 10px;
   border-radius: 12px;
-  background: rgba(247, 250, 255, 0.96);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  background: rgba(var(--paper-soft-rgb), 0.96);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .detail-stack {
@@ -3574,7 +3574,7 @@ input[type='file']::file-selector-button {
   gap: 14px;
   padding: 16px;
   border-radius: 14px;
-  background: linear-gradient(145deg, rgba(248, 252, 255, 0.98), rgba(238, 246, 255, 0.9));
+  background: linear-gradient(145deg, rgba(var(--paper-soft-rgb), 0.98), rgba(var(--paper-soft-rgb), 0.9));
   border: 1px solid rgba(80, 142, 205, 0.14);
   cursor: pointer;
   transition:
@@ -3587,7 +3587,7 @@ input[type='file']::file-selector-button {
 .import-option:has(input:focus-visible) {
   transform: translateY(-2px);
   border-color: rgba(80, 142, 205, 0.3);
-  box-shadow: 0 8px 20px rgba(28, 55, 88, 0.07);
+  box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.07);
 }
 
 .import-option input {
@@ -3652,15 +3652,15 @@ input[type='file']::file-selector-button {
 .import-copy small,
 .export-row span,
 .import-status small {
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
 }
 
 .import-action {
   padding: 6px 8px;
   border-radius: 8px;
   color: #285070;
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  background: rgba(var(--paper-rgb), 0.86);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
   font-size: 0.7rem;
   font-weight: 700;
 }
@@ -3680,7 +3680,7 @@ input[type='file']::file-selector-button {
 .import-status > span {
   padding: 4px 6px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.76);
+  background: rgba(var(--paper-rgb), 0.76);
   font-size: 0.62rem;
   font-weight: 800;
 }
@@ -3698,8 +3698,8 @@ input[type='file']::file-selector-button {
   margin-top: 12px;
   padding: 11px 12px;
   border-radius: 13px;
-  background: rgba(247, 250, 255, 0.86);
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  background: rgba(var(--paper-soft-rgb), 0.86);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
 }
 
 .export-row > div:first-child {
@@ -3717,8 +3717,8 @@ input[type='file']::file-selector-button {
   min-width: 0;
   padding: 12px;
   border-radius: 14px;
-  background: rgba(247, 250, 255, 0.86);
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  background: rgba(var(--paper-soft-rgb), 0.86);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
 }
 
 .label-group-genre {
@@ -3737,7 +3737,7 @@ input[type='file']::file-selector-button {
   align-items: flex-start;
   gap: 10px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(23, 48, 74, 0.07);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.07);
 }
 
 .label-group-head > div {
@@ -3748,7 +3748,7 @@ input[type='file']::file-selector-button {
 
 .label-group-head small,
 .label-manage-name small {
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
 }
 
 .label-kind-badge {
@@ -3786,8 +3786,8 @@ input[type='file']::file-selector-button {
   gap: 10px;
   padding: 9px;
   border-radius: 11px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(23, 48, 74, 0.07);
+  background: rgba(var(--paper-rgb), 0.92);
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
 }
 
 .label-manage-name {
@@ -3830,7 +3830,7 @@ input[type='file']::file-selector-button {
 .label-empty {
   padding: 14px 8px;
   text-align: center;
-  color: rgba(23, 48, 74, 0.58);
+  color: rgba(var(--ink-rgb), 0.58);
   font-size: 0.78rem;
 }
 
@@ -3838,9 +3838,9 @@ input[type='file']::file-selector-button {
   min-height: 54px;
   padding: 7px 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #17304a;
-  border-color: rgba(23, 48, 74, 0.08);
+  background: rgba(var(--paper-rgb), 0.92);
+  color: var(--ink);
+  border-color: rgba(var(--ink-rgb), 0.08);
   display: grid;
   gap: 2px;
   font-size: 0.78rem;
@@ -3859,7 +3859,7 @@ input[type='file']::file-selector-button {
   z-index: 40;
   display: grid;
   place-items: center;
-  background: rgba(234, 243, 255, 0.72);
+  background: rgba(var(--paper-soft-rgb), 0.72);
   backdrop-filter: blur(12px);
   padding: 12px;
 }
@@ -3884,7 +3884,7 @@ input[type='file']::file-selector-button {
   padding: 22px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 100% 0, rgba(103, 217, 192, 0.16), transparent 34%), rgba(255, 255, 255, 0.96);
+    radial-gradient(circle at 100% 0, rgba(103, 217, 192, 0.16), transparent 34%), rgba(var(--paper-rgb), 0.96);
   box-shadow: 0 24px 70px rgba(32, 61, 99, 0.18);
 }
 
@@ -3897,7 +3897,7 @@ input[type='file']::file-selector-button {
   background: linear-gradient(145deg, #e5f0ff, #e1faf3);
   border: 1px solid rgba(46, 102, 230, 0.12);
   border-radius: 16px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 0 rgba(var(--paper-rgb), 0.9);
 }
 
 .confirm-modal-icon span {
@@ -3926,7 +3926,7 @@ input[type='file']::file-selector-button {
 
 .confirm-modal-copy > p:last-child {
   margin: 3px 0 0;
-  color: rgba(23, 48, 74, 0.65);
+  color: rgba(var(--ink-rgb), 0.65);
   font-size: 0.82rem;
   line-height: 1.5;
 }
@@ -3956,8 +3956,8 @@ input[type='file']::file-selector-button {
   z-index: 4;
   margin: -16px -16px 0;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.96);
-  border-bottom: 1px solid rgba(23, 48, 74, 0.07);
+  background: rgba(var(--paper-rgb), 0.96);
+  border-bottom: 1px solid rgba(var(--ink-rgb), 0.07);
   backdrop-filter: blur(12px);
 }
 
@@ -3974,7 +3974,7 @@ input[type='file']::file-selector-button {
   display: grid;
   gap: 9px;
   padding: 11px 12px;
-  color: #17304a;
+  color: var(--ink);
   background: linear-gradient(135deg, rgba(223, 244, 255, 0.92), rgba(216, 247, 239, 0.92));
   border: 1px solid rgba(46, 102, 230, 0.16);
   border-radius: 13px;
@@ -3988,7 +3988,7 @@ input[type='file']::file-selector-button {
 
 .detected-title-suggestion span,
 .detected-title-suggestion small {
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
   font-size: 0.72rem;
 }
 
@@ -4008,8 +4008,8 @@ input[type='file']::file-selector-button {
   align-items: center;
   gap: 10px;
   padding: 9px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(23, 48, 74, 0.08);
+  background: rgba(var(--paper-rgb), 0.78);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
   border-radius: 10px;
 }
 
@@ -4031,9 +4031,9 @@ input[type='file']::file-selector-button {
 .comic-form-section {
   min-width: 0;
   padding: 12px;
-  border: 1px solid rgba(23, 48, 74, 0.08);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
   border-radius: 14px;
-  background: rgba(247, 250, 255, 0.72);
+  background: rgba(var(--paper-soft-rgb), 0.72);
 }
 .reader-modal {
   width: min(900px, 100%);
@@ -4120,9 +4120,9 @@ input[type='file']::file-selector-button {
   line-height: 1.5;
   resize: vertical;
   border-radius: 14px;
-  border: 1px solid rgba(23, 48, 74, 0.1);
-  background: rgba(250, 252, 255, 0.96);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  background: rgba(var(--paper-soft-rgb), 0.96);
+  box-shadow: inset 0 1px 0 rgba(var(--paper-rgb), 0.7);
 }
 
 .comic-details-section textarea:focus {
@@ -4135,15 +4135,15 @@ input[type='file']::file-selector-button {
   gap: 12px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(247, 250, 255, 0.96);
-  border: 1px solid rgba(23, 48, 74, 0.08);
+  background: rgba(var(--paper-soft-rgb), 0.96);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
 }
 
 .cover-source-results > strong {
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(23, 48, 74, 0.62);
+  color: rgba(var(--ink-rgb), 0.62);
 }
 
 .cover-source-results-list {
@@ -4156,8 +4156,8 @@ input[type='file']::file-selector-button {
   gap: 9px;
   padding: 11px 13px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  background: rgba(var(--paper-rgb), 0.92);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .cover-source-result > div {
@@ -4167,7 +4167,7 @@ input[type='file']::file-selector-button {
 .cover-source-result span {
   display: inline-block;
   margin-bottom: 4px;
-  color: rgba(23, 48, 74, 0.58);
+  color: rgba(var(--ink-rgb), 0.58);
   font-size: 0.72rem;
 }
 
@@ -4179,7 +4179,7 @@ input[type='file']::file-selector-button {
 .cover-source-result small {
   display: block;
   margin-top: 4px;
-  color: rgba(23, 48, 74, 0.56);
+  color: rgba(var(--ink-rgb), 0.56);
   overflow-wrap: anywhere;
 }
 
@@ -4220,8 +4220,8 @@ input[type='file']::file-selector-button {
   margin: 8px 0;
   padding: 9px;
   border-radius: 11px;
-  background: rgba(247, 250, 255, 0.96);
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  background: rgba(var(--paper-soft-rgb), 0.96);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .cover-preview-side {
@@ -4248,8 +4248,8 @@ input[type='file']::file-selector-button {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
-  background: rgba(23, 48, 74, 0.05);
-  color: rgba(23, 48, 74, 0.58);
+  background: rgba(var(--ink-rgb), 0.05);
+  color: rgba(var(--ink-rgb), 0.58);
   text-align: center;
 }
 
@@ -4267,7 +4267,7 @@ input[type='file']::file-selector-button {
 
 .cover-preview span {
   margin-top: 3px;
-  color: rgba(23, 48, 74, 0.68);
+  color: rgba(var(--ink-rgb), 0.68);
   font-size: 0.74rem;
 }
 
@@ -4289,8 +4289,8 @@ input[type='file']::file-selector-button {
   padding: 12px;
   max-height: 44vh;
   border-radius: 13px;
-  background: linear-gradient(180deg, rgba(247, 250, 255, 0.98), rgba(237, 244, 255, 0.92));
-  border: 1px solid rgba(23, 48, 74, 0.08);
+  background: linear-gradient(180deg, rgba(var(--paper-soft-rgb), 0.98), rgba(var(--paper-soft-rgb), 0.92));
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
   box-shadow: 0 16px 40px rgba(32, 61, 99, 0.08);
 }
 
@@ -4300,7 +4300,7 @@ input[type='file']::file-selector-button {
   margin: 6px 0 18px;
   padding: 12px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(var(--paper-rgb), 0.98);
   border: 1px solid rgba(46, 102, 230, 0.12);
   box-shadow: 0 18px 46px rgba(32, 61, 99, 0.12);
   backdrop-filter: blur(12px);
@@ -4320,7 +4320,7 @@ input[type='file']::file-selector-button {
 
 .source-summary-float-head span {
   margin-top: 4px;
-  color: rgba(23, 48, 74, 0.66);
+  color: rgba(var(--ink-rgb), 0.66);
 }
 
 .source-summary-float-close {
@@ -4364,7 +4364,7 @@ input[type='file']::file-selector-button {
 
 .cover-check-head span,
 .cover-check-head small {
-  color: rgba(23, 48, 74, 0.66);
+  color: rgba(var(--ink-rgb), 0.66);
 }
 
 .cover-check-item {
@@ -4376,14 +4376,14 @@ input[type='file']::file-selector-button {
   width: 100%;
   padding: 7px;
   border-radius: 11px;
-  border: 1px solid rgba(23, 48, 74, 0.08);
-  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--paper-rgb), 0.94);
   color: inherit;
 }
 
 .cover-check-item.active {
   border-color: rgba(36, 82, 255, 0.42);
-  background: rgba(236, 243, 255, 0.98);
+  background: rgba(var(--paper-soft-rgb), 0.98);
   box-shadow: 0 0 0 2px rgba(36, 82, 255, 0.12);
 }
 
@@ -4392,7 +4392,7 @@ input[type='file']::file-selector-button {
   height: 86px;
   border-radius: 9px;
   object-fit: cover;
-  background: rgba(10, 20, 35, 0.06);
+  background: rgba(var(--shadow-rgb), 0.06);
 }
 
 .cover-check-item strong,
@@ -4403,7 +4403,7 @@ input[type='file']::file-selector-button {
 .cover-check-item span {
   margin-top: 3px;
   font-size: 0.7rem;
-  color: rgba(23, 48, 74, 0.66);
+  color: rgba(var(--ink-rgb), 0.66);
   word-break: break-all;
 }
 
@@ -4418,7 +4418,7 @@ input[type='file']::file-selector-button {
 
 .cover-check-genres {
   font-size: 0.8rem;
-  color: rgba(23, 48, 74, 0.7);
+  color: rgba(var(--ink-rgb), 0.7);
 }
 
 .inline-actions {
@@ -4445,17 +4445,17 @@ input[type='file']::file-selector-button {
   display: grid;
   place-items: center;
   min-height: 38vh;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(var(--paper-rgb), 0.7);
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(23, 48, 74, 0.06);
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
 }
 
 .reader-frame {
   width: 100%;
   height: 48vh;
   border: 0;
-  background: #fff;
+  background: var(--paper);
 }
 
 .reader-image {
@@ -4471,8 +4471,8 @@ input[type='file']::file-selector-button {
   padding: 16px;
   overflow: auto;
   white-space: pre-wrap;
-  color: #17304a;
-  background: #fff;
+  color: var(--ink);
+  background: var(--paper);
   font-family: ui-serif, Georgia, 'Times New Roman', serif;
   line-height: 1.7;
 }
@@ -4503,7 +4503,7 @@ input[type='number'] {
     position: static;
     min-height: auto;
     border-right: 0;
-    border-bottom: 1px solid rgba(23, 48, 74, 0.08);
+    border-bottom: 1px solid rgba(var(--ink-rgb), 0.08);
   }
 
   .content {

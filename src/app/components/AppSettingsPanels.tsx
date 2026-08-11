@@ -32,6 +32,7 @@ type AppSettingsPanelsProps = {
   syncState: SyncState;
   adultContentMode: AdultContentMode;
   showAdultOnDashboard: boolean;
+  theme: 'light' | 'dark';
   labels: Array<{ id: string; name: string; kind: string }>;
   allComics: any[];
   openLabelForm: (kind?: string) => void;
@@ -41,6 +42,7 @@ type AppSettingsPanelsProps = {
   setLocale: (value: Locale) => void;
   setAdultContentMode: (value: AdultContentMode) => void;
   setShowAdultOnDashboard: (value: boolean | ((current: boolean) => boolean)) => void;
+  setTheme: (value: 'light' | 'dark') => void;
   setProfileUsernameInput: (value: string) => void;
   setNewPassword: (value: string) => void;
   setConfirmPassword: (value: string) => void;
@@ -64,6 +66,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     syncState,
     adultContentMode,
     showAdultOnDashboard,
+    theme,
     labels,
     allComics,
     openLabelForm,
@@ -73,6 +76,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     setLocale,
     setAdultContentMode,
     setShowAdultOnDashboard,
+    setTheme,
     setProfileUsernameInput,
     setNewPassword,
     setConfirmPassword,
@@ -392,6 +396,34 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
                   onClick={() => setLocale('en')}
                 >
                   {t.english}
+                </button>
+              </div>
+            </article>
+            <article className="panel compact-panel settings-card theme-settings-card">
+              <div className="settings-card-copy">
+                <p className="eyebrow">{tr('Tampilan', 'Appearance')}</p>
+                <h3>{tr('Mode gelap', 'Dark mode')}</h3>
+                <p className="muted">
+                  {tr(
+                    'Pilih tema terang atau gelap untuk aplikasi.',
+                    'Choose a light or dark theme for the app.',
+                  )}
+                </p>
+              </div>
+              <div className="language-toggle" role="group" aria-label={tr('Pilihan tema', 'Theme selector')}>
+                <button
+                  type="button"
+                  className={theme === 'light' ? 'language-toggle-button active' : 'language-toggle-button'}
+                  onClick={() => setTheme('light')}
+                >
+                  {tr('Terang', 'Light')}
+                </button>
+                <button
+                  type="button"
+                  className={theme === 'dark' ? 'language-toggle-button active' : 'language-toggle-button'}
+                  onClick={() => setTheme('dark')}
+                >
+                  {tr('Gelap', 'Dark')}
                 </button>
               </div>
             </article>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { STORAGE_KEYS } from '../../lib/constants/storageKeys';
 import type { AdultContentMode, Locale } from '../../features/settings';
 import type { ReadingStatus } from '../../features/reading-progress';
@@ -25,10 +25,19 @@ export function useLibraryPreferences() {
   const [showAdultOnDashboard, setShowAdultOnDashboard] = useState(
     () => window.localStorage.getItem(STORAGE_KEYS.dashboardAdultVisibility) === 'true',
   );
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const stored = window.localStorage.getItem(STORAGE_KEYS.theme);
+    return stored === 'dark' ? 'dark' : 'light';
+  });
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.locale, locale);
   }, [locale]);
+
+  useLayoutEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.theme, theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.libraryView, viewMode);
@@ -72,6 +81,8 @@ export function useLibraryPreferences() {
     setAdultContentMode,
     showAdultOnDashboard,
     setShowAdultOnDashboard,
+    theme,
+    setTheme,
     activeGenreFilters,
     activeCollectionFilters,
     activeTagFilters,

@@ -4,5 +4,6 @@ export const STORAGE_KEYS = {
   libraryView: 'arsip-library-view',
   locale: 'arsip-locale',
   pendingCoverSync: 'arsip-pending-cover-sync',
+  theme: 'arsip-theme',
   webDeviceId: 'arsip-buku-gua.web-device-id',
 } as const;

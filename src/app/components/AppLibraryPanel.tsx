@@ -96,6 +96,15 @@ export function AppLibraryPanel(props: AppLibraryPanelProps) {
     syncNow,
   } = props;
 
+  const handleResetFilters = () => {
+    setQuery('');
+    setSelectedGenres([]);
+    setSelectedCollections([]);
+    setSelectedTags([]);
+    setSelectedReadingStatus('all');
+    setSelectedFavoriteFilter('all');
+  };
+
   return (
     <div className="library-side-column">
       <section className="filters panel library-filter-panel">
@@ -133,6 +142,9 @@ export function AppLibraryPanel(props: AppLibraryPanelProps) {
                 <option value="title_desc">{tr('Judul (Z-A)', 'Title (Z-A)')}</option>
                 <option value="last_read_desc">{tr('Terakhir dibaca', 'Last read')}</option>
               </select>
+              <button type="button" className="secondary" onClick={handleResetFilters}>
+                {tr('Reset filter', 'Reset filters')}
+              </button>
             </div>
           </div>
         </div>
@@ -153,6 +165,13 @@ export function AppLibraryPanel(props: AppLibraryPanelProps) {
           <div className="filter-group">
             <span className="filter-label">{tr('Koleksi', 'Collection')}</span>
             <div className="chips">
+              <button
+                type="button"
+                className={selectedCollections.length === 0 ? 'chip active' : 'chip'}
+                onClick={() => setSelectedCollections([])}
+              >
+                {tr('Semua', 'All')}
+              </button>
               {collections.map((collection) => (
                 <button
                   key={collection}
@@ -174,6 +193,13 @@ export function AppLibraryPanel(props: AppLibraryPanelProps) {
           <div className="filter-group">
             <span className="filter-label">Genre</span>
             <div className="chips">
+              <button
+                type="button"
+                className={selectedGenres.length === 0 ? 'chip active' : 'chip'}
+                onClick={() => setSelectedGenres([])}
+              >
+                {tr('Semua', 'All')}
+              </button>
               {genres.map((genre) => (
                 <button
                   key={genre}
@@ -193,6 +219,13 @@ export function AppLibraryPanel(props: AppLibraryPanelProps) {
           <div className="filter-group">
             <span className="filter-label">Tag</span>
             <div className="chips">
+              <button
+                type="button"
+                className={selectedTags.length === 0 ? 'chip active' : 'chip'}
+                onClick={() => setSelectedTags([])}
+              >
+                {tr('Semua', 'All')}
+              </button>
               {tags.map((tag) => (
                 <button
                   key={tag}

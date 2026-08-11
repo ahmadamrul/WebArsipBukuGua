@@ -1,5 +1,15 @@
 :root {
-  color: #182636;
+  --ink-rgb: 23, 48, 74;
+  --ink: rgb(var(--ink-rgb));
+  --paper-rgb: 255, 255, 255;
+  --paper: rgb(var(--paper-rgb));
+  --paper-soft-rgb: 244, 249, 255;
+  --shadow-rgb: 28, 55, 88;
+  --accent-rgb: 33, 77, 224;
+  --accent: rgb(var(--accent-rgb));
+  --input-bg: #fcfeff;
+
+  color: var(--ink);
   background:
     radial-gradient(circle at top left, rgba(34, 92, 255, 0.24), transparent 28%),
     radial-gradient(circle at 82% 8%, rgba(19, 167, 133, 0.16), transparent 22%),
@@ -18,4 +28,18 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme='dark'] {
+  --ink-rgb: 226, 233, 243;
+  --paper-rgb: 26, 33, 44;
+  --paper-soft-rgb: 35, 43, 56;
+  --shadow-rgb: 0, 0, 0;
+  --accent-rgb: 94, 140, 255;
+  --input-bg: #1b2430;
+
+  background:
+    radial-gradient(circle at top left, rgba(60, 110, 255, 0.16), transparent 28%),
+    radial-gradient(circle at 82% 8%, rgba(19, 167, 133, 0.1), transparent 22%),
+    linear-gradient(180deg, #10151d 0%, #12181f 58%, #0e1319 100%);
 }

@@ -100,6 +100,8 @@ export default function App() {
     setAdultContentMode,
     showAdultOnDashboard,
     setShowAdultOnDashboard,
+    theme,
+    setTheme,
     activeGenreFilters,
     activeCollectionFilters,
     activeTagFilters,
@@ -645,6 +647,7 @@ export default function App() {
           syncState={syncState}
           adultContentMode={adultContentMode}
           showAdultOnDashboard={showAdultOnDashboard}
+          theme={theme}
           labels={labels}
           allComics={comics}
           openLabelForm={openLabelForm}
@@ -654,6 +657,7 @@ export default function App() {
           setLocale={setLocale}
           setAdultContentMode={setAdultContentMode}
           setShowAdultOnDashboard={setShowAdultOnDashboard}
+          setTheme={setTheme}
           setProfileUsernameInput={setProfileUsernameInput}
           setNewPassword={setNewPassword}
           setConfirmPassword={setConfirmPassword}

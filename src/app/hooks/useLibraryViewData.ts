@@ -125,9 +125,9 @@ export function useLibraryViewData({
         return list.sort((a, b) => compareDate(a.updated_at, b.updated_at));
     }
   }, [filteredComics, sortBy, progresses]);
-  const genres = useMemo(() => ['Semua', ...new Set([...comics.flatMap((comic) => (comic.genre ?? '').split(',').map((value) => value.trim())).filter(Boolean), ...labels.filter((label) => label.kind === 'genre').map((label) => label.name.trim()).filter(Boolean)])], [comics, labels]);
-  const collections = useMemo(() => ['Semua', ...new Set(labels.filter((label) => label.kind === 'collection').map((label) => label.name.trim()).filter(Boolean))], [labels]);
-  const tags = useMemo(() => ['Semua', ...new Set(labels.filter((label) => label.kind === 'tag').map((label) => label.name.trim()).filter(Boolean))], [labels]);
+  const genres = useMemo(() => [...new Set([...comics.flatMap((comic) => (comic.genre ?? '').split(',').map((value) => value.trim())).filter(Boolean), ...labels.filter((label) => label.kind === 'genre').map((label) => label.name.trim()).filter(Boolean)])], [comics, labels]);
+  const collections = useMemo(() => [...new Set(labels.filter((label) => label.kind === 'collection').map((label) => label.name.trim()).filter(Boolean))], [labels]);
+  const tags = useMemo(() => [...new Set(labels.filter((label) => label.kind === 'tag').map((label) => label.name.trim()).filter(Boolean))], [labels]);
   const collectionOptions = useMemo(() => labels.filter((label) => label.kind === 'collection').map((label) => label.name.trim()).filter(Boolean), [labels]);
   const tagOptions = useMemo(() => labels.filter((label) => label.kind === 'tag').map((label) => label.name.trim()).filter(Boolean), [labels]);
   const stats = buildDashboardStats({ comics: dashboardComics, labels, readingStatusLabel, locale, tr });
