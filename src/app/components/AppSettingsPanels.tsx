@@ -700,6 +700,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
             }}
           />
           <ManualCoverUploadPanel
+            key={coverFixRefreshKey}
             comics={allComics}
             tr={tr}
             onUploadComplete={() => {
