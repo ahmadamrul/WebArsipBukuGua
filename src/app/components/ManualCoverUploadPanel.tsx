@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { updateComic, type Comic } from '../../features/comics';
 import { hasUsableCoverUrl, getAllCoverUrls } from '../../lib/utils/cover';
 
@@ -10,12 +10,13 @@ type ManualCoverUploadPanelProps = {
 
 export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualCoverUploadPanelProps) {
   const [uploading, setUploading] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement>>({});
 
   const eligibleComics = comics.filter(
     (comic) => !comic.cover_storage_path && hasUsableCoverUrl(comic.cover_url),
   );
 
-  const handleUploadImage = async (comic: Comic) => {
+  const handleUploadImage = async (comic: Comic, fileInput?: HTMLInputElement) => {
     const urls = getAllCoverUrls(comic);
     if (urls.length === 0) return;
 
@@ -28,6 +29,30 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
       const blob = await response.blob();
       const { uploadComicCoverFromFile } = await import('../../features/comics');
       const cachedCover = await uploadComicCoverFromFile(comic.id, blob, comic.title);
+
+      await updateComic(comic.id, {
+        coverUrl: cachedCover.coverUrl,
+        coverUrls: null,
+        coverStoragePath: cachedCover.coverStoragePath,
+      });
+      onUploadComplete();
+    } catch (error) {
+      console.error(`Failed to upload cover for ${comic.title}:`, error);
+      // Auto-open file picker on failure
+      if (fileInput) {
+        fileInput.click();
+      }
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  const handleFileUpload = async (comic: Comic, file: File) => {
+    if (!file) return;
+    setUploading(comic.id);
+    try {
+      const { uploadComicCoverFromFile } = await import('../../features/comics');
+      const cachedCover = await uploadComicCoverFromFile(comic.id, file, comic.title);
 
       await updateComic(comic.id, {
         coverUrl: cachedCover.coverUrl,
@@ -79,11 +104,25 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
               >
                 {tr('Buka Gambar', 'Open Image')}
               </button>
+              <input
+                type="file"
+                accept="image/*"
+                ref={(el) => {
+                  if (el) fileInputRefs.current[comic.id] = el;
+                }}
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.currentTarget.files?.[0];
+                  if (file) {
+                    void handleFileUpload(comic, file);
+                  }
+                }}
+              />
               <button
                 type="button"
                 className="primary"
                 disabled={uploading === comic.id}
-                onClick={() => void handleUploadImage(comic)}
+                onClick={() => void handleUploadImage(comic, fileInputRefs.current[comic.id])}
                 style={{ width: '100%' }}
               >
                 {uploading === comic.id ? tr('Uploading...', 'Uploading...') : tr('Upload', 'Upload')}
