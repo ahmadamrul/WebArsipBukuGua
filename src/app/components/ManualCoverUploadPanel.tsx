@@ -70,10 +70,21 @@ export function ManualCoverUploadPanel({ comics, tr, onUploadComplete }: ManualC
               <small>{comic.source_name || tr('Sumber', 'Source')}</small>
               <button
                 type="button"
+                className="secondary"
+                onClick={() => {
+                  const imageUrl = getAllCoverUrls(comic)[0];
+                  if (imageUrl) window.open(imageUrl, '_blank');
+                }}
+                style={{ marginTop: '8px', width: '100%', fontSize: '0.8rem', padding: '6px 8px' }}
+              >
+                {tr('Buka Gambar', 'Open Image')}
+              </button>
+              <button
+                type="button"
                 className="primary"
                 disabled={uploading === comic.id}
                 onClick={() => void handleUploadImage(comic)}
-                style={{ marginTop: '8px', width: '100%' }}
+                style={{ width: '100%' }}
               >
                 {uploading === comic.id ? tr('Uploading...', 'Uploading...') : tr('Upload', 'Upload')}
               </button>
