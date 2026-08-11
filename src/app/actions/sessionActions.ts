@@ -201,22 +201,21 @@ export function createSessionActions(deps: SessionActionsDeps) {
     }
   };
 
-  const syncNow = async (
-    processPendingCovers = false,
-    options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean },
-  ) => {
-    if (!ready) {
-      setShowLogin(true);
-      setMessage('Wajib login untuk masuk.');
-      setMessageTone('warning');
-      return false;
-    }
-    setSyncState('sedang-sync');
+  const PENDING_COVER_RETRY_CONCURRENCY = 3;
+  let pendingCoverRetryRunning = false;
+
+  const processPendingCoverRetries = async () => {
+    if (pendingCoverRetryRunning) return;
+    const pendingCovers = readPendingCoverSync();
+    if (pendingCovers.length === 0) return;
+    pendingCoverRetryRunning = true;
     try {
-      if (processPendingCovers) {
-        const pendingCovers = readPendingCoverSync();
-        const remainingCovers: PendingCoverSync[] = [];
-        for (const pendingCover of pendingCovers) {
+      const remainingCovers: PendingCoverSync[] = [];
+      const queue = [...pendingCovers];
+      const worker = async () => {
+        while (queue.length > 0) {
+          const pendingCover = queue.shift();
+          if (!pendingCover) break;
           try {
             const uploadedCover = await replaceComicCover(pendingCover.comicId, pendingCover.coverUrl, pendingCover.comicTitle);
             await updateComic(pendingCover.comicId, {
@@ -231,7 +230,37 @@ export function createSessionActions(deps: SessionActionsDeps) {
             remainingCovers.push(pendingCover);
           }
         }
-        writePendingCoverSync(remainingCovers);
+      };
+      await Promise.all(Array.from({ length: PENDING_COVER_RETRY_CONCURRENCY }, () => worker()));
+      writePendingCoverSync(remainingCovers);
+      // Silently refresh so successfully-cached covers show up without another manual sync.
+      const refreshed = await loadLibrary();
+      setComics(refreshed.comics);
+      setLabels(refreshed.labels);
+      setComicLabels(refreshed.comicLabels);
+      setSources(refreshed.sources);
+      setProgresses(refreshed.progresses);
+    } finally {
+      pendingCoverRetryRunning = false;
+    }
+  };
+
+  const syncNow = async (
+    processPendingCovers = false,
+    options?: { suppressSuccessMessage?: boolean; suppressErrorMessage?: boolean },
+  ) => {
+    if (!ready) {
+      setShowLogin(true);
+      setMessage('Wajib login untuk masuk.');
+      setMessageTone('warning');
+      return false;
+    }
+    setSyncState('sedang-sync');
+    try {
+      if (processPendingCovers) {
+        // Runs in the background so a large retry queue never blocks the sync
+        // button from finishing quickly.
+        void processPendingCoverRetries();
       }
       const snapshot = await loadLibrary();
       setComics(snapshot.comics);
