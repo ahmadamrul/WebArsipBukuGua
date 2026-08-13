@@ -23,6 +23,7 @@ export type ComicInput = {
   sourceUrl?: string;
   sourceName?: string;
   coverUrl?: string;
+  coverUrls?: string[] | null;
   coverStoragePath?: string;
   favorite?: boolean;
   genre?: string;
