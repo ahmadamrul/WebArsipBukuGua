@@ -21,6 +21,7 @@ type Params = {
   sortBy: 'updated_at_desc' | 'title_asc' | 'title_desc' | 'last_read_desc' | 'created_at_desc';
   adultContentMode: AdultContentMode;
   showAdultOnDashboard: boolean;
+  customAdultLabelIds?: string[];
   locale: Locale;
   tr: Translate;
   readingStatusLabel: (status: ReadingStatus | null | undefined, locale: Locale) => string;
@@ -40,13 +41,19 @@ export function useLibraryViewData({
   sortBy,
   adultContentMode,
   showAdultOnDashboard,
+  customAdultLabelIds,
   locale,
   tr,
   readingStatusLabel,
 }: Params) {
   const adultComicIds = useMemo(
-    () => new Set(comics.filter((comic) => comicHasAdultTaxonomy(comic, labels, comicLabels)).map((comic) => comic.id)),
-    [comics, labels, comicLabels],
+    () =>
+      new Set(
+        comics
+          .filter((comic) => comicHasAdultTaxonomy(comic, labels, comicLabels, customAdultLabelIds))
+          .map((comic) => comic.id),
+      ),
+    [comics, labels, comicLabels, customAdultLabelIds],
   );
   const visibleComics = useMemo(
     () => (adultContentMode === 'hide-comics' ? comics.filter((comic) => !adultComicIds.has(comic.id)) : comics),

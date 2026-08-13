@@ -35,6 +35,8 @@ type AppSettingsPanelsProps = {
   syncState: SyncState;
   adultContentMode: AdultContentMode;
   showAdultOnDashboard: boolean;
+  customAdultLabelIds: string[];
+  setCustomAdultLabelIds: (value: string[] | ((current: string[]) => string[])) => void;
   theme: 'light' | 'dark';
   labels: Array<{ id: string; name: string; kind: string }>;
   allComics: any[];
@@ -69,6 +71,8 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     syncState,
     adultContentMode,
     showAdultOnDashboard,
+    customAdultLabelIds,
+    setCustomAdultLabelIds,
     theme,
     labels,
     allComics,
@@ -101,6 +105,7 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
   const [currentDeadLink, setCurrentDeadLink] = useState<{ comicId: string; comicTitle: string; failedUrl: string } | null>(null);
   const [replacingCover, setReplacingCover] = useState(false);
   const [coverFixRefreshKey, setCoverFixRefreshKey] = useState(0);
+  const [showCustomAdultLabels, setShowCustomAdultLabels] = useState(false);
 
   useEffect(() => {
     return subscribeToImportProgress((progress) => {
@@ -350,6 +355,15 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
     }
   };
 
+  const taxonomyLabelsForAdultPicker = labels.filter(
+    (label) => label.kind === 'genre' || label.kind === 'tag' || label.kind === 'collection',
+  );
+  const toggleCustomAdultLabel = (labelId: string) => {
+    setCustomAdultLabelIds((current) =>
+      current.includes(labelId) ? current.filter((id) => id !== labelId) : [...current, labelId],
+    );
+  };
+
   const syncLabel: Record<SyncState, string> = {
     'belum-login': tr('Belum login', 'Not logged in'),
     'siap-sync': tr('Siap sinkron', 'Ready to sync'),
@@ -441,8 +455,8 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
               <h3>{tr('Konten & cover', 'Content & covers')}</h3>
               <p className="muted">
                 {tr(
-                  'Komik dikenali dari genre dan tag seperti Adult, Hentai, Sex, Explicit, NSFW, atau Nudity. Pilihan ini tersimpan di perangkat.',
-                  'Comics are detected from genres and tags such as Adult, Hentai, Sex, Explicit, NSFW, or Nudity. This choice is saved on this device.',
+                  'Komik dikenali dari genre, koleksi, atau tag yang kamu tandai sendiri di bagian "Label kustom" di bawah — tidak ada deteksi otomatis. Pilihan ini tersimpan di perangkat.',
+                  'Comics are detected only from the genres, collections, or tags you mark yourself in "Custom labels" below — there is no automatic detection. This choice is saved on this device.',
                 )}
               </p>
             </div>
@@ -502,6 +516,56 @@ export function AppSettingsPanels(props: AppSettingsPanelsProps) {
                 </div>
                 <span className="cover-manager-entry-arrow" aria-hidden="true">→</span>
               </button>
+            </div>
+            <div className="adult-custom-labels-block">
+              <button
+                type="button"
+                className="adult-custom-labels-toggle"
+                aria-expanded={showCustomAdultLabels}
+                onClick={() => setShowCustomAdultLabels((current) => !current)}
+              >
+                <span>
+                  <p className="eyebrow">{tr('Label kustom', 'Custom labels')}</p>
+                  <h4>{tr('Anggap label ini sebagai konten dewasa', 'Treat these labels as adult content')}</h4>
+                  {customAdultLabelIds.length > 0 && (
+                    <small className="muted">
+                      {tr(`${customAdultLabelIds.length} label dipilih`, `${customAdultLabelIds.length} labels selected`)}
+                    </small>
+                  )}
+                </span>
+                <span className={showCustomAdultLabels ? 'adult-custom-labels-chevron open' : 'adult-custom-labels-chevron'} aria-hidden="true">
+                  ▾
+                </span>
+              </button>
+              {showCustomAdultLabels && (
+                <div className="adult-custom-labels-panel">
+                  <p className="muted">
+                    {tr(
+                      'Pilih genre, koleksi, atau tag mana saja yang ingin kamu tandai sebagai konten dewasa. Klik untuk mengaktifkan/menonaktifkan.',
+                      'Pick whichever genres, collections, or tags you want marked as adult content. Click to toggle on or off.',
+                    )}
+                  </p>
+                  {taxonomyLabelsForAdultPicker.length === 0 ? (
+                    <p className="muted">{tr('Belum ada genre, koleksi, atau tag.', 'No genres, collections, or tags yet.')}</p>
+                  ) : (
+                    <div className="adult-custom-labels-list">
+                      {taxonomyLabelsForAdultPicker.map((label) => (
+                        <button
+                          type="button"
+                          key={label.id}
+                          className={customAdultLabelIds.includes(label.id) ? 'chip active' : 'chip'}
+                          aria-pressed={customAdultLabelIds.includes(label.id)}
+                          onClick={() => toggleCustomAdultLabel(label.id)}
+                          title={label.kind}
+                        >
+                          {label.name}
+                          <small className="adult-custom-label-kind"> · {label.kind === 'genre' ? 'Genre' : label.kind === 'collection' ? tr('Koleksi', 'Collection') : 'Tag'}</small>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </section>
           <section className="panel compact-panel import-manager">

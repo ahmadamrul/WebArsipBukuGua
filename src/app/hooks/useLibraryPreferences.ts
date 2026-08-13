@@ -25,6 +25,16 @@ export function useLibraryPreferences() {
   const [showAdultOnDashboard, setShowAdultOnDashboard] = useState(
     () => window.localStorage.getItem(STORAGE_KEYS.dashboardAdultVisibility) === 'true',
   );
+  const [customAdultLabelIds, setCustomAdultLabelIds] = useState<string[]>(() => {
+    const stored = window.localStorage.getItem(STORAGE_KEYS.customAdultLabelIds);
+    if (!stored) return [];
+    try {
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : [];
+    } catch {
+      return [];
+    }
+  });
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const stored = window.localStorage.getItem(STORAGE_KEYS.theme);
     return stored === 'dark' ? 'dark' : 'light';
@@ -50,6 +60,10 @@ export function useLibraryPreferences() {
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.dashboardAdultVisibility, String(showAdultOnDashboard));
   }, [showAdultOnDashboard]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.customAdultLabelIds, JSON.stringify(customAdultLabelIds));
+  }, [customAdultLabelIds]);
 
   const activeGenreFilters = useMemo(() => (Array.isArray(selectedGenres) ? selectedGenres : []), [selectedGenres]);
   const activeCollectionFilters = useMemo(
@@ -81,6 +95,8 @@ export function useLibraryPreferences() {
     setAdultContentMode,
     showAdultOnDashboard,
     setShowAdultOnDashboard,
+    customAdultLabelIds,
+    setCustomAdultLabelIds,
     theme,
     setTheme,
     activeGenreFilters,

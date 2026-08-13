@@ -1,5 +1,6 @@
 export const STORAGE_KEYS = {
   adultContentMode: 'arsip-adult-content-mode',
+  customAdultLabelIds: 'arsip-custom-adult-label-ids',
   dashboardAdultVisibility: 'arsip-dashboard-show-adult',
   libraryView: 'arsip-library-view',
   locale: 'arsip-locale',

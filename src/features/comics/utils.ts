@@ -3,7 +3,6 @@ import type { ComicLabel, LibraryLabel } from '../../lib/domain/label';
 import type { ReadingStatus } from '../../lib/domain/readingStatus';
 import { validReadingStatus } from '../../lib/domain/readingStatus';
 import { MAX_COMIC_RATING } from '../../lib/constants/limits';
-import { ADULT_TAXONOMY_PATTERN } from '../../lib/constants/regex';
 import { editDistance, normalizeComparableText } from '../../lib/utils/text';
 
 export function comicTitleSimilarity(leftTitle: string, rightTitle: string) {
@@ -61,26 +60,41 @@ export function findSimilarComic(title: string, comics: Comic[]) {
   );
 }
 
-export function isAdultTaxonomyName(value: string) {
-  return ADULT_TAXONOMY_PATTERN.test(
-    value
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase(),
-  );
+function normalizeTaxonomyName(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
 }
 
-export function comicHasAdultTaxonomy(comic: Comic, labels: LibraryLabel[], comicLabels: ComicLabel[]) {
+export function comicHasAdultTaxonomy(
+  comic: Comic,
+  labels: LibraryLabel[],
+  comicLabels: ComicLabel[],
+  customAdultLabelIds?: Iterable<string>,
+) {
+  const customAdultIds = customAdultLabelIds instanceof Set ? customAdultLabelIds : new Set(customAdultLabelIds ?? []);
+  if (customAdultIds.size === 0) return false;
+
   const linkedLabelIds = new Set(
     comicLabels.filter((link) => link.comic_id === comic.id).map((link) => link.label_id),
   );
-  const taxonomyNames = [
-    ...(comic.genre ?? '').split(','),
-    ...labels
-      .filter((label) => linkedLabelIds.has(label.id) && (label.kind === 'genre' || label.kind === 'tag'))
-      .map((label) => label.name),
-  ];
-  return taxonomyNames.some((name) => isAdultTaxonomyName(name.trim()));
+  if ([...linkedLabelIds].some((id) => customAdultIds.has(id))) {
+    return true;
+  }
+
+  // Legacy comic.genre text isn't linked via comicLabels, so match it by name
+  // against the genre labels the user picked as adult.
+  const customAdultGenreNames = new Set(
+    labels
+      .filter((label) => label.kind === 'genre' && customAdultIds.has(label.id))
+      .map((label) => normalizeTaxonomyName(label.name)),
+  );
+  if (customAdultGenreNames.size === 0) return false;
+  return (comic.genre ?? '')
+    .split(',')
+    .some((name) => customAdultGenreNames.has(normalizeTaxonomyName(name)));
 }
 
 export function validComicRating(value: number | null | undefined) {

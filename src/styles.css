@@ -2154,6 +2154,68 @@ input[type='file']::file-selector-button {
   background: #2e66e6;
 }
 
+.adult-custom-labels-block {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.08);
+}
+
+.adult-custom-labels-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  appearance: none;
+  -webkit-appearance: none;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.adult-custom-labels-toggle small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+}
+
+.adult-custom-labels-chevron {
+  flex: none;
+  color: rgba(var(--ink-rgb), 0.55);
+  transition: transform 160ms ease;
+}
+
+.adult-custom-labels-chevron.open {
+  transform: rotate(180deg);
+}
+
+.adult-custom-labels-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.adult-custom-labels-panel .muted {
+  max-width: 62ch;
+  font-size: 0.8rem;
+}
+
+.adult-custom-labels-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.adult-custom-label-kind {
+  opacity: 0.6;
+  font-size: 0.7em;
+}
+
 .adult-cover-notice {
   position: absolute;
   inset: 0;

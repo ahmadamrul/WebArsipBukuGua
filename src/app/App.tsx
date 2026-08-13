@@ -112,6 +112,8 @@ export default function App() {
     setAdultContentMode,
     showAdultOnDashboard,
     setShowAdultOnDashboard,
+    customAdultLabelIds,
+    setCustomAdultLabelIds,
     theme,
     setTheme,
     activeGenreFilters,
@@ -208,6 +210,7 @@ export default function App() {
     comicFormTagIds,
     formMode,
     setComicFormGenreIds,
+    customAdultLabelIds,
   });
 
   useEffect(() => {
@@ -295,6 +298,7 @@ export default function App() {
     sortBy,
     adultContentMode,
     showAdultOnDashboard,
+    customAdultLabelIds,
     locale,
     tr,
     readingStatusLabel,
@@ -682,6 +686,8 @@ export default function App() {
           syncState={syncState}
           adultContentMode={adultContentMode}
           showAdultOnDashboard={showAdultOnDashboard}
+          customAdultLabelIds={customAdultLabelIds}
+          setCustomAdultLabelIds={setCustomAdultLabelIds}
           theme={theme}
           labels={labels}
           allComics={comics}
